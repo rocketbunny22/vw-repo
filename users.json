@@ -1,0 +1,47 @@
+[
+  {
+    "id": "72a28962-684e-4c24-8320-357a5d00948b",
+    "email": "derek@test.com",
+    "username": "testuser",
+    "passwordHash": "$2b$12$N/56h9cvqKUt/RQgVdGRfuy/O6PBSFAQwtswXc9ZQep1NuSC78/wO",
+    "role": "admin",
+    "createdAt": "2026-04-23T19:07:03.945Z",
+    "lastLogin": "2026-04-23T19:07:03.945Z"
+  },
+  {
+    "id": "c95b6748-b01b-4639-9f2e-a33d2643844c",
+    "email": "new@test.com",
+    "username": "newuser",
+    "passwordHash": "$2b$12$d7TpuBD0yJDuwF185HMiWu3nkn74TluVIYLLjtc7CH7yluYJSjycO",
+    "role": "admin",
+    "createdAt": "2026-04-23T19:07:25.015Z",
+    "lastLogin": "2026-04-23T19:07:25.015Z"
+  },
+  {
+    "id": "757769e8-d6c4-4812-a107-c40e2c99222e",
+    "email": "derek@viztech360.com",
+    "username": "dereknolt",
+    "passwordHash": "$2b$12$9rL8c0mVXH8e/wwsQMDdwOugIEC5oNJKjeslTuxPKs.38beCvPfc2",
+    "role": "admin",
+    "createdAt": "2026-04-23T19:07:35.130Z",
+    "lastLogin": "2026-04-23T19:10:33.860Z"
+  },
+  {
+    "id": "e8a82380-c462-42ae-bd33-fdeb81f3f4a1",
+    "email": "newuser2@test.com",
+    "username": "newuser2",
+    "passwordHash": "$2b$12$k0IsebeIgA0EfabHahmfDe3QUU9O8vpUn/fF48Ysl6LKpe6EgKxNe",
+    "role": "admin",
+    "createdAt": "2026-04-23T19:10:40.801Z",
+    "lastLogin": "2026-04-23T19:10:40.801Z"
+  },
+  {
+    "id": "e751cf8c-7664-49ff-83a8-40bcf42e0ef7",
+    "email": "hackthebunny22@gmail.com",
+    "username": "rocketbunny",
+    "passwordHash": "$2b$12$M9kMO7PcvrIApyPgI8IMPeWrHXF5DoxXDVT0W0P6EG04sCS4SIPfi",
+    "role": "admin",
+    "createdAt": "2026-04-23T19:14:46.184Z",
+    "lastLogin": "2026-04-23T19:15:15.917Z"
+  }
+]

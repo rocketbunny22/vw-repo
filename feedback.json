@@ -1,0 +1,10 @@
+[
+  {
+    "id": "4c7474f9-9dab-456c-a487-07051af11684",
+    "name": "Test User",
+    "email": "test@test.com",
+    "category": "suggestion",
+    "message": "Great site! Would love to see more content about Type 2 buses.",
+    "createdAt": "2026-04-23T19:48:30.453Z"
+  }
+]

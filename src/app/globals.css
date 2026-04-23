@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 :root {
+  --vw-blue: #001E50;
+  --vw-blue-light: #1a3a7a;
+  --vw-gold: #B2975A;
+  --vw-gold-light: #d4b87a;
+  --vw-dark: #0a1628;
+  --vw-red: #c41e3a;
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -8,19 +14,72 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-vw-blue: var(--vw-blue);
+  --color-vw-blue-light: var(--vw-blue-light);
+  --color-vw-gold: var(--vw-gold);
+  --color-vw-gold-light: var(--vw-gold-light);
+  --color-vw-dark: var(--vw-dark);
+  --color-vw-red: var(--vw-red);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.prose h1 {
+  @apply text-3xl font-bold text-vw-blue mb-6;
+}
+
+.prose h2 {
+  @apply text-2xl font-bold text-vw-blue mt-8 mb-4;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold text-vw-dark mt-6 mb-3;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-4 ml-4;
+}
+
+.prose li {
+  @apply mb-2;
+}
+
+.prose code {
+  @apply bg-gray-100 text-vw-blue px-1 py-0.5 rounded text-sm;
+}
+
+.prose pre {
+  @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4;
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow;
+}
+
+.btn-primary {
+  @apply bg-vw-blue text-white px-4 py-2 rounded-md font-medium hover:bg-vw-blue-light transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-vw-gold text-vw-blue px-4 py-2 rounded-md font-medium hover:bg-vw-gold-light transition-colors;
+}
+
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-blue {
+  @apply bg-vw-blue text-white;
+}
+
+.badge-gold {
+  @apply bg-vw-gold text-vw-blue;
 }
