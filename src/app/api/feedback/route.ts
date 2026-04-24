@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
 import crypto from 'crypto';
+import { Redis } from '@upstash/redis';
 
-const feedbackDbFile = path.resolve(process.cwd(), 'feedback.json');
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+
+const redis = process.env.UPSTASH_REDIS_REST_URL 
+  ? new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
+  : null;
 
 interface Feedback {
   id: string;
@@ -15,16 +18,14 @@ interface Feedback {
 }
 
 async function getFeedback(): Promise<Feedback[]> {
-  try {
-    const data = await readFile(feedbackDbFile, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
+  if (!redis) return [];
+  const feedback = await redis.get<Feedback[]>('feedback');
+  return feedback || [];
 }
 
 async function saveFeedback(feedback: Feedback[]): Promise<void> {
-  await writeFile(feedbackDbFile, JSON.stringify(feedback, null, 2));
+  if (!redis) return;
+  await redis.set('feedback', feedback);
 }
 
 export async function POST(request: NextRequest) {
@@ -60,7 +61,6 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const authCookie = request.cookies.get('vw_auth');
-  const SESSION_SECRET = process.env.SESSION_SECRET || '';
   
   if (!authCookie || !SESSION_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
+import { Redis } from '@upstash/redis';
 
-const usersDbFile = path.resolve(process.cwd(), 'users.json');
-const resetTokensFile = path.resolve(process.cwd(), 'reset-tokens.json');
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 const RESET_TOKEN_SECRET = process.env.RESET_TOKEN_SECRET || crypto.randomBytes(32).toString('hex');
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
+const redis = process.env.UPSTASH_REDIS_REST_URL 
+  ? new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
+  : null;
 
 async function sendPasswordResetEmail(email: string, resetToken: string) {
   if (!resend) {
@@ -18,7 +19,7 @@ async function sendPasswordResetEmail(email: string, resetToken: string) {
     return;
   }
 
-  const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}`;
+  const resetUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
   
   await resend.emails.send({
     from: 'VW Registry <noreply@yourdomain.com>',
@@ -48,30 +49,23 @@ interface User {
   lastLogin: string;
 }
 
-interface ResetToken {
-  email: string;
-  token: string;
-  expiresAt: number;
-  used: boolean;
-}
-
 interface RateLimitEntry {
   attempts: number;
   firstAttempt: number;
   lockedUntil?: number;
 }
 
-const rateLimitMap = new Map<string, RateLimitEntry>();
+const inMemoryRateLimit = new Map<string, RateLimitEntry>();
 const RATE_LIMIT_WINDOW = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 30 * 60 * 1000;
 
 function checkRateLimit(key: string): { allowed: boolean; retryAfter?: number } {
   const now = Date.now();
-  const entry = rateLimitMap.get(key);
+  const entry = inMemoryRateLimit.get(key);
   
   if (!entry || now > (entry.lockedUntil || 0)) {
-    rateLimitMap.set(key, { attempts: 1, firstAttempt: now });
+    inMemoryRateLimit.set(key, { attempts: 1, firstAttempt: now });
     return { allowed: true };
   }
   
@@ -80,7 +74,7 @@ function checkRateLimit(key: string): { allowed: boolean; retryAfter?: number } 
   }
   
   if (now - entry.firstAttempt > RATE_LIMIT_WINDOW) {
-    rateLimitMap.set(key, { attempts: 1, firstAttempt: now });
+    inMemoryRateLimit.set(key, { attempts: 1, firstAttempt: now });
     return { allowed: true };
   }
   
@@ -95,20 +89,7 @@ function checkRateLimit(key: string): { allowed: boolean; retryAfter?: number } 
 }
 
 function clearRateLimit(key: string): void {
-  rateLimitMap.delete(key);
-}
-
-async function getResetTokens(): Promise<ResetToken[]> {
-  try {
-    const data = await readFile(resetTokensFile, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
-
-async function saveResetTokens(tokens: ResetToken[]): Promise<void> {
-  await writeFile(resetTokensFile, JSON.stringify(tokens, null, 2));
+  inMemoryRateLimit.delete(key);
 }
 
 function createPasswordResetToken(email: string): string {
@@ -132,32 +113,25 @@ function verifyPasswordResetToken(token: string): { valid: boolean; email?: stri
 }
 
 async function getUsers(): Promise<User[]> {
-  try {
-    const data = await readFile(usersDbFile, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
+  if (!redis) return [];
+  const users = await redis.get<User[]>('users');
+  return users || [];
 }
 
 async function saveUsers(users: User[]): Promise<void> {
-  await writeFile(usersDbFile, JSON.stringify(users, null, 2));
+  if (!redis) return;
+  await redis.set('users', users);
 }
 
-function createHash256(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex');
+async function getResetTokens(): Promise<{ email: string; token: string; used: boolean }[]> {
+  if (!redis) return [];
+  const tokens = await redis.get<{ email: string; token: string; used: boolean }[]>('reset_tokens');
+  return tokens || [];
 }
 
-async function verifyPassword(password: string, passwordHash: string): Promise<boolean> {
-  if (passwordHash.length === 64 && !passwordHash.includes('$')) {
-    return createHash256(password) === passwordHash;
-  }
-  return bcrypt.compare(password, passwordHash);
-}
-
-async function migratePassword(users: User[], userIndex: number, newPasswordHash: string): Promise<void> {
-  users[userIndex].passwordHash = newPasswordHash;
-  await saveUsers(users);
+async function saveResetTokens(tokens: { email: string; token: string; used: boolean }[]): Promise<void> {
+  if (!redis) return;
+  await redis.set('reset_tokens', tokens);
 }
 
 function createSessionToken(user: User): string {
@@ -204,7 +178,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
       }
 
-      // Check for admin code in body or use first user as admin
       const adminCode = body.adminCode;
       const isFirstUser = users.length === 0;
       const role: 'user' | 'admin' = (adminCode === 'VWADMIN2024' || isFirstUser) ? 'admin' : 'user';
@@ -235,7 +208,7 @@ export async function POST(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 1 week
+        maxAge: 60 * 60 * 24 * 7,
         path: '/',
       });
 
@@ -255,12 +228,8 @@ export async function POST(request: NextRequest) {
       const users = await getUsers();
       const user = users.find(u => u.email === email);
       
-      if (!user || !(await verifyPassword(password, user.passwordHash))) {
+      if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
         return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
-      }
-
-      if (user.passwordHash.length === 64 && !user.passwordHash.includes('$')) {
-        user.passwordHash = await bcrypt.hash(password, 12);
       }
 
       user.lastLogin = new Date().toISOString();
@@ -424,7 +393,7 @@ export async function POST(request: NextRequest) {
       if (user) {
         const token = createPasswordResetToken(email);
         const tokens = await getResetTokens();
-        tokens.push({ email, token, expiresAt: Date.now() + 15 * 60 * 1000, used: false });
+        tokens.push({ email, token, used: false });
         await saveResetTokens(tokens);
         await sendPasswordResetEmail(email, token);
       }

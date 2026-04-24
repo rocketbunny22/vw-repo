@@ -1,25 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PdfDocument } from '@/types';
-import { existsSync, mkdirSync } from 'fs';
-import { writeFile, readFile } from 'fs/promises';
-import path from 'path';
 import crypto from 'crypto';
+import { Redis } from '@upstash/redis';
 
-const pdfsDbFile = path.resolve(process.cwd(), 'pdfs.json');
-const PDFs_DIR = path.resolve(process.cwd(), 'public', 'pdfs');
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
+const redis = process.env.UPSTASH_REDIS_REST_URL 
+  ? new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
+  : null;
+
 async function getPdfsDb(): Promise<PdfDocument[]> {
-  try {
-    const data = await readFile(pdfsDbFile, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
+  if (!redis) return [];
+  const pdfs = await redis.get<PdfDocument[]>('pdfs');
+  return pdfs || [];
 }
 
 async function savePdfsDb(pdfs: PdfDocument[]): Promise<void> {
-  await writeFile(pdfsDbFile, JSON.stringify(pdfs, null, 2));
+  if (!redis) return;
+  await redis.set('pdfs', pdfs);
 }
 
 function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
@@ -78,8 +76,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only PDF files are allowed' }, { status: 400 });
     }
 
-    if (!existsSync(PDFs_DIR)) {
-      mkdirSync(PDFs_DIR, { recursive: true });
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
@@ -87,9 +85,6 @@ export async function POST(request: NextRequest) {
 
     const id = `${generation}-${system}-${Date.now()}`;
     const filename = `${id}.pdf`;
-    const filepath = path.join(PDFs_DIR, filename);
-
-    await writeFile(filepath, buffer);
 
     const pdfData: PdfDocument = {
       id,
