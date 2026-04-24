@@ -15,8 +15,9 @@ const systemsList = [
   { id: 'cooling', name: 'Cooling System' },
 ];
 
-export default function LibraryPage({ searchParams }: { searchParams: Promise<{ generation?: string; system?: string }> }) {
+export default function LibraryPage({ searchParams }: { searchParams: Promise<{ generation?: string; system?: string; model?: string }> }) {
   const [selectedGeneration, setSelectedGeneration] = useState<string>('all');
+  const [selectedModel, setSelectedModel] = useState<string>('all');
   const [selectedSystem, setSelectedSystem] = useState<string>('all');
   const [pdfs, setPdfs] = useState<PdfDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
     async function init() {
       const params = await searchParams;
       setSelectedGeneration(params.generation || 'all');
+      setSelectedModel(params.model || 'all');
       setSelectedSystem(params.system || 'all');
       fetchPdfs();
     }
@@ -43,8 +45,13 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
     }
   };
 
+  const currentModels = selectedGeneration !== 'all' 
+    ? generations.find(g => g.id === selectedGeneration)?.models || []
+    : [];
+
   const filteredPdfs = pdfs.filter((pdf) => {
     if (selectedGeneration !== 'all' && pdf.generation !== selectedGeneration) return false;
+    if (selectedModel !== 'all' && pdf.model !== selectedModel) return false;
     if (selectedSystem !== 'all' && pdf.system !== selectedSystem) return false;
     return true;
   });
@@ -89,13 +96,26 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
           <div className="flex flex-col md:flex-row gap-4">
             <select
               value={selectedGeneration}
-              onChange={(e) => setSelectedGeneration(e.target.value)}
+              onChange={(e) => { setSelectedGeneration(e.target.value); setSelectedModel('all'); }}
               className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
             >
               <option value="all">All Generations</option>
               {generations.map((gen) => (
                 <option key={gen.id} value={gen.id}>
                   {gen.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
+              disabled={!currentModels.length}
+            >
+              <option value="all">All Models</option>
+              {currentModels.map((model) => (
+                <option key={model} value={model}>
+                  {model}
                 </option>
               ))}
             </select>
@@ -158,6 +178,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
                     )}
                     <div className="flex flex-wrap gap-2 mb-4">
                       <span className="badge badge-blue">{getGenerationName(pdf.generation)}</span>
+                      {pdf.model && <span className="badge badge-green">{pdf.model}</span>}
                       <span className="badge badge-gold">{getSystemName(pdf.system)}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm text-gray-500">

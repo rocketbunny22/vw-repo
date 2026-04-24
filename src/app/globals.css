@@ -83,3 +83,7 @@ body {
 .badge-gold {
   @apply bg-vw-gold text-vw-blue;
 }
+
+.badge-green {
+  @apply bg-green-600 text-white;
+}

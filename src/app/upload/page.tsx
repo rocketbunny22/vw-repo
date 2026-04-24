@@ -19,6 +19,8 @@ export default function UploadPage() {
   const [loading, setLoading] = useState(true);
   const [file, setFile] = useState<File | null>(null);
   const [generation, setGeneration] = useState('');
+  const [model, setModel] = useState('');
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [system, setSystem] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -28,6 +30,17 @@ export default function UploadPage() {
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    if (generation) {
+      const gen = generations.find(g => g.id === generation);
+      setAvailableModels(gen?.models || []);
+      setModel('');
+    } else {
+      setAvailableModels([]);
+      setModel('');
+    }
+  }, [generation]);
 
   const checkAuth = async () => {
     try {
@@ -77,6 +90,7 @@ export default function UploadPage() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('generation', generation);
+      if (model) formData.append('model', model);
       formData.append('system', system);
       formData.append('title', title);
       formData.append('description', description);
@@ -92,6 +106,7 @@ export default function UploadPage() {
         setMessage({ type: 'success', text: 'PDF uploaded successfully!' });
         setFile(null);
         setGeneration('');
+        setModel('');
         setSystem('');
         setTitle('');
         setDescription('');
@@ -167,6 +182,25 @@ export default function UploadPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Model (optional)
+                  </label>
+                  <select
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
+                    disabled={!availableModels.length}
+                  >
+                    <option value="">All Models</option>
+                    {availableModels.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     System *
                   </label>
                   <select
@@ -183,20 +217,20 @@ export default function UploadPage() {
                     ))}
                   </select>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g., Mk1 GTI Engine Rebuild Guide"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
-                  required
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g., Mk1 GTI Engine Rebuild Guide"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
+                    required
+                  />
+                </div>
               </div>
 
               <div>

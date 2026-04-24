@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const generation = formData.get('generation') as string;
+    const model = formData.get('model') as string;
     const system = formData.get('system') as string;
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
@@ -91,6 +92,7 @@ export async function POST(request: NextRequest) {
       filename,
       originalName: file.name,
       generation,
+      model: model || undefined,
       system,
       title,
       description: description || '',

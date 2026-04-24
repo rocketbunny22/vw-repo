@@ -37,6 +37,7 @@ export interface PdfDocument {
   filename: string;
   originalName: string;
   generation: string;
+  model?: string;
   system: string;
   title: string;
   description: string;
