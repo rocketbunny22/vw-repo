@@ -21,22 +21,25 @@ async function sendPasswordResetEmail(email: string, resetToken: string) {
 
   const resetUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
   
-  await resend.emails.send({
-    from: 'VW Registry <noreply@yourdomain.com>',
-    to: email,
-    subject: 'Reset your VW Registry password',
-    html: `
-      <h1>Reset your password</h1>
-      <p>Click the button below to reset your password:</p>
-      <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background: #0066cc; color: white; text-decoration: none; border-radius: 4px;">
-        Reset Password
-      </a>
-      <p>Or copy this link: ${resetUrl}</p>
-      <p>This link expires in 15 minutes.</p>
-    `,
-  });
-  
-  console.log(`Password reset email sent to ${email}`);
+  try {
+    await resend.emails.send({
+      from: 'VW Registry <onboarding@resend.dev>',
+      to: email,
+      subject: 'Reset your VW Registry password',
+      html: `
+        <h1>Reset your password</h1>
+        <p>Click the button below to reset your password:</p>
+        <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background: #0066cc; color: white; text-decoration: none; border-radius: 4px;">
+          Reset Password
+        </a>
+        <p>Or copy this link: ${resetUrl}</p>
+        <p>This link expires in 15 minutes.</p>
+      `,
+    });
+    console.log(`Password reset email sent to ${email}`);
+  } catch (err) {
+    console.error('Resend error:', err);
+  }
 }
 
 interface User {
