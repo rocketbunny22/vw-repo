@@ -11,6 +11,8 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
 export async function GET(request: NextRequest, { params }: { params: Promise<{ filename: string }> }) {
   try {
     const { filename } = await params;
+    const { searchParams } = new URL(request.url);
+    const view = searchParams.get('view');
     
     if (!filename || !filename.endsWith('.pdf')) {
       return NextResponse.json({ error: 'Invalid file' }, { status: 400 });
@@ -27,11 +29,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const fileBuffer = Buffer.from(pdfData, 'base64');
+    const disposition = view === 'true' ? 'inline' : 'attachment';
 
     return new NextResponse(fileBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Disposition': `${disposition}; filename="${filename}"`,
       },
     });
   } catch (error) {

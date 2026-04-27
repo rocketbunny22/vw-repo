@@ -59,7 +59,7 @@ export function PdfCard({ pdf, formatFileSize }: PdfCardProps) {
             </div>
             <div className="flex-1 overflow-auto p-4 bg-gray-100">
               <iframe
-                src={viewingPdf.url}
+                src={`${viewingPdf.url}?view=true`}
                 className="w-full h-[70vh] border-0"
                 title={viewingPdf.title}
               />
@@ -122,7 +122,7 @@ export function PdfListItem({ pdf, formatFileSize }: PdfListItemProps) {
             </div>
             <div className="flex-1 overflow-auto p-4 bg-gray-100">
               <iframe
-                src={viewingPdf.url}
+                src={`${viewingPdf.url}?view=true`}
                 className="w-full h-[70vh] border-0"
                 title={viewingPdf.title}
               />
