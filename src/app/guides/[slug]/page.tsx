@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { diyGuides } from '@/data/diyGuides';
 import { generations } from '@/data/generations';
+import { DiyGuide } from '@/types';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
@@ -22,13 +23,14 @@ export async function generateStaticParams() {
   // Also include approved user guides
   try {
     const guidesFile = path.resolve(process.cwd(), 'user-guides.json');
-    if (existsSync(guidesFile)) {
-      const data = await readFile(guidesFile, 'utf-8');
-      const userGuides = JSON.parse(data).filter((g: any) => g.approved);
-      userGuides.forEach((g: any) => {
-        params.push({ slug: g.slug });
-      });
-    }
+      if (existsSync(guidesFile)) {
+        const data = await readFile(guidesFile, 'utf-8');
+        const userGuides: DiyGuide[] = JSON.parse(data);
+        userGuides.filter((guide) => guide.approved).forEach((guide) => {
+          params.push({ slug: guide.slug });
+        });
+      }
+
   } catch {
     // No user guides
   }
@@ -51,8 +53,8 @@ export default async function GuidePage({
     try {
       const guidesFile = path.resolve(process.cwd(), 'user-guides.json');
       const data = await readFile(guidesFile, 'utf-8');
-      const userGuides = JSON.parse(data);
-      guide = userGuides.find((g: any) => g.slug === slug && g.approved);
+      const userGuides: DiyGuide[] = JSON.parse(data);
+      guide = userGuides.find((userGuide) => userGuide.slug === slug && userGuide.approved);
     } catch {
       // No user guides yet
     }

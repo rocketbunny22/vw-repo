@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { generations } from '@/data/generations';
+import { DiyGuide, PdfDocument } from '@/types';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -46,34 +47,36 @@ export default function SearchPage() {
       const pdfsData = await pdfsRes.json();
       const guidesData = await guidesRes.json();
 
-      const pdfs: SearchResult[] = (pdfsData.pdfs || [])
-        .filter((p: any) => 
-          p.title.toLowerCase().includes(query.toLowerCase()) ||
-          p.description.toLowerCase().includes(query.toLowerCase())
+      const pdfList: PdfDocument[] = pdfsData.pdfs || [];
+      const pdfs: SearchResult[] = pdfList
+        .filter((pdf) => 
+          pdf.title.toLowerCase().includes(query.toLowerCase()) ||
+          pdf.description.toLowerCase().includes(query.toLowerCase())
         )
-        .map((p: any) => ({
+        .map((pdf) => ({
           type: 'pdf' as const,
-          id: p.id,
-          title: p.title,
-          description: p.description,
-          generation: p.generation,
-          system: p.system,
-          url: p.url
+          id: pdf.id,
+          title: pdf.title,
+          description: pdf.description,
+          generation: pdf.generation,
+          system: pdf.system,
+          url: pdf.url
         }));
 
-      const guides: SearchResult[] = (guidesData.guides || [])
-        .filter((g: any) =>
-          g.title.toLowerCase().includes(query.toLowerCase()) ||
-          g.content?.toLowerCase().includes(query.toLowerCase())
+      const guideList: DiyGuide[] = guidesData.guides || [];
+      const guides: SearchResult[] = guideList
+        .filter((guide) =>
+          guide.title.toLowerCase().includes(query.toLowerCase()) ||
+          guide.content?.toLowerCase().includes(query.toLowerCase())
         )
-        .map((g: any) => ({
+        .map((guide) => ({
           type: 'guide' as const,
-          id: g.id,
-          title: g.title,
-          description: g.content?.substring(0, 150) + '...',
-          generation: g.generation,
-          system: g.system,
-          url: `/guides/${g.slug}`
+          id: guide.id,
+          title: guide.title,
+          description: `${guide.content?.substring(0, 150) || ''}...`,
+          generation: guide.generation,
+          system: guide.system,
+          url: `/guides/${guide.slug}`
         }));
 
       // Search generations
@@ -171,9 +174,10 @@ export default function SearchPage() {
         <section className="py-12 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-vw-blue">
-                {results.length} results for "{query}"
-              </h2>
+                <h2 className="text-2xl font-bold text-vw-blue">
+                  {results.length} results for “{query}”
+                </h2>
+
               <Link href="/search" className="text-vw-blue hover:underline">
                 Clear search
               </Link>

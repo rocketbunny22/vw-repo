@@ -22,6 +22,18 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
   const [pdfs, setPdfs] = useState<PdfDocument[]>([]);
   const [loading, setLoading] = useState(true);
 
+  async function fetchPdfs() {
+    try {
+      const response = await fetch('/api/pdfs');
+      const data = await response.json();
+      setPdfs(data.pdfs || []);
+    } catch (error) {
+      console.error('Failed to fetch PDFs:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     async function init() {
       const params = await searchParams;
@@ -32,18 +44,6 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
     }
     init();
   }, []);
-
-  const fetchPdfs = async () => {
-    try {
-      const response = await fetch('/api/pdfs');
-      const data = await response.json();
-      setPdfs(data.pdfs || []);
-    } catch (error) {
-      console.error('Failed to fetch PDFs:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const currentModels = selectedGeneration !== 'all' 
     ? generations.find(g => g.id === selectedGeneration)?.models || []

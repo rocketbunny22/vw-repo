@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
   });
   
   // Filter
-  let filtered = allGuides.filter((g: DiyGuide) => {
+  const filtered = allGuides.filter((g: DiyGuide) => {
     if (generation && generation !== 'all' && g.generation !== generation) return false;
     if (system && system !== 'all' && g.system !== system) return false;
     return true;

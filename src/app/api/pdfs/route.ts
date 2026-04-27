@@ -1,24 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PdfDocument } from '@/types';
 import crypto from 'crypto';
-import { Redis } from '@upstash/redis';
+import { getAllPdfs, saveAllPdfs, savePdfFile } from '@/data/pdfs';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
-const redis = process.env.UPSTASH_REDIS_REST_URL 
-  ? new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
-  : null;
-
-async function getPdfsDb(): Promise<PdfDocument[]> {
-  if (!redis) return [];
-  const pdfs = await redis.get<PdfDocument[]>('pdfs');
-  return pdfs || [];
-}
-
-async function savePdfsDb(pdfs: PdfDocument[]): Promise<void> {
-  if (!redis) return;
-  await redis.set('pdfs', pdfs);
-}
 
 function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
   try {
@@ -49,7 +35,7 @@ function checkAuth(request: NextRequest): { authenticated: boolean; user?: { id:
 }
 
 export async function GET() {
-  const pdfs = await getPdfsDb();
+  const pdfs = await getAllPdfs();
   return NextResponse.json({ pdfs });
 }
 
@@ -102,9 +88,11 @@ export async function POST(request: NextRequest) {
       uploadedBy: auth.user?.username,
     };
 
-    const pdfs = await getPdfsDb();
+    await savePdfFile(filename, buffer);
+
+    const pdfs = await getAllPdfs();
     pdfs.push(pdfData);
-    await savePdfsDb(pdfs);
+    await saveAllPdfs(pdfs);
 
     return NextResponse.json({ success: true, pdf: pdfData });
   } catch (error) {

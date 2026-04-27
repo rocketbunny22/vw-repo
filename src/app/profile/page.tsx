@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 interface User {
   id: string;
@@ -35,28 +34,40 @@ export default function ProfilePage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    let isActive = true;
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/auth');
-      const data = await response.json();
-      
-      if (!data.authenticated) {
+    async function loadAuth() {
+      try {
+        const response = await fetch('/api/auth');
+        const data = await response.json();
+
+        if (!data.authenticated) {
+          router.push('/login');
+          return;
+        }
+
+        if (!isActive) {
+          return;
+        }
+
+        setUser(data.user);
+        setEditUsername(data.user.username);
+        setEditEmail(data.user.email);
+      } catch {
         router.push('/login');
-        return;
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
       }
-      
-      setUser(data.user);
-      setEditUsername(data.user.username);
-      setEditEmail(data.user.email);
-    } catch {
-      router.push('/login');
-    } finally {
-      setLoading(false);
     }
-  };
+
+    void loadAuth();
+
+    return () => {
+      isActive = false;
+    };
+  }, [router]);
 
   const handleLogout = async () => {
     try {
@@ -362,7 +373,7 @@ export default function ProfilePage() {
                     </div>
                   </form>
                 ) : (
-                  <p className="text-gray-500">Click "Change" to update your password</p>
+                  <p className="text-gray-500">Click &quot;Change&quot; to update your password</p>
                 )}
               </div>
 

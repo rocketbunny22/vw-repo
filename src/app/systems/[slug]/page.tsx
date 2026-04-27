@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { generations } from '@/data/generations';
+import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
-import { readFile } from 'fs/promises';
-import path from 'path';
 
 export async function generateStaticParams() {
   const systemSlugs = new Set<string>();
@@ -12,26 +11,6 @@ export async function generateStaticParams() {
     });
   });
   return Array.from(systemSlugs).map((slug) => ({ slug }));
-}
-
-async function getPdfs() {
-  try {
-    const dbPath = path.resolve(process.cwd(), 'pdfs.json');
-    const data = await readFile(dbPath, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
-
-async function getGuides() {
-  try {
-    const dbPath = path.resolve(process.cwd(), 'pdfs.json');
-    const data = await readFile(dbPath, 'utf-8');
-    return [];
-  } catch {
-    return [];
-  }
 }
 
 export default async function SystemsPage({
@@ -63,8 +42,10 @@ export default async function SystemsPage({
   const systemInfo = filteredSystems[0];
   const selectedGen = gen ? generations.find((g) => g.slug === gen) : null;
 
-  const pdfs = await getPdfs();
-  const relatedPdfs = pdfs.filter((p: any) => p.system === slug && (!gen || p.generation === gen));
+  const pdfs = await getAllPdfs();
+  const relatedPdfs = pdfs.filter(
+    (pdf) => pdf.system === slug && (!selectedGen || pdf.generation === selectedGen.id || pdf.generation === selectedGen.slug)
+  );
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -152,12 +133,12 @@ export default async function SystemsPage({
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-vw-blue">Related PDFs</h2>
-              <Link href={`/library?generation=${gen}&system=${slug}`} className="text-vw-blue hover:underline">
+              <Link href={`/library?generation=${selectedGen.id}&system=${slug}`} className="text-vw-blue hover:underline">
                 View All →
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {relatedPdfs.slice(0, 3).map((pdf: any) => (
+              {relatedPdfs.slice(0, 3).map((pdf) => (
                 <div key={pdf.id} className="bg-gray-50 rounded-lg p-4 border hover:shadow-md transition-all">
                   <h3 className="font-bold text-vw-dark mb-1">{pdf.title}</h3>
                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">{pdf.description}</p>
@@ -178,14 +159,15 @@ export default async function SystemsPage({
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-vw-blue">DIY Guides</h2>
-              <Link href={`/guides?generation=${gen}&system=${slug}`} className="text-vw-blue hover:underline">
+               <Link href={`/guides?generation=${selectedGen.id}&system=${slug}`} className="text-vw-blue hover:underline">
+
                 View All →
               </Link>
             </div>
             <p className="text-gray-600 mb-4">
               Check the DIY Guides page for step-by-step tutorials on {selectedGen.name} {systemInfo.name}.
             </p>
-            <Link href={`/guides?generation=${gen}&system=${slug}`} className="btn-primary">
+            <Link href={`/guides?generation=${selectedGen.id}&system=${slug}`} className="btn-primary">
               Browse {selectedGen.name} {systemInfo.name} Guides
             </Link>
           </div>
@@ -200,10 +182,10 @@ export default async function SystemsPage({
               No PDFs or guides found specifically for {selectedGen.name} {systemInfo.name}.
             </p>
             <div className="flex gap-4">
-              <Link href={`/library?generation=${gen}`} className="text-vw-blue hover:underline">
+              <Link href={`/library?generation=${selectedGen.id}`} className="text-vw-blue hover:underline">
                 Browse All {selectedGen.name} PDFs
               </Link>
-              <Link href={`/guides?generation=${gen}`} className="text-vw-blue hover:underline">
+              <Link href={`/guides?generation=${selectedGen.id}`} className="text-vw-blue hover:underline">
                 Browse All {selectedGen.name} Guides
               </Link>
             </div>

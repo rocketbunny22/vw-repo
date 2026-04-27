@@ -32,7 +32,7 @@ export default function GuidesPage({ searchParams }: { searchParams: Promise<{ g
     init();
   }, []);
 
-  const fetchGuides = async () => {
+  async function fetchGuides() {
     try {
       const params = new URLSearchParams();
       if (selectedGeneration !== 'all') params.set('generation', selectedGeneration);
@@ -46,7 +46,7 @@ export default function GuidesPage({ searchParams }: { searchParams: Promise<{ g
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   useEffect(() => {
     fetchGuides();

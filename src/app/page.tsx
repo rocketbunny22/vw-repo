@@ -2,8 +2,6 @@ import Link from 'next/link';
 import { generations } from '@/data/generations';
 
 export default function Home() {
-  const mainGenerations = generations.slice(0, 8);
-  
   return (
     <div className="flex flex-col">
       {/* Hero Section */}

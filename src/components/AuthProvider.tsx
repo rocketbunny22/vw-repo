@@ -26,23 +26,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    let isActive = true;
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/auth');
-      const data = await response.json();
-      
-      if (data.authenticated) {
-        setUser(data.user);
+    async function loadAuth() {
+      try {
+        const response = await fetch('/api/auth');
+        const data = await response.json();
+
+        if (isActive && data.authenticated) {
+          setUser(data.user);
+        }
+      } catch {
+        if (isActive) {
+          setUser(null);
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
       }
-    } catch {
-      setUser(null);
-    } finally {
-      setLoading(false);
     }
-  };
+
+    void loadAuth();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {

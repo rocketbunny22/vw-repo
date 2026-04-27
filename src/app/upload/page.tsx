@@ -20,29 +20,17 @@ export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [generation, setGeneration] = useState('');
   const [model, setModel] = useState('');
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [system, setSystem] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  const availableModels = generation
+    ? generations.find((gen) => gen.id === generation)?.models || []
+    : [];
 
-  useEffect(() => {
-    if (generation) {
-      const gen = generations.find(g => g.id === generation);
-      setAvailableModels(gen?.models || []);
-      setModel('');
-    } else {
-      setAvailableModels([]);
-      setModel('');
-    }
-  }, [generation]);
-
-  const checkAuth = async () => {
+  async function checkAuth() {
     try {
       const response = await fetch('/api/auth');
       const data = await response.json();
@@ -56,7 +44,11 @@ export default function UploadPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   if (loading) {
     return (
@@ -167,7 +159,10 @@ export default function UploadPage() {
                   </label>
                   <select
                     value={generation}
-                    onChange={(e) => setGeneration(e.target.value)}
+                    onChange={(e) => {
+                      setGeneration(e.target.value);
+                      setModel('');
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
                     required
                   >

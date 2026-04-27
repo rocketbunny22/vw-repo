@@ -15,20 +15,29 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    let isActive = true;
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/auth');
-      const data = await response.json();
-      if (data.authenticated) {
-        setUser(data.user);
+    async function loadAuth() {
+      try {
+        const response = await fetch('/api/auth');
+        const data = await response.json();
+
+        if (isActive && data.authenticated) {
+          setUser(data.user);
+        }
+      } catch {
+        if (isActive) {
+          setUser(null);
+        }
       }
-    } catch {
-      setUser(null);
     }
-  };
+
+    void loadAuth();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const handleLogout = async () => {
     await fetch('/api/auth', {

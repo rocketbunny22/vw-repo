@@ -36,11 +36,7 @@ export default function SubmitGuidePage() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  async function checkAuth() {
     try {
       const response = await fetch('/api/auth');
       const data = await response.json();
@@ -54,7 +50,11 @@ export default function SubmitGuidePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

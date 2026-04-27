@@ -30,11 +30,7 @@ export default function AdminPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    checkAdmin();
-  }, []);
-
-  const checkAdmin = async () => {
+  async function checkAdmin() {
     try {
       const response = await fetch('/api/auth');
       const data = await response.json();
@@ -55,9 +51,9 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const loadData = async () => {
+  async function loadData() {
     try {
       const response = await fetch('/api/admin');
       const data = await response.json();
@@ -69,12 +65,16 @@ export default function AdminPage() {
       
       setUsers(data.users || []);
       setPdfs(data.pdfs || []);
-    } catch (e) {
+    } catch {
       setError('Failed to load data');
     }
-  };
+  }
 
-  const handleAction = async (action: string, id: string, extra?: any) => {
+  useEffect(() => {
+    checkAdmin();
+  }, []);
+
+  const handleAction = async (action: string, id: string, extra?: { role?: string }) => {
     setActionLoading(id);
     setError('');
     

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { generations } from '@/data/generations';
+import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
 
 export default async function GenerationPage({
@@ -11,6 +12,11 @@ export default async function GenerationPage({
   const generation = generations.find((g) => g.slug === slug);
   
   if (!generation) notFound();
+
+  const pdfs = await getAllPdfs();
+  const relatedPdfs = pdfs.filter(
+    (pdf) => pdf.generation === generation.id || pdf.generation === generation.slug
+  );
   
   return (
     <div className="flex flex-col">
@@ -28,9 +34,10 @@ export default async function GenerationPage({
 
       <section className="bg-vw-gold py-8">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
             <div><div className="text-2xl font-bold text-vw-blue">{generation.systems.length}</div><div className="text-sm text-vw-dark">Systems</div></div>
             <div><div className="text-2xl font-bold text-vw-blue">{generation.models.length}</div><div className="text-sm text-vw-dark">Models</div></div>
+            <div><div className="text-2xl font-bold text-vw-blue">{relatedPdfs.length}</div><div className="text-sm text-vw-dark">PDFs</div></div>
           </div>
         </div>
       </section>
@@ -46,6 +53,44 @@ export default async function GenerationPage({
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="py-12 px-4 bg-white border-t">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-6 gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-vw-blue">Related PDFs</h2>
+              <p className="text-gray-600 mt-1">Documents uploaded for {generation.name}.</p>
+            </div>
+            <Link href={`/library?generation=${generation.id}`} className="text-vw-blue hover:underline">
+              View all PDFs →
+            </Link>
+          </div>
+
+          {relatedPdfs.length === 0 ? (
+            <div className="bg-gray-50 rounded-lg border p-6 text-gray-600">
+              No PDFs have been uploaded for this generation yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {relatedPdfs.slice(0, 6).map((pdf) => (
+                <div key={pdf.id} className="bg-gray-50 rounded-lg p-5 border hover:shadow-md transition-all">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <span className="badge badge-gold">{pdf.system}</span>
+                    {pdf.model && <span className="badge badge-green">{pdf.model}</span>}
+                  </div>
+                  <h3 className="font-bold text-vw-dark mb-2">{pdf.title}</h3>
+                  {pdf.description && (
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{pdf.description}</p>
+                  )}
+                  <a href={pdf.url} download className="text-vw-blue hover:underline font-medium">
+                    Download PDF
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

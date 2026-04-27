@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { generations } from '@/data/generations';
 
 const systems = [
   { id: 'engine', name: 'Engine' },

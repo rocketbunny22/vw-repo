@@ -2,31 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
+import { getAllPdfs, saveAllPdfs } from '@/data/pdfs';
+import { PdfDocument, User } from '@/types';
 
 const usersDbFile = path.resolve(process.cwd(), 'users.json');
-const pdfsDbFile = path.resolve(process.cwd(), 'pdfs.json');
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
-async function getUsers() {
+async function getUsers(): Promise<User[]> {
   try {
     const data = await readFile(usersDbFile, 'utf-8');
-    return JSON.parse(data);
+    const users = JSON.parse(data);
+    return Array.isArray(users) ? users : [];
   } catch {
     return [];
   }
 }
 
-async function saveUsers(users: any[]) {
+async function saveUsers(users: User[]) {
   await writeFile(usersDbFile, JSON.stringify(users, null, 2));
-}
-
-async function getPdfs() {
-  try {
-    const data = await readFile(pdfsDbFile, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
 }
 
 function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
@@ -69,9 +62,9 @@ export async function GET(request: NextRequest) {
   }
 
   const users = await getUsers();
-  const pdfs = await getPdfs();
+  const pdfs = await getAllPdfs();
 
-  const usersWithoutPassword = users.map((u: any) => ({
+  const usersWithoutPassword = users.map((u) => ({
     id: u.id,
     email: u.email,
     username: u.username,
@@ -91,12 +84,17 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
+    const body = await request.json() as {
+      action?: string;
+      userId?: string;
+      pdfId?: string;
+      role?: User['role'];
+    };
     const { action, userId, pdfId, role } = body;
 
     if (action === 'deleteUser') {
       const users = await getUsers();
-      const userIndex = users.findIndex((u: any) => u.id === userId);
+      const userIndex = users.findIndex((u) => u.id === userId);
       
       if (userIndex === -1) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -113,10 +111,14 @@ export async function POST(request: NextRequest) {
 
     if (action === 'changeRole') {
       const users = await getUsers();
-      const userIndex = users.findIndex((u: any) => u.id === userId);
+      const userIndex = users.findIndex((u) => u.id === userId);
       
       if (userIndex === -1) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      if (!role) {
+        return NextResponse.json({ error: 'Role is required' }, { status: 400 });
       }
 
       users[userIndex].role = role;
@@ -125,8 +127,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'deletePdf') {
-      const pdfs = await getPdfs();
-      const pdfIndex = pdfs.findIndex((p: any) => p.id === pdfId);
+      const pdfs = await getAllPdfs();
+      const pdfIndex = pdfs.findIndex((p: PdfDocument) => p.id === pdfId);
       
       if (pdfIndex === -1) {
         return NextResponse.json({ error: 'PDF not found' }, { status: 404 });
@@ -139,13 +141,12 @@ export async function POST(request: NextRequest) {
       const filepath = path.resolve(process.cwd(), 'public', 'pdfs', pdf.filename);
       try {
         fs.unlinkSync(filepath);
-      } catch (e) {
+      } catch {
         // File may not exist
       }
 
       pdfs.splice(pdfIndex, 1);
-      const pdfsData = await import('fs/promises');
-      await pdfsData.writeFile(pdfsDbFile, JSON.stringify(pdfs, null, 2));
+      await saveAllPdfs(pdfs);
       return NextResponse.json({ success: true });
     }
 
