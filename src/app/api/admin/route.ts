@@ -91,8 +91,13 @@ export async function POST(request: NextRequest) {
       userId?: string;
       pdfId?: string;
       role?: User['role'];
+      title?: string;
+      description?: string;
+      generation?: string;
+      system?: string;
+      model?: string;
     };
-    const { action, userId, pdfId, role } = body;
+    const { action, userId, pdfId, role, title, description, generation, system, model } = body;
 
     if (action === 'deleteUser') {
       const users = await getUsers();
@@ -143,6 +148,26 @@ export async function POST(request: NextRequest) {
       pdfs.splice(pdfIndex, 1);
       await saveAllPdfs(pdfs);
       return NextResponse.json({ success: true });
+    }
+
+    if (action === 'updatePdf') {
+      const pdfs = await getAllPdfs();
+      const pdfIndex = pdfs.findIndex((p: PdfDocument) => p.id === pdfId);
+      
+      if (pdfIndex === -1) {
+        return NextResponse.json({ error: 'PDF not found' }, { status: 404 });
+      }
+
+      const { title, description, generation, system, model } = body;
+
+      if (title !== undefined) pdfs[pdfIndex].title = title;
+      if (description !== undefined) pdfs[pdfIndex].description = description;
+      if (generation !== undefined) pdfs[pdfIndex].generation = generation;
+      if (system !== undefined) pdfs[pdfIndex].system = system;
+      if (model !== undefined) pdfs[pdfIndex].model = model;
+
+      await saveAllPdfs(pdfs);
+      return NextResponse.json({ success: true, pdf: pdfs[pdfIndex] });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

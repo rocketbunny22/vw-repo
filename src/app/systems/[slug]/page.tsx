@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
+import { PdfListItem } from '@/components/PdfViewer';
 
 export async function generateStaticParams() {
   const systemSlugs = new Set<string>();
@@ -139,14 +140,7 @@ export default async function SystemsPage({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {relatedPdfs.slice(0, 3).map((pdf) => (
-                <div key={pdf.id} className="bg-gray-50 rounded-lg p-4 border hover:shadow-md transition-all">
-                  <h3 className="font-bold text-vw-dark mb-1">{pdf.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{pdf.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">{formatFileSize(pdf.fileSize)}</span>
-                    <a href={pdf.url} download className="text-vw-blue text-sm hover:underline">Download</a>
-                  </div>
-                </div>
+                <PdfListItem key={pdf.id} pdf={pdf} formatFileSize={formatFileSize} />
               ))}
             </div>
           </div>

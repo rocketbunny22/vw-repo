@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { generations } from '@/data/generations';
 
 interface User {
   id: string;
@@ -15,11 +16,16 @@ interface User {
 interface Pdf {
   id: string;
   title: string;
+  description: string;
   generation: string;
   system: string;
+  model?: string;
   uploadedBy?: string;
   uploadedAt: string;
 }
+
+const generationOptions = generations.map(g => ({ value: g.id, label: g.name }));
+const systemOptions = ['engine', 'transmission', 'suspension', 'brakes', 'electrical', 'body', 'interior', 'cooling', 'fuel', 'exhaust'];
 
 export default function AdminPage() {
   const router = useRouter();
@@ -29,6 +35,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'users' | 'pdfs'>('users');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [editingPdf, setEditingPdf] = useState<Pdf | null>(null);
+  const [editForm, setEditForm] = useState({ title: '', description: '', generation: '', system: '', model: '' });
 
   async function checkAdmin() {
     try {
@@ -94,6 +102,48 @@ export default function AdminPage() {
       }
     } catch {
       setError('Action failed');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const startEditPdf = (pdf: Pdf) => {
+    setEditingPdf(pdf);
+    setEditForm({
+      title: pdf.title,
+      description: pdf.description,
+      generation: pdf.generation,
+      system: pdf.system,
+      model: pdf.model || '',
+    });
+  };
+
+  const handleUpdatePdf = async () => {
+    if (!editingPdf) return;
+    setActionLoading(editingPdf.id);
+    setError('');
+
+    try {
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'updatePdf',
+          pdfId: editingPdf.id,
+          ...editForm,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setEditingPdf(null);
+        loadData();
+      } else {
+        setError(data.error || 'Update failed');
+      }
+    } catch {
+      setError('Update failed');
     } finally {
       setActionLoading(null);
     }
@@ -250,7 +300,13 @@ export default function AdminPage() {
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {formatDate(pdf.uploadedAt)}
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button
+                          onClick={() => startEditPdf(pdf)}
+                          className="text-vw-blue hover:underline text-sm"
+                        >
+                          Edit
+                        </button>
                         <button
                           onClick={() => handleAction('deletePdf', pdf.id)}
                           disabled={actionLoading === pdf.id}
@@ -263,6 +319,89 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {editingPdf && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+                <h3 className="text-xl font-bold mb-4">Edit PDF</h3>
+                {error && (
+                  <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md text-sm">
+                    {error}
+                  </div>
+                )}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <input
+                      type="text"
+                      value={editForm.title}
+                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      rows={3}
+                      className="w-full px-3 py-2 border rounded-md"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Generation</label>
+                      <select
+                        value={editForm.generation}
+                        onChange={(e) => setEditForm({ ...editForm, generation: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md"
+                      >
+                        {generationOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">System</label>
+                      <select
+                        value={editForm.system}
+                        onChange={(e) => setEditForm({ ...editForm, system: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md"
+                      >
+                        {systemOptions.map((sys) => (
+                          <option key={sys} value={sys}>{sys.charAt(0).toUpperCase() + sys.slice(1)}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Model (optional)</label>
+                    <input
+                      type="text"
+                      value={editForm.model}
+                      onChange={(e) => setEditForm({ ...editForm, model: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    onClick={() => setEditingPdf(null)}
+                    className="px-4 py-2 text-gray-700 border rounded-md hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUpdatePdf}
+                    disabled={actionLoading === editingPdf.id}
+                    className="px-4 py-2 bg-vw-blue text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {actionLoading === editingPdf.id ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -21,6 +21,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
   const [selectedSystem, setSelectedSystem] = useState<string>('all');
   const [pdfs, setPdfs] = useState<PdfDocument[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewingPdf, setViewingPdf] = useState<PdfDocument | null>(null);
 
   async function fetchPdfs() {
     try {
@@ -185,16 +186,57 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
                       <span>{formatFileSize(pdf.fileSize)}</span>
                       <span>{formatDate(pdf.uploadedAt)}</span>
                     </div>
-                    <a
-                      href={pdf.url}
-                      download
-                      className="mt-4 block w-full text-center btn-primary py-2"
-                    >
-                      Download
-                    </a>
+                    <div className="flex gap-2 mt-4">
+                      <button
+                        onClick={() => setViewingPdf(pdf)}
+                        className="flex-1 text-center btn-secondary py-2"
+                      >
+                        View
+                      </button>
+                      <a
+                        href={pdf.url}
+                        download
+                        className="flex-1 text-center btn-primary py-2"
+                      >
+                        Download
+                      </a>
+                    </div>
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {viewingPdf && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col">
+                <div className="flex items-center justify-between p-4 border-b">
+                  <h3 className="font-bold">{viewingPdf.title}</h3>
+                  <button
+                    onClick={() => setViewingPdf(null)}
+                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                  >
+                    &times;
+                  </button>
+                </div>
+                <div className="flex-1 overflow-auto p-4 bg-gray-100">
+                  <iframe
+                    src={viewingPdf.url}
+                    className="w-full h-[70vh] border-0"
+                    title={viewingPdf.title}
+                  />
+                </div>
+                <div className="p-4 border-t flex justify-between items-center">
+                  <span className="text-sm text-gray-500">{formatFileSize(viewingPdf.fileSize)}</span>
+                  <a
+                    href={viewingPdf.url}
+                    download
+                    className="px-4 py-2 bg-vw-blue text-white rounded-md hover:bg-blue-700"
+                  >
+                    Download PDF
+                  </a>
+                </div>
+              </div>
             </div>
           )}
         </div>

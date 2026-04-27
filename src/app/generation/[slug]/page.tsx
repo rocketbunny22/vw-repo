@@ -2,6 +2,13 @@ import Link from 'next/link';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
+import { PdfCard } from '@/components/PdfViewer';
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
 
 export default async function GenerationPage({
   params,
@@ -75,19 +82,7 @@ export default async function GenerationPage({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {relatedPdfs.slice(0, 6).map((pdf) => (
-                <div key={pdf.id} className="bg-gray-50 rounded-lg p-5 border hover:shadow-md transition-all">
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <span className="badge badge-gold">{pdf.system}</span>
-                    {pdf.model && <span className="badge badge-green">{pdf.model}</span>}
-                  </div>
-                  <h3 className="font-bold text-vw-dark mb-2">{pdf.title}</h3>
-                  {pdf.description && (
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{pdf.description}</p>
-                  )}
-                  <a href={pdf.url} download className="text-vw-blue hover:underline font-medium">
-                    Download PDF
-                  </a>
-                </div>
+                <PdfCard key={pdf.id} pdf={pdf} formatFileSize={formatFileSize} />
               ))}
             </div>
           )}
