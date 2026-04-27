@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       description: description || '',
       uploadedAt: new Date().toISOString(),
       fileSize: buffer.length,
-      url: `/pdfs/${filename}`,
+      url: `/api/pdfs/${filename}`,
       uploadedBy: auth.user?.username,
     };
 
