@@ -1,33 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
 import crypto from 'crypto';
-import { getAllPdfs, saveAllPdfs } from '@/data/pdfs';
+import { Redis } from '@upstash/redis';
+import { getAllPdfs, saveAllPdfs, deletePdfFile } from '@/data/pdfs';
 import { PdfDocument, User } from '@/types';
 
-const usersDbFile = path.resolve(process.cwd(), 'users.json');
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
+const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
+  : null;
+
 async function getUsers(): Promise<User[]> {
-  try {
-    const data = await readFile(usersDbFile, 'utf-8');
-    const users = JSON.parse(data);
-    return Array.isArray(users) ? users : [];
-  } catch {
-    return [];
-  }
+  if (!redis) return [];
+  const users = await redis.get<User[]>('users');
+  return users || [];
 }
 
-async function saveUsers(users: User[]) {
-  await writeFile(usersDbFile, JSON.stringify(users, null, 2));
+async function saveUsers(users: User[]): Promise<void> {
+  if (!redis) return;
+  await redis.set('users', users);
 }
 
 function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
   try {
     const [payload, signature] = token.split('.');
-    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
-    if (signature !== expectedSig) return { valid: false };
     const data = JSON.parse(Buffer.from(payload, 'base64').toString());
+    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(JSON.stringify(data)).digest('hex');
+    if (signature !== expectedSig) return { valid: false };
     if (data.exp < Date.now()) return { valid: false };
     return { valid: true, user: { id: data.id, username: data.username, role: data.role } };
   } catch {
@@ -136,14 +138,7 @@ export async function POST(request: NextRequest) {
 
       const pdf = pdfs[pdfIndex];
       
-      // Delete file
-      const fs = await import('fs');
-      const filepath = path.resolve(process.cwd(), 'public', 'pdfs', pdf.filename);
-      try {
-        fs.unlinkSync(filepath);
-      } catch {
-        // File may not exist
-      }
+      await deletePdfFile(pdf.filename);
 
       pdfs.splice(pdfIndex, 1);
       await saveAllPdfs(pdfs);

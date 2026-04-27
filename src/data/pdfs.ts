@@ -32,3 +32,10 @@ export async function savePdfFile(filename: string, buffer: Buffer): Promise<voi
   }
   await redis.set(`pdf:${filename}`, buffer.toString('base64'));
 }
+
+export async function deletePdfFile(filename: string): Promise<void> {
+  if (!redis) {
+    throw new Error('Redis not configured');
+  }
+  await redis.del(`pdf:${filename}`);
+}
