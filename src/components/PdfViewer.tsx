@@ -3,12 +3,17 @@
 import { useState } from 'react';
 import { PdfDocument } from '@/types';
 
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+};
+
 interface PdfCardProps {
   pdf: PdfDocument;
-  formatFileSize: (bytes: number) => string;
 }
 
-export function PdfCard({ pdf, formatFileSize }: PdfCardProps) {
+export function PdfCard({ pdf }: PdfCardProps) {
   const [viewingPdf, setViewingPdf] = useState<PdfDocument | null>(null);
 
   return (
@@ -83,10 +88,9 @@ export function PdfCard({ pdf, formatFileSize }: PdfCardProps) {
 
 interface PdfListItemProps {
   pdf: PdfDocument;
-  formatFileSize: (bytes: number) => string;
 }
 
-export function PdfListItem({ pdf, formatFileSize }: PdfListItemProps) {
+export function PdfListItem({ pdf }: PdfListItemProps) {
   const [viewingPdf, setViewingPdf] = useState<PdfDocument | null>(null);
 
   return (

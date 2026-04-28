@@ -140,7 +140,7 @@ export default async function SystemsPage({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {relatedPdfs.slice(0, 3).map((pdf) => (
-                <PdfListItem key={pdf.id} pdf={pdf} formatFileSize={formatFileSize} />
+                <PdfListItem key={pdf.id} pdf={pdf} />
               ))}
             </div>
           </div>

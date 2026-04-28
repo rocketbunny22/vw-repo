@@ -6,12 +6,6 @@ import { PdfCard } from '@/components/PdfViewer';
 
 export const dynamic = 'force-dynamic';
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-};
-
 export default async function GenerationPage({
   params,
 }: {
@@ -84,7 +78,7 @@ export default async function GenerationPage({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {relatedPdfs.slice(0, 6).map((pdf) => (
-                <PdfCard key={pdf.id} pdf={pdf} formatFileSize={formatFileSize} />
+                <PdfCard key={pdf.id} pdf={pdf} />
               ))}
             </div>
           )}
