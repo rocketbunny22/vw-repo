@@ -4,11 +4,13 @@ import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
 import { PdfCard } from '@/components/PdfViewer';
 
-function formatFileSize(bytes: number): string {
+export const dynamic = 'force-dynamic';
+
+const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
+};
 
 export default async function GenerationPage({
   params,
