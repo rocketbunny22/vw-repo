@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { generations } from '@/data/generations';
 
 export default function Home() {
@@ -83,9 +84,24 @@ export default function Home() {
                 className="group"
               >
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1">
-                  <div className="h-24 bg-gradient-to-br from-vw-blue to-vw-blue-light flex items-center justify-center">
-                    <span className="text-3xl font-bold text-vw-gold">{gen.name}</span>
-                  </div>
+                  {gen.image ? (
+                    <div className="h-24 relative bg-gradient-to-br from-vw-blue to-vw-blue-light">
+                      <Image 
+                        src={gen.image} 
+                        alt={gen.name}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-vw-blue/80 to-transparent" />
+                      <div className="absolute bottom-2 left-2">
+                        <span className="text-2xl font-bold text-vw-gold">{gen.name}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-24 bg-gradient-to-br from-vw-blue to-vw-blue-light flex items-center justify-center">
+                      <span className="text-3xl font-bold text-vw-gold">{gen.name}</span>
+                    </div>
+                  )}
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs text-gray-500">{gen.years}</span>
