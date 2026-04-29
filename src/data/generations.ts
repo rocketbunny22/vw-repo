@@ -911,7 +911,7 @@ export const generations: Generation[] = [
     years: '1938-2003',
     description: 'The legendary air-cooled Beetle. The most produced single design in history.',
     models: ['Standard Beetle', 'Super Beetle', '1302/1303', 'Volkswagen Nuevo'],
-    image: '/images/type1.jpg',
+    image: '/images/type1.jpeg',
     systems: [
       {
         id: 'engine',
