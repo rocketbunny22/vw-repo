@@ -7,7 +7,7 @@ export const generations: Generation[] = [
     slug: 'mk1',
     years: '1974-1983',
     description: 'The first generation of modern VW Golf/hot hatchbacks. Introduced the transverse engine layout that would define decades of VW performance.',
-    models: ['Golf GTI', 'Golf Diesel', 'Rabbit'],
+    models: ['Golf GTI', 'Golf Diesel', 'Rabbit', 'Caddy pickup', 'Cabriolet'],
     image: '/images/mk1.jpg',
     systems: [
       {
@@ -163,7 +163,7 @@ export const generations: Generation[] = [
     slug: 'mk2',
     years: '1984-1992',
     description: 'The legendary second generation that cemented the GTI legacy. Refined styling and improved performance made it an icon of the 80s.',
-    models: ['Golf GTI 16V', 'Golf Rallye', 'Golf Country', 'Corrado'],
+    models: ['Golf GTI 16V', 'Golf Rallye G60', 'Golf Country', 'Corrado', 'Jetta II'],
     image: '/images/mk2.jpg',
     systems: [
       {
@@ -284,8 +284,8 @@ export const generations: Generation[] = [
     slug: 'mk3',
     years: '1993-1998',
     description: 'The controversial third generation with rounded styling. Introduced the VR6 and marked the end of air-cooled engines.',
-    models: ['Golf GTI VR6', 'Golf GTI 2.0L', 'Cabriolet'],
-    image: '/images/mk3.jpg',
+    models: ['Golf GTI VR6', 'Golf GTI 2.0L', 'Cabrio'],
+    image: '/images/mk3.webp',
     systems: [
       {
         id: 'engine',
@@ -370,8 +370,8 @@ export const generations: Generation[] = [
     slug: 'mk4',
     years: '1999-2005',
     description: 'The refined fourth generation. Introduced the legendary 1.8T and marked the golden era of VW tunability.',
-    models: ['Golf GTI 1.8T', 'Golf GTI VR6', 'GTI 337 Edition', 'R32'],
-    image: '/images/mk4.jpg',
+    models: ['Golf GTI 1.8T', 'Golf GTI VR6', 'GTI 337 Edition', 'Golf R32', 'Wagon', 'Jetta/Bora'],
+    image: '/images/mk4.webp',
     systems: [
       {
         id: 'engine',
@@ -495,7 +495,7 @@ export const generations: Generation[] = [
     slug: 'mk5',
     years: '2006-2009',
     description: 'The controversial styling that polarized fans. Return of the 2.0T FSI and introduction of the TSI.',
-    models: ['Golf GTI', 'GTI Edition 30', 'R32', 'GTI Cup'],
+    models: ['Golf GTI', 'GTI Edition 30', 'R32', 'Cup Edition'],
     image: '/images/mk5.jpg',
     systems: [
       {
@@ -615,8 +615,8 @@ export const generations: Generation[] = [
     slug: 'mk6',
     years: '2010-2014',
     description: 'The refined sixth generation. More conservative styling with improved quality and the return of the GTI to the US.',
-    models: ['Golf GTI', 'GTI Performance Package', 'Golf R', 'GTI Wolfsburg Edition'],
-    image: '/images/mk6.jpg',
+    models: ['Golf GTI', 'Golf R', 'GTI Wolfsburg Edition'],
+    image: '/images/mk6.webp',
     systems: [
       {
         id: 'engine',
@@ -712,7 +712,7 @@ export const generations: Generation[] = [
     years: '2015-2020',
     description: 'The MQB platform brings major improvements in technology, safety, and performance.',
     models: ['Golf GTI', 'Golf GTI TCR', 'Golf R', 'GTI Clubsport', 'GTI Rabbit Edition'],
-    image: '/images/mk7.jpg',
+    image: '/images/mk7.webp',
     systems: [
       {
         id: 'engine',
@@ -990,7 +990,7 @@ export const generations: Generation[] = [
     years: '1950-2013',
     description: 'The iconic Microbus. From the splittie to the modern transporter.',
     models: ['T1 Splittie', 'T2 Bay', 'T3 Transporter', 'T4 Eurovan', 'T5 Transporter'],
-    image: '/images/type2.jpg',
+    image: '/images/type2.webp',
     systems: [
       {
         id: 'engine',
@@ -1049,7 +1049,7 @@ export const generations: Generation[] = [
     years: '1938-1998',
     description: 'The air-cooled VWs including Type 1, 2, 3, and early Type 4.',
     models: ['Type 1 Beetle', 'Type 2 Bus', 'Type 3/411', 'Karmann Ghia'],
-    image: '/images/aircooled.jpg',
+    image: '/images/aircooled.webp',
     systems: [
       {
         id: 'cooling',
@@ -1077,7 +1077,7 @@ export const generations: Generation[] = [
     years: '1980-Present',
     description: 'The modern water-cooled VWs from the first Vanagon to present.',
     models: ['Vanagon', 'Transporter T4', 'Golf/Bora', 'Jetta', 'Passat'],
-    image: '/images/watercooled.jpg',
+    image: '/images/watercooled.webp',
     systems: [
       {
         id: 'cooling',
