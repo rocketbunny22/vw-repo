@@ -32,8 +32,9 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [pdfs, setPdfs] = useState<Pdf[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'pdfs'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'pdfs' | 'tools'>('users');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [testEmailSent, setTestEmailSent] = useState(false);
   const [error, setError] = useState('');
   const [editingPdf, setEditingPdf] = useState<Pdf | null>(null);
   const [editForm, setEditForm] = useState({ title: '', description: '', generation: '', system: '', model: '' });
@@ -149,6 +150,32 @@ export default function AdminPage() {
     }
   };
 
+  const sendTestEmail = async () => {
+    setActionLoading('testEmail');
+    setError('');
+    setTestEmailSent(false);
+
+    try {
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'testEmail' }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setTestEmailSent(true);
+      } else {
+        setError(data.error || 'Failed to send test email');
+      }
+    } catch {
+      setError('Failed to send test email');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -201,6 +228,14 @@ export default function AdminPage() {
               }`}
             >
               PDFs ({pdfs.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('tools')}
+              className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                activeTab === 'tools' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-vw-dark hover:text-white'
+              }`}
+            >
+              Tools
             </button>
           </div>
         </div>
@@ -319,6 +354,27 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {activeTab === 'tools' && (
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-bold mb-4">Email Test</h3>
+              <p className="text-gray-600 mb-4">
+                Send a test email to verify your Resend setup is working correctly.
+              </p>
+              {testEmailSent && (
+                <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-md">
+                  Test email sent successfully! Check your inbox.
+                </div>
+              )}
+              <button
+                onClick={sendTestEmail}
+                disabled={actionLoading === 'testEmail'}
+                className="px-4 py-2 bg-vw-blue text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {actionLoading === 'testEmail' ? ' Sending...' : 'Send Test Email'}
+              </button>
             </div>
           )}
 

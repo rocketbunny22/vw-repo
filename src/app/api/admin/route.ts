@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { Redis } from '@upstash/redis';
+import { Resend } from 'resend';
 import { getAllPdfs, saveAllPdfs, deletePdfFile } from '@/data/pdfs';
 import { PdfDocument, User } from '@/types';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
   ? new Redis({
@@ -168,6 +171,29 @@ export async function POST(request: NextRequest) {
 
       await saveAllPdfs(pdfs);
       return NextResponse.json({ success: true, pdf: pdfs[pdfIndex] });
+    }
+
+    if (action === 'testEmail') {
+      if (!resend) {
+        return NextResponse.json({ error: 'Resend not configured' }, { status: 400 });
+      }
+
+      try {
+        await resend.emails.send({
+          from: 'VW Repo <onboarding@resend.dev>',
+          to: process.env.ADMIN_EMAIL || 'admin@example.com',
+          subject: 'Test Email - VW Repo',
+          html: `
+            <h1>Test Email</h1>
+            <p>This is a test email to verify your Resend setup is working.</p>
+            <p>If you received this, everything is configured correctly!</p>
+          `,
+        });
+        return NextResponse.json({ success: true });
+      } catch (err) {
+        console.error('Resend error:', err);
+        return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
