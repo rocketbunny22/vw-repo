@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
 
       try {
         const result = await resend.emails.send({
-          from: 'VW Repo <onboarding@resend.dev>',
+          from: 'VW Repo <vwrepo@groundedcyber.com>',
           to: adminEmail,
           subject: 'Test Email - VW Repo',
           html: '<h1>Test</h1><p>If you see this, Resend is working.</p>',

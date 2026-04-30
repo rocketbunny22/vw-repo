@@ -23,7 +23,7 @@ async function sendPasswordResetEmail(email: string, resetToken: string) {
   
   try {
     await resend.emails.send({
-      from: 'VW Repo <onboarding@resend.dev>',
+      from: 'VW Repo <vwrepo@groundedcyber.com>',
       to: email,
       subject: 'Reset your VW Repo password',
       html: `
