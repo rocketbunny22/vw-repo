@@ -176,6 +176,7 @@ export async function POST(request: NextRequest) {
     if (action === 'testEmail') {
       console.log('RESEND_API_KEY configured:', !!resend);
       console.log('ADMIN_EMAIL:', process.env.ADMIN_EMAIL);
+      console.log('RESEND_API_KEY:', RESEND_API_KEY ? RESEND_API_KEY.substring(0, 10) + '...' : 'not set');
 
       if (!resend) {
         return NextResponse.json({ error: 'Resend not configured. Please set RESEND_API_KEY env var.' }, { status: 400 });
@@ -187,18 +188,14 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        await resend.emails.send({
+        const result = await resend.emails.send({
           from: 'VW Repo <onboarding@resend.dev>',
           to: adminEmail,
           subject: 'Test Email - VW Repo',
-          html: `
-            <h1>Test Email</h1>
-            <p>This is a test email to verify your Resend setup is working.</p>
-            <p>If you received this, everything is configured correctly!</p>
-          `,
+          html: '<h1>Test</h1><p>If you see this, Resend is working.</p>',
         });
-        console.log('Test email sent to:', adminEmail);
-        return NextResponse.json({ success: true });
+        console.log('Resend result:', result);
+        return NextResponse.json({ success: true, result });
       } catch (err) {
         console.error('Resend error:', err);
         return NextResponse.json({ error: 'Failed to send email', details: String(err) }, { status: 500 });
