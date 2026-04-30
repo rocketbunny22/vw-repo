@@ -24,7 +24,7 @@ export default function Home() {
               <span className="text-vw-blue font-bold text-xl">VW</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-              VW Registry
+              VW Repo
             </h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
               The comprehensive knowledge base for Volkswagen enthusiasts. 

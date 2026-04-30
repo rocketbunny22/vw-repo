@@ -15,7 +15,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           <div>
-            <h3 className="text-vw-gold font-bold text-lg mb-4">VW Registry</h3>
+            <h3 className="text-vw-gold font-bold text-lg mb-4">VW Repo</h3>
             <p className="text-sm">
               The comprehensive resource for Volkswagen enthusiasts. 
               From air-cooled classics to modern performance.
@@ -66,7 +66,7 @@ export default function Footer() {
         </div>
         
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm">
-          <p>VW Registry - Built for enthusiasts, by enthusiasts.</p>
+          <p>VW Repo - Built for enthusiasts, by enthusiasts.</p>
         </div>
       </div>
     </footer>

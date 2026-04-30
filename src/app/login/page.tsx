@@ -141,7 +141,7 @@ export default function LoginPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold text-white mb-4">Sign In</h1>
           <p className="text-xl text-gray-300">
-            Welcome back to VW Registry.
+            Welcome back to VW Repo.
           </p>
         </div>
       </section>

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - VW Registry',
-  description: 'Privacy policy for VW Registry',
+  title: 'Privacy Policy - VW Repo',
+  description: 'Privacy policy for VW Repo',
 };
 
 export default function PrivacyPolicy() {

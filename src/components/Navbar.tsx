@@ -58,7 +58,7 @@ export default function Navbar() {
               <div className="w-8 h-8 bg-vw-gold rounded-full flex items-center justify-center">
                 <span className="text-vw-blue font-bold text-sm">VW</span>
               </div>
-              <span className="font-bold text-xl tracking-tight">VW Registry</span>
+              <span className="font-bold text-xl tracking-tight">VW Repo</span>
             </Link>
           </div>
 

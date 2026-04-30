@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Use - VW Registry',
-  description: 'Terms of use for VW Registry',
+  title: 'Terms of Use - VW Repo',
+  description: 'Terms of use for VW Repo',
 };
 
 export default function TermsOfUse() {
@@ -16,14 +16,14 @@ export default function TermsOfUse() {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-vw-dark mb-4">1. Acceptance of Terms</h2>
           <p className="text-gray-700">
-            By accessing and using VW Registry, you accept and agree to be bound by the terms and provisions of this agreement.
+            By accessing and using VW Repo, you accept and agree to be bound by the terms and provisions of this agreement.
           </p>
         </section>
 
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-vw-dark mb-4">2. Use License</h2>
           <p className="text-gray-700 mb-4">
-            Permission is granted to temporarily use VW Registry for personal, non-commercial use only. This is the grant of a license, not a transfer of title.
+            Permission is granted to temporarily use VW Repo for personal, non-commercial use only. This is the grant of a license, not a transfer of title.
           </p>
         </section>
 
@@ -44,14 +44,14 @@ export default function TermsOfUse() {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-vw-dark mb-4">4. User Content</h2>
           <p className="text-gray-700 mb-4">
-            By submitting content to VW Registry, you grant us a worldwide, royalty-free license to use, display, and distribute your content. You represent that you own or have the rights to any content you submit.
+            By submitting content to VW Repo, you grant us a worldwide, royalty-free license to use, display, and distribute your content. You represent that you own or have the rights to any content you submit.
           </p>
         </section>
 
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-vw-dark mb-4">5. Disclaimer</h2>
           <p className="text-gray-700 mb-4">
-            VW Registry is provided &quot;as is&quot; without any representations or warranties, express or implied. The content on this site is for informational purposes only.
+            VW Repo is provided &quot;as is&quot; without any representations or warranties, express or implied. The content on this site is for informational purposes only.
           </p>
           <p className="text-gray-700">
             We make no warranties about the completeness, reliability, or accuracy of this site. Any action you take based upon the information from this site is strictly at your own risk.
@@ -61,7 +61,7 @@ export default function TermsOfUse() {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-vw-dark mb-4">6. Limitation of Liability</h2>
           <p className="text-gray-700">
-            VW Registry will not be liable to you in relation to the contents of, or use of, or otherwise in connection with, this website for any indirect, special, or consequential loss.
+            VW Repo will not be liable to you in relation to the contents of, or use of, or otherwise in connection with, this website for any indirect, special, or consequential loss.
           </p>
         </section>
 

@@ -23,9 +23,9 @@ async function sendPasswordResetEmail(email: string, resetToken: string) {
   
   try {
     await resend.emails.send({
-      from: 'VW Registry <onboarding@resend.dev>',
+      from: 'VW Repo <onboarding@resend.dev>',
       to: email,
-      subject: 'Reset your VW Registry password',
+      subject: 'Reset your VW Repo password',
       html: `
         <h1>Reset your password</h1>
         <p>Click the button below to reset your password:</p>

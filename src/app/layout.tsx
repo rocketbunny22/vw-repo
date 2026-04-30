@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "VW Registry - The Volkswagen Knowledge Base",
+  title: "VW Repo - The Volkswagen Knowledge Base",
   description: "Comprehensive resource for Volkswagen enthusiasts. From air-cooled classics to modern performance. Technical specs, maintenance guides, and more.",
 };
 
