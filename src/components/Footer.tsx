@@ -13,7 +13,7 @@ export default function Footer() {
   return (
     <footer className="bg-vw-dark text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           <div>
             <h3 className="text-vw-gold font-bold text-lg mb-4">VW Registry</h3>
             <p className="text-sm">
@@ -53,6 +53,14 @@ export default function Footer() {
               <li><Link href="/library" className="hover:text-vw-gold">PDF Library</Link></li>
               <li><Link href="/search" className="hover:text-vw-gold">Search</Link></li>
               <li><Link href="/submit-guide" className="hover:text-vw-gold">Submit Guide</Link></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="text-white font-bold mb-4">Legal</h3>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/privacy-policy" className="hover:text-vw-gold">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-use" className="hover:text-vw-gold">Terms of Use</Link></li>
             </ul>
           </div>
         </div>
