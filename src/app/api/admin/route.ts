@@ -174,14 +174,22 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'testEmail') {
+      console.log('RESEND_API_KEY configured:', !!resend);
+      console.log('ADMIN_EMAIL:', process.env.ADMIN_EMAIL);
+
       if (!resend) {
-        return NextResponse.json({ error: 'Resend not configured' }, { status: 400 });
+        return NextResponse.json({ error: 'Resend not configured. Please set RESEND_API_KEY env var.' }, { status: 400 });
+      }
+
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (!adminEmail) {
+        return NextResponse.json({ error: 'ADMIN_EMAIL not set. Please set ADMIN_EMAIL env var.' }, { status: 400 });
       }
 
       try {
         await resend.emails.send({
           from: 'VW Repo <onboarding@resend.dev>',
-          to: process.env.ADMIN_EMAIL || 'admin@example.com',
+          to: adminEmail,
           subject: 'Test Email - VW Repo',
           html: `
             <h1>Test Email</h1>
@@ -189,10 +197,11 @@ export async function POST(request: NextRequest) {
             <p>If you received this, everything is configured correctly!</p>
           `,
         });
+        console.log('Test email sent to:', adminEmail);
         return NextResponse.json({ success: true });
       } catch (err) {
         console.error('Resend error:', err);
-        return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to send email', details: String(err) }, { status: 500 });
       }
     }
 
