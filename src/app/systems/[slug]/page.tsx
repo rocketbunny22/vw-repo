@@ -44,9 +44,18 @@ export default async function SystemsPage({
   const selectedGen = gen ? generations.find((g) => g.slug === gen) : null;
 
   const pdfs = await getAllPdfs();
-  const relatedPdfs = pdfs.filter(
-    (pdf) => pdf.system === slug && (!selectedGen || pdf.generation === selectedGen.id || pdf.generation === selectedGen.slug)
-  );
+  const relatedPdfs = pdfs.filter((pdf) => {
+    if (pdf.system !== slug) return false;
+
+    if (!selectedGen) return true;
+
+    const genValues = [
+      selectedGen.id?.toString(),
+      selectedGen.slug,
+    ];
+
+    return genValues.includes(String(pdf.generation));
+  });
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
