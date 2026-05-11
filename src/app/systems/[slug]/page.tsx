@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
-import { PdfListItem } from '@/components/PdfViewer';
+import { PdfCard } from '@/components/PdfViewer';
 
 export async function generateStaticParams() {
   const systemSlugs = new Set<string>();
@@ -140,7 +140,7 @@ export default async function SystemsPage({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {relatedPdfs.slice(0, 3).map((pdf) => (
-                <PdfListItem key={pdf.id} pdf={pdf} />
+                <PdfCard key={pdf.id} pdf={pdf} />
               ))}
             </div>
           </div>
