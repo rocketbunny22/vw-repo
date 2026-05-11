@@ -19,7 +19,7 @@ export default function UploadPage() {
   const [loading, setLoading] = useState(true);
   const [file, setFile] = useState<File | null>(null);
   const [generation, setGeneration] = useState('');
-  const [model, setModel] = useState('');
+  const [models, setModels] = useState<string[]>([]);
   const [system, setSystem] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -82,7 +82,7 @@ export default function UploadPage() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('generation', generation);
-      if (model) formData.append('model', model);
+      models.forEach((m) => formData.append('models', m));
       formData.append('system', system);
       formData.append('title', title);
       formData.append('description', description);
@@ -98,7 +98,7 @@ export default function UploadPage() {
         setMessage({ type: 'success', text: 'PDF uploaded successfully!' });
         setFile(null);
         setGeneration('');
-        setModel('');
+                      setModels([]);
         setSystem('');
         setTitle('');
         setDescription('');
@@ -161,7 +161,7 @@ export default function UploadPage() {
                     value={generation}
                     onChange={(e) => {
                       setGeneration(e.target.value);
-                      setModel('');
+        setModels([]);
                     }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
                     required
@@ -177,19 +177,29 @@ export default function UploadPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Model (optional)
+                    Models (optional)
                   </label>
-                  <select
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
-                    disabled={!availableModels.length}
-                  >
-                    <option value="">All Models</option>
+                  <div className="border border-gray-300 rounded-md p-3 max-h-40 overflow-y-auto">
+                    {!availableModels.length && (
+                      <p className="text-sm text-gray-500">Select a generation first</p>
+                    )}
                     {availableModels.map((m) => (
-                      <option key={m} value={m}>{m}</option>
+                      <label key={m} className="flex items-center space-x-2 mb-1">
+                        <input
+                          type="checkbox"
+                          checked={models.includes(m)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setModels([...models, m]);
+                            } else {
+                              setModels(models.filter((x) => x !== m));
+                            }
+                          }}
+                        />
+                        <span className="text-sm text-gray-700">{m}</span>
+                      </label>
                     ))}
-                  </select>
+                  </div>
                 </div>
               </div>
 
