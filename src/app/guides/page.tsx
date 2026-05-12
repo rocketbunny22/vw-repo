@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { DiyGuide } from '@/types';
+import { DiyGuide, VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
 
 const systemsList = [
@@ -21,6 +21,18 @@ export default function GuidesPage({ searchParams }: { searchParams: Promise<{ g
   const [selectedGeneration, setSelectedGeneration] = useState<string>('all');
   const [selectedSystem, setSelectedSystem] = useState<string>('all');
   const [difficulty, setDifficulty] = useState<string>('all');
+  const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
+
+  useEffect(() => {
+    async function loadVehicle() {
+      try {
+        const res = await fetch('/api/user/vehicle');
+        const data = await res.json();
+        if (data.vehicle) setVehicle(data.vehicle);
+      } catch { /* optional */ }
+    }
+    loadVehicle();
+  }, []);
 
   useEffect(() => {
     async function init() {
@@ -132,6 +144,18 @@ export default function GuidesPage({ searchParams }: { searchParams: Promise<{ g
               <option value="moderate">Moderate</option>
               <option value="hard">Hard</option>
             </select>
+            {vehicle && (
+              <button
+                onClick={() => setSelectedGeneration(selectedGeneration === vehicle.generation ? 'all' : vehicle.generation)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  selectedGeneration === vehicle.generation
+                    ? 'bg-vw-blue text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                🚗 My Car
+              </button>
+            )}
           </div>
         </div>
       </section>

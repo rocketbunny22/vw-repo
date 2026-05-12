@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { generations } from '@/data/generations';
+import { VehicleProfile } from '@/types';
 
 interface User {
   id: string;
@@ -12,6 +13,7 @@ interface User {
 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
+  const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -24,6 +26,11 @@ export default function Navbar() {
 
         if (isActive && data.authenticated) {
           setUser(data.user);
+          const vehRes = await fetch('/api/user/vehicle');
+          const vehData = await vehRes.json();
+          if (isActive && vehData.vehicle) {
+            setVehicle(vehData.vehicle);
+          }
         }
       } catch {
         if (isActive) {
@@ -118,7 +125,8 @@ export default function Navbar() {
 
               {user ? (
                 <div className="relative group">
-                  <button className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                  <button className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5">
+                    {vehicle && <span title={`${vehicle.nickname || ''} ${vehicle.model}`}>🚗</span>}
                     {user.username}
                     <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

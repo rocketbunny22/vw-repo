@@ -67,6 +67,15 @@ export interface DiyGuide {
   approved?: boolean;
 }
 
+export interface VehicleProfile {
+  generation: string;
+  model: string;
+  year?: number;
+  engineCode?: string;
+  color?: string;
+  nickname?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -75,4 +84,5 @@ export interface User {
   role: 'user' | 'admin';
   createdAt: string;
   lastLogin: string;
+  vehicle?: VehicleProfile;
 }

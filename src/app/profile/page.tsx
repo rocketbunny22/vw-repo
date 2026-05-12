@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { VehicleProfile } from '@/types';
+import { generations } from '@/data/generations';
 
 interface User {
   id: string;
@@ -30,6 +32,18 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
   
+  // Garage / vehicle states
+  const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
+  const [vehicleLoading, setVehicleLoading] = useState(true);
+  const [garageMode, setGarageMode] = useState(false);
+  const [vGeneration, setVGeneration] = useState('');
+  const [vModel, setVModel] = useState('');
+  const [vYear, setVYear] = useState('');
+  const [vEngineCode, setVEngineCode] = useState('');
+  const [vColor, setVColor] = useState('');
+  const [vNickname, setVNickname] = useState('');
+  const [savingVehicle, setSavingVehicle] = useState(false);
+
   // Messages
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -68,6 +82,101 @@ export default function ProfilePage() {
       isActive = false;
     };
   }, [router]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    async function loadVehicle() {
+      try {
+        const response = await fetch('/api/user/vehicle');
+        const data = await response.json();
+        if (data.vehicle) {
+          setVehicle(data.vehicle);
+        }
+      } catch {
+        // vehicle data is optional
+      } finally {
+        setVehicleLoading(false);
+      }
+    }
+
+    void loadVehicle();
+  }, [user]);
+
+  const openGarage = () => {
+    if (!vehicle) {
+      setVGeneration('');
+      setVModel('');
+      setVYear('');
+      setVEngineCode('');
+      setVColor('');
+      setVNickname('');
+    } else {
+      setVGeneration(vehicle.generation);
+      setVModel(vehicle.model);
+      setVYear(vehicle.year?.toString() || '');
+      setVEngineCode(vehicle.engineCode || '');
+      setVColor(vehicle.color || '');
+      setVNickname(vehicle.nickname || '');
+    }
+    setGarageMode(true);
+  };
+
+  const handleSaveVehicle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingVehicle(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch('/api/user/vehicle', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          generation: vGeneration,
+          model: vModel,
+          year: vYear || undefined,
+          engineCode: vEngineCode || undefined,
+          color: vColor || undefined,
+          nickname: vNickname || undefined,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setVehicle(data.vehicle);
+        setGarageMode(false);
+        setMessage({ type: 'success', text: 'Garage updated!' });
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to save' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Something went wrong' });
+    } finally {
+      setSavingVehicle(false);
+    }
+  };
+
+  const handleRemoveVehicle = async () => {
+    try {
+      const response = await fetch('/api/user/vehicle', { method: 'DELETE' });
+      const data = await response.json();
+      if (data.success) {
+        setVehicle(null);
+        setMessage({ type: 'success', text: 'Vehicle removed from garage' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Failed to remove vehicle' });
+    }
+  };
+
+  const currentModels = vGeneration
+    ? generations.find(g => g.id === vGeneration)?.models || []
+    : [];
+
+  const getGenerationName = (id: string) => {
+    const gen = generations.find(g => g.id === id);
+    return gen?.name || id;
+  };
 
   const handleLogout = async () => {
     try {
@@ -374,6 +483,128 @@ export default function ProfilePage() {
                   </form>
                 ) : (
                   <p className="text-gray-500">Click &quot;Change&quot; to update your password</p>
+                )}
+              </div>
+
+              {/* My Garage Card */}
+              <div className="bg-white rounded-lg shadow-md p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-vw-blue">My Garage</h2>
+                  {!garageMode && !vehicleLoading && (
+                    <button onClick={openGarage} className="text-vw-blue hover:underline text-sm">
+                      {vehicle ? 'Edit' : 'Add Your Car'}
+                    </button>
+                  )}
+                </div>
+
+                {vehicleLoading ? (
+                  <p className="text-gray-500">Loading...</p>
+                ) : garageMode ? (
+                  <form onSubmit={handleSaveVehicle}>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm text-gray-500">Generation *</label>
+                        <select
+                          value={vGeneration}
+                          onChange={(e) => { setVGeneration(e.target.value); setVModel(''); }}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          required
+                        >
+                          <option value="">Select generation</option>
+                          {generations.map(gen => (
+                            <option key={gen.id} value={gen.id}>{gen.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-500">Model *</label>
+                        <select
+                          value={vModel}
+                          onChange={(e) => setVModel(e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          required
+                          disabled={!currentModels.length}
+                        >
+                          <option value="">Select model</option>
+                          {currentModels.map(m => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm text-gray-500">Year</label>
+                          <input
+                            type="number"
+                            value={vYear}
+                            onChange={(e) => setVYear(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                            placeholder="e.g. 2003"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-500">Engine Code</label>
+                          <input
+                            type="text"
+                            value={vEngineCode}
+                            onChange={(e) => setVEngineCode(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                            placeholder="e.g. AWU"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm text-gray-500">Color</label>
+                          <input
+                            type="text"
+                            value={vColor}
+                            onChange={(e) => setVColor(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                            placeholder="e.g. Reflex Silver"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-500">Nickname</label>
+                          <input
+                            type="text"
+                            value={vNickname}
+                            onChange={(e) => setVNickname(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                            placeholder="e.g. Betty"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="submit" disabled={savingVehicle} className="btn-primary">
+                          {savingVehicle ? 'Saving...' : 'Save'}
+                        </button>
+                        <button type="button" onClick={() => setGarageMode(false)}
+                          className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                ) : vehicle ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">🚗</span>
+                      <div>
+                        <p className="text-lg font-medium">
+                          {vehicle.nickname && `${vehicle.nickname} - `}{getGenerationName(vehicle.generation)} {vehicle.model}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {[vehicle.year, vehicle.engineCode, vehicle.color].filter(Boolean).join(' • ')}
+                        </p>
+                      </div>
+                    </div>
+                    <button onClick={handleRemoveVehicle} className="text-sm text-red-600 hover:underline mt-2">
+                      Remove from garage
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-gray-500">No vehicle set. Add your VW to get personalized content.</p>
                 )}
               </div>
 

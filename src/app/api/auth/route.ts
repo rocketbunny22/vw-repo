@@ -182,8 +182,7 @@ export async function POST(request: NextRequest) {
       }
 
       const adminCode = body.adminCode;
-      const isFirstUser = users.length === 0;
-      const role: 'user' | 'admin' = (adminCode === 'VWADMIN2024' || isFirstUser) ? 'admin' : 'user';
+      const role: 'user' | 'admin' = adminCode === 'VWADMIN2024' ? 'admin' : 'user';
 
       const passwordHash = await bcrypt.hash(password, 12);
 

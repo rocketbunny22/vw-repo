@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { generations } from '@/data/generations';
-import { DiyGuide, PdfDocument } from '@/types';
+import { DiyGuide, PdfDocument, VehicleProfile } from '@/types';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -31,6 +31,23 @@ export default function SearchPage() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
+  const [myCarOnly, setMyCarOnly] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch('/api/user/vehicle');
+        const data = await res.json();
+        if (data.vehicle) {
+          setVehicle(data.vehicle);
+        }
+      } catch {
+        // vehicle is optional
+      }
+    }
+    load();
+  }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,13 +134,18 @@ export default function SearchPage() {
         });
       });
 
-      setResults([...systemResults, ...generationResults, ...pdfs, ...guides]);
+      const allResults = [...systemResults, ...generationResults, ...pdfs, ...guides];
+      setResults(allResults);
     } catch (error) {
       console.error('Search error:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const displayResults = myCarOnly && vehicle
+    ? results.filter(r => r.generation === vehicle.generation)
+    : results;
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -175,24 +197,38 @@ export default function SearchPage() {
       {searched && !loading && (
         <section className="py-12 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+              <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold text-vw-blue">
-                  {results.length} results for “{query}”
+                  {displayResults.length} results for &ldquo;{query}&rdquo;
                 </h2>
+                {vehicle && (
+                  <button
+                    onClick={() => setMyCarOnly(!myCarOnly)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                      myCarOnly
+                        ? 'bg-vw-gold text-vw-blue'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    }`}
+                  >
+                    🚗 My car only
+                  </button>
+                )}
+              </div>
 
               <Link href="/search" className="text-vw-blue hover:underline">
                 Clear search
               </Link>
             </div>
 
-            {results.length === 0 ? (
+            {displayResults.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">No results found</p>
                 <p className="text-gray-400 text-sm mt-2">Try different keywords</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {results.map((result, index) => (
+                {displayResults.map((result, index) => (
                   <Link
                     key={`${result.type}-${result.id}-${index}`}
                     href={result.url}

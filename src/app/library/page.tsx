@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { PdfDocument } from '@/types';
+import { PdfDocument, VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
 
 const systemsList = [
@@ -22,6 +22,18 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
   const [pdfs, setPdfs] = useState<PdfDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewingPdf, setViewingPdf] = useState<PdfDocument | null>(null);
+  const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
+
+  useEffect(() => {
+    async function loadVehicle() {
+      try {
+        const res = await fetch('/api/user/vehicle');
+        const data = await res.json();
+        if (data.vehicle) setVehicle(data.vehicle);
+      } catch { /* optional */ }
+    }
+    loadVehicle();
+  }, []);
 
   async function fetchPdfs() {
     try {
@@ -132,6 +144,18 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
                 </option>
               ))}
             </select>
+            {vehicle && (
+              <button
+                onClick={() => setSelectedGeneration(selectedGeneration === vehicle.generation ? 'all' : vehicle.generation)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  selectedGeneration === vehicle.generation
+                    ? 'bg-vw-blue text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                🚗 My Car
+              </button>
+            )}
             <Link
               href="/upload"
               className="ml-auto btn-secondary py-2 px-4 text-center"
