@@ -22,6 +22,7 @@ interface SearchResult {
   description: string;
   generation: string;
   system?: string;
+  model?: string;
   url: string;
 }
 
@@ -60,6 +61,7 @@ export default function SearchPage() {
           description: pdf.description,
           generation: pdf.generation,
           system: pdf.system,
+          model: (pdf as any).model || (pdf as any).models?.[0],
           url: pdf.url
         }));
 
@@ -204,6 +206,9 @@ export default function SearchPage() {
                           <span className="badge badge-blue">{getGenerationName(result.generation)}</span>
                           {result.system && (
                             <span className="badge badge-gold">{getSystemName(result.system)}</span>
+                          )}
+                          {result.model && (
+                            <span className="badge badge-gray">{result.model}</span>
                           )}
                         </div>
                         <h3 className="text-xl font-bold text-vw-blue mb-1">{result.title}</h3>

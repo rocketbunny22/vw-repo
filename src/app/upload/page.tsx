@@ -18,7 +18,7 @@ export default function UploadPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [file, setFile] = useState<File | null>(null);
-  const [generation, setGeneration] = useState('');
+  const [generationsSelected, setGenerationsSelected] = useState<string[]>([]);
   const [models, setModels] = useState<string[]>([]);
   const [system, setSystem] = useState('');
   const [title, setTitle] = useState('');
@@ -26,8 +26,8 @@ export default function UploadPage() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const availableModels = generation
-    ? generations.find((gen) => gen.id === generation)?.models || []
+  const availableModels = generationsSelected.length === 1
+    ? generations.find((gen) => gen.id === generationsSelected[0])?.models || []
     : [];
 
   async function checkAuth() {
@@ -50,6 +50,12 @@ export default function UploadPage() {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    if (generationsSelected.length !== 1) {
+      setModels([]);
+    }
+  }, [generationsSelected]);
+
   if (loading) {
     return (
       <div className="flex flex-col">
@@ -70,7 +76,7 @@ export default function UploadPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!file || !generation || !system || !title) {
+    if (!file || generationsSelected.length === 0 || !system || !title) {
       setMessage({ type: 'error', text: 'Please fill in all required fields' });
       return;
     }
@@ -81,7 +87,7 @@ export default function UploadPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('generation', generation);
+      generationsSelected.forEach((g) => formData.append('generation', g));
       models.forEach((m) => formData.append('models', m));
       formData.append('system', system);
       formData.append('title', title);
@@ -97,7 +103,7 @@ export default function UploadPage() {
       if (data.success) {
         setMessage({ type: 'success', text: 'PDF uploaded successfully!' });
         setFile(null);
-        setGeneration('');
+        setGenerationsSelected([]);
                       setModels([]);
         setSystem('');
         setTitle('');
@@ -157,22 +163,47 @@ export default function UploadPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Generation *
                   </label>
-                  <select
-                    value={generation}
-                    onChange={(e) => {
-                      setGeneration(e.target.value);
-        setModels([]);
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
-                    required
-                  >
-                    <option value="">Select Generation</option>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      {generationsSelected.length} selected
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (generationsSelected.length === generations.length) {
+                          setGenerationsSelected([]);
+                        } else {
+                          setGenerationsSelected(generations.map((g) => g.id));
+                        }
+                        setModels([]);
+                      }}
+                      className="text-sm text-vw-blue hover:underline"
+                    >
+                      {generationsSelected.length === generations.length ? 'Clear All' : 'Select All'}
+                    </button>
+                  </div>
+
+                  <div className="border border-gray-300 rounded-md p-3 max-h-40 overflow-y-auto">
                     {generations.map((gen) => (
-                      <option key={gen.id} value={gen.id}>
-                        {gen.name} ({gen.years})
-                      </option>
+                      <label key={gen.id} className="flex items-center space-x-2 mb-1">
+                        <input
+                          type="checkbox"
+                          checked={generationsSelected.includes(gen.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setGenerationsSelected([...generationsSelected, gen.id]);
+                            } else {
+                              setGenerationsSelected(generationsSelected.filter((g) => g !== gen.id));
+                            }
+                            setModels([]);
+                          }}
+                        />
+                        <span className="text-sm text-gray-700">
+                          {gen.name} ({gen.years})
+                        </span>
+                      </label>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
                 <div>
@@ -180,8 +211,8 @@ export default function UploadPage() {
                     Models (optional)
                   </label>
                   <div className="border border-gray-300 rounded-md p-3 max-h-40 overflow-y-auto">
-                    {!availableModels.length && (
-                      <p className="text-sm text-gray-500">Select a generation first</p>
+                    {generationsSelected.length !== 1 && (
+                      <p className="text-sm text-gray-500">Select exactly one generation to choose models</p>
                     )}
                     {availableModels.map((m) => (
                       <label key={m} className="flex items-center space-x-2 mb-1">

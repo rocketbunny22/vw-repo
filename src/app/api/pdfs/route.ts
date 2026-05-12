@@ -49,13 +49,13 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    const generation = formData.get('generation') as string;
+    const generations = formData.getAll('generation') as string[];
     const model = formData.get('model') as string;
     const system = formData.get('system') as string;
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
 
-    if (!file || !generation || !system || !title) {
+    if (!file || generations.length === 0 || !system || !title) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -70,31 +70,36 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const id = `${generation}-${system}-${Date.now()}`;
-    const filename = `${id}.pdf`;
-
-    const pdfData: PdfDocument = {
-      id,
-      filename,
-      originalName: file.name,
-      generation,
-      model: model || undefined,
-      system,
-      title,
-      description: description || '',
-      uploadedAt: new Date().toISOString(),
-      fileSize: buffer.length,
-      url: `/api/pdfs/${filename}`,
-      uploadedBy: auth.user?.username,
-    };
-
-    await savePdfFile(filename, buffer);
-
     const pdfs = await getAllPdfs();
-    pdfs.push(pdfData);
+    const created: PdfDocument[] = [];
+
+    for (const generation of generations) {
+      const id = `${generation}-${system}-${Date.now()}`;
+      const filename = `${id}.pdf`;
+
+      const pdfData: PdfDocument = {
+        id,
+        filename,
+        originalName: file.name,
+        generation,
+        model: model || undefined,
+        system,
+        title,
+        description: description || '',
+        uploadedAt: new Date().toISOString(),
+        fileSize: buffer.length,
+        url: `/api/pdfs/${filename}`,
+        uploadedBy: auth.user?.username,
+      };
+
+      await savePdfFile(filename, buffer);
+      pdfs.push(pdfData);
+      created.push(pdfData);
+    }
+
     await saveAllPdfs(pdfs);
 
-    return NextResponse.json({ success: true, pdf: pdfData });
+    return NextResponse.json({ success: true, pdfs: created });
   } catch (error) {
     console.error('PDF upload error:', error);
     return NextResponse.json({ error: 'Failed to upload PDF' }, { status: 500 });

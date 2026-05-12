@@ -7,7 +7,7 @@ export const generations: Generation[] = [
     slug: 'mk1',
     years: '1974-1983',
     description: 'The first generation of modern VW Golf/hot hatchbacks. Introduced the transverse engine layout that would define decades of VW performance.',
-    models: ['Golf GTI', 'Golf Diesel', 'Rabbit', 'Caddy pickup', 'Cabriolet'],
+    models: ['Golf', 'Rabbit', 'Caddy', 'Cabriolet'],
     image: '/images/mk1.jpg',
     systems: [
       {
@@ -163,7 +163,7 @@ export const generations: Generation[] = [
     slug: 'mk2',
     years: '1984-1992',
     description: 'The legendary second generation that cemented the GTI legacy. Refined styling and improved performance made it an icon of the 80s.',
-    models: ['Golf GTI 16V', 'Golf Rallye G60', 'Golf Country', 'Corrado', 'Jetta II'],
+    models: ['Golf', 'Jetta', 'Corrado'],
     image: '/images/mk2.jpg',
     systems: [
       {
@@ -284,7 +284,7 @@ export const generations: Generation[] = [
     slug: 'mk3',
     years: '1993-1998',
     description: 'The controversial third generation with rounded styling. Introduced the VR6 and marked the end of air-cooled engines.',
-    models: ['Golf GTI VR6', 'Golf GTI 2.0L', 'Cabrio'],
+    models: ['Golf', 'Cabriolet'],
     image: '/images/mk3.webp',
     systems: [
       {
@@ -370,7 +370,7 @@ export const generations: Generation[] = [
     slug: 'mk4',
     years: '1999-2005',
     description: 'The refined fourth generation. Introduced the legendary 1.8T and marked the golden era of VW tunability.',
-    models: ['Golf GTI 1.8T', 'Golf GTI VR6', 'GTI 337 Edition', 'Golf R32', 'Wagon', 'Jetta/Bora'],
+    models: ['Golf', 'Jetta/Bora', 'Golf Wagon'],
     image: '/images/mk4.webp',
     systems: [
       {
@@ -495,7 +495,7 @@ export const generations: Generation[] = [
     slug: 'mk5',
     years: '2006-2009',
     description: 'The controversial styling that polarized fans. Return of the 2.0T FSI and introduction of the TSI.',
-    models: ['Golf GTI', 'GTI Edition 30', 'R32', 'Cup Edition'],
+    models: ['Golf'],
     image: '/images/mk5.jpg',
     systems: [
       {
@@ -615,7 +615,7 @@ export const generations: Generation[] = [
     slug: 'mk6',
     years: '2010-2014',
     description: 'The refined sixth generation. More conservative styling with improved quality and the return of the GTI to the US.',
-    models: ['Golf GTI', 'Golf R', 'GTI Wolfsburg Edition'],
+    models: ['Golf'],
     image: '/images/mk6.webp',
     systems: [
       {
@@ -711,7 +711,7 @@ export const generations: Generation[] = [
     slug: 'mk7',
     years: '2015-2020',
     description: 'The MQB platform brings major improvements in technology, safety, and performance.',
-    models: ['Golf GTI', 'Golf GTI TCR', 'Golf R', 'GTI Clubsport', 'GTI Rabbit Edition'],
+    models: ['Golf'],
     image: '/images/mk7.webp',
     systems: [
       {
@@ -818,7 +818,7 @@ export const generations: Generation[] = [
     slug: 'mk8',
     years: '2021-Present',
     description: 'The all-new eighth generation. Full digital cockpit and electrified options.',
-    models: ['Golf GTI', 'Golf R', 'GTI Clubsport'],
+    models: ['Golf'],
     image: '/images/mk8.jpg',
     systems: [
       {
