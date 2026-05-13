@@ -95,18 +95,8 @@ export default function Home() {
       )}
 
       {/* Hero Section */}
-      <section className="relative bg-vw-blue overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `repeating-linear-gradient(
-              45deg,
-              transparent,
-              transparent 10px,
-              rgba(178, 151, 90, 0.1) 10px,
-              rgba(178, 151, 90, 0.1) 20px
-            )`
-          }} />
-        </div>
+      <section className="relative bg-[url('/images/all_gens.webp')] bg-cover bg-center overflow-hidden">
+        <div className="absolute inset-0 bg-black/60" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-vw-gold rounded-full mb-6">
