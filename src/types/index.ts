@@ -45,6 +45,16 @@ export interface PdfDocument {
   uploadedBy?: string;
   fileSize: number;
   url: string;
+  downloads: number;
+}
+
+export interface Comment {
+  id: string;
+  guideId: string;
+  authorId: string;
+  authorName: string;
+  content: string;
+  createdAt: string;
 }
 
 export interface DiyGuide {

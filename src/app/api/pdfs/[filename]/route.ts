@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
+import { getAllPdfs, saveAllPdfs } from '@/data/pdfs';
 
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
   ? new Redis({
@@ -26,6 +27,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!pdfData) {
       return NextResponse.json({ error: 'PDF not found' }, { status: 404 });
+    }
+
+    if (view !== 'true') {
+      try {
+        const pdfs = await getAllPdfs();
+        const pdf = pdfs.find((p) => p.filename === filename);
+        if (pdf) {
+          pdf.downloads = (pdf.downloads || 0) + 1;
+          await saveAllPdfs(pdfs);
+        }
+      } catch (err) {
+        console.error('Failed to track download:', err);
+      }
     }
 
     const fileBuffer = Buffer.from(pdfData, 'base64');

@@ -6,6 +6,7 @@ import { DiyGuide } from '@/types';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
+import CommentsSection from '@/components/CommentsSection';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -158,6 +159,10 @@ export default async function GuidePage({
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <CommentsSection guideId={guide.id} />
           </div>
         </div>
       </section>

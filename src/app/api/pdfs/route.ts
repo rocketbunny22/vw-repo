@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
         fileSize: buffer.length,
         url: `/api/pdfs/${filename}`,
         uploadedBy: auth.user?.username,
+        downloads: 0,
       };
 
       await savePdfFile(filename, buffer);
