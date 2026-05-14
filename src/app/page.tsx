@@ -19,6 +19,12 @@ export default function Home() {
   const [user, setUser] = useState<{ id: string; username: string } | null>(null);
   const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dismissedGarage, setDismissedGarage] = useState(false);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('dismissedGarage');
+    if (dismissed === 'true') setDismissedGarage(true);
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -52,7 +58,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Personalized Greeting */}
-      {!loading && user && vehicle && (
+      {!loading && user && vehicle && !dismissedGarage && (
         <section className="bg-gradient-to-r from-vw-gold to-amber-500 py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -65,20 +71,27 @@ export default function Home() {
                   Hey {user.username}! Here&apos;s what&apos;s relevant for your ride.
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex items-center gap-3">
                 <Link href={`/generation/${vehicle.generation}`} className="bg-white text-vw-blue px-4 py-2 rounded-md font-medium hover:bg-gray-100 transition-colors text-sm">
                   View Generation
                 </Link>
                 <Link href={`/guides?generation=${vehicle.generation}`} className="bg-vw-blue text-white px-4 py-2 rounded-md font-medium hover:bg-vw-blue-light transition-colors text-sm">
                   Guides for Your Car
                 </Link>
+                <button
+                  onClick={() => { setDismissedGarage(true); localStorage.setItem('dismissedGarage', 'true'); }}
+                  className="text-vw-blue/60 hover:text-vw-blue text-2xl ml-2"
+                  aria-label="Dismiss garage bar"
+                >
+                  &times;
+                </button>
               </div>
             </div>
           </div>
         </section>
       )}
 
-      {!loading && !vehicle && user && (
+      {!loading && !vehicle && user && !dismissedGarage && (
         <section className="bg-gradient-to-r from-vw-gold to-amber-500 py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -86,9 +99,18 @@ export default function Home() {
                 <p className="text-vw-blue text-sm">Hey {user.username}! 👋</p>
                 <h2 className="text-xl font-bold text-vw-blue">Set up your garage to get personalized content</h2>
               </div>
-              <Link href="/profile" className="bg-white text-vw-blue px-4 py-2 rounded-md font-medium hover:bg-gray-100 transition-colors text-sm">
-                Add Your Car
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link href="/profile" className="bg-white text-vw-blue px-4 py-2 rounded-md font-medium hover:bg-gray-100 transition-colors text-sm">
+                  Add Your Car
+                </Link>
+                <button
+                  onClick={() => { setDismissedGarage(true); localStorage.setItem('dismissedGarage', 'true'); }}
+                  className="text-vw-blue/60 hover:text-vw-blue text-2xl"
+                  aria-label="Dismiss garage bar"
+                >
+                  &times;
+                </button>
+              </div>
             </div>
           </div>
         </section>
