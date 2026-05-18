@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PdfDocument } from '@/types';
 import crypto from 'crypto';
 import { getAllPdfs, saveAllPdfs, savePdfFile } from '@/data/pdfs';
+import { extractPdfText } from '@/lib/pdfText';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
@@ -50,7 +51,8 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const generations = formData.getAll('generation') as string[];
-    const model = formData.get('model') as string;
+    const model = formData.get('model') as string | null;
+    const models = formData.getAll('models') as string[];
     const system = formData.get('system') as string;
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
@@ -69,6 +71,7 @@ export async function POST(request: NextRequest) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const searchText = await extractPdfText(buffer);
 
     const pdfs = await getAllPdfs();
     const created: PdfDocument[] = [];
@@ -82,10 +85,13 @@ export async function POST(request: NextRequest) {
         filename,
         originalName: file.name,
         generation,
-        model: model || undefined,
+        model: model || models[0] || undefined,
+        models: models.length > 0 ? models : undefined,
         system,
         title,
         description: description || '',
+        searchText: searchText || undefined,
+        searchTextExtractedAt: searchText ? new Date().toISOString() : undefined,
         uploadedAt: new Date().toISOString(),
         fileSize: buffer.length,
         url: `/api/pdfs/${filename}`,

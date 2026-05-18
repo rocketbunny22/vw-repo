@@ -38,9 +38,12 @@ export interface PdfDocument {
   originalName: string;
   generation: string;
   model?: string;
+  models?: string[];
   system: string;
   title: string;
   description: string;
+  searchText?: string;
+  searchTextExtractedAt?: string;
   uploadedAt: string;
   uploadedBy?: string;
   fileSize: number;

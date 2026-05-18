@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { generations } from '@/data/generations';
-import { DiyGuide, PdfDocument, VehicleProfile } from '@/types';
+import { VehicleProfile } from '@/types';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -24,6 +24,9 @@ interface SearchResult {
   system?: string;
   model?: string;
   url: string;
+  matchContext?: string;
+  matchSource?: 'title' | 'description' | 'metadata' | 'content' | 'pdf-text';
+  score: number;
 }
 
 export default function SearchPage() {
@@ -57,87 +60,12 @@ export default function SearchPage() {
     setSearched(true);
 
     try {
-      const [pdfsRes, guidesRes] = await Promise.all([
-        fetch('/api/pdfs'),
-        fetch('/api/guides')
-      ]);
-
-      const pdfsData = await pdfsRes.json();
-      const guidesData = await guidesRes.json();
-
-      const pdfList: PdfDocument[] = pdfsData.pdfs || [];
-      const pdfs: SearchResult[] = pdfList
-        .filter((pdf) => 
-          pdf.title.toLowerCase().includes(query.toLowerCase()) ||
-          pdf.description.toLowerCase().includes(query.toLowerCase())
-        )
-        .map((pdf) => ({
-          type: 'pdf' as const,
-          id: pdf.id,
-          title: pdf.title,
-          description: pdf.description,
-          generation: pdf.generation,
-          system: pdf.system,
-          model: (pdf as any).model || (pdf as any).models?.[0],
-          url: pdf.url
-        }));
-
-      const guideList: DiyGuide[] = guidesData.guides || [];
-      const guides: SearchResult[] = guideList
-        .filter((guide) =>
-          guide.title.toLowerCase().includes(query.toLowerCase()) ||
-          guide.content?.toLowerCase().includes(query.toLowerCase())
-        )
-        .map((guide) => ({
-          type: 'guide' as const,
-          id: guide.id,
-          title: guide.title,
-          description: `${guide.content?.substring(0, 150) || ''}...`,
-          generation: guide.generation,
-          system: guide.system,
-          url: `/guides/${guide.slug}`
-        }));
-
-      // Search generations
-      const generationResults: SearchResult[] = generations
-        .filter(g =>
-          g.name.toLowerCase().includes(query.toLowerCase()) ||
-          g.slug.toLowerCase().includes(query.toLowerCase())
-        )
-        .map(g => ({
-          type: 'generation' as const,
-          id: g.id,
-          title: g.name,
-          description: g.description,
-          generation: g.id,
-          url: `/generation/${g.slug}`
-        }));
-
-      // Search systems within generations
-      const systemResults: SearchResult[] = [];
-      generations.forEach(g => {
-        g.systems.forEach(sys => {
-          if (
-            sys.name.toLowerCase().includes(query.toLowerCase()) ||
-            sys.description.toLowerCase().includes(query.toLowerCase())
-          ) {
-            systemResults.push({
-              type: 'generation',
-              id: `${g.slug}-${sys.slug}`,
-              title: `${g.name} - ${sys.name}`,
-              description: sys.description,
-              generation: g.slug,
-              system: sys.slug,
-              url: `/systems/${sys.slug}?gen=${g.slug}`
-            });
-          }
-        });
-      });
-
-      const allResults = [...systemResults, ...generationResults, ...pdfs, ...guides];
-      setResults(allResults);
+      const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+      const data = await response.json();
+      setResults(data.results || []);
     } catch (error) {
       console.error('Search error:', error);
+      setResults([]);
     } finally {
       setLoading(false);
     }
@@ -245,6 +173,9 @@ export default function SearchPage() {
                           )}
                           {result.model && (
                             <span className="badge badge-gray">{result.model}</span>
+                          )}
+                          {result.matchSource === 'pdf-text' && (
+                            <span className="badge bg-gray-100 text-gray-700">PDF text</span>
                           )}
                         </div>
                         <h3 className="text-xl font-bold text-vw-blue mb-1">{result.title}</h3>

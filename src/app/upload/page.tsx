@@ -50,12 +50,6 @@ export default function UploadPage() {
     checkAuth();
   }, []);
 
-  useEffect(() => {
-    if (generationsSelected.length !== 1) {
-      setModels([]);
-    }
-  }, [generationsSelected]);
-
   if (loading) {
     return (
       <div className="flex flex-col">

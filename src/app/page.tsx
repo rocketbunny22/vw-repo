@@ -19,12 +19,9 @@ export default function Home() {
   const [user, setUser] = useState<{ id: string; username: string } | null>(null);
   const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [dismissedGarage, setDismissedGarage] = useState(false);
-
-  useEffect(() => {
-    const dismissed = localStorage.getItem('dismissedGarage');
-    if (dismissed === 'true') setDismissedGarage(true);
-  }, []);
+  const [dismissedGarage, setDismissedGarage] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem('dismissedGarage') === 'true'
+  );
 
   useEffect(() => {
     async function load() {

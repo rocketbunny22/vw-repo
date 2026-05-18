@@ -1,4 +1,3 @@
-import { writeFile } from 'fs/promises';
 import { Redis } from '@upstash/redis';
 import { PdfDocument } from '@/types';
 
@@ -31,6 +30,15 @@ export async function savePdfFile(filename: string, buffer: Buffer): Promise<voi
     throw new Error('Redis not configured');
   }
   await redis.set(`pdf:${filename}`, buffer.toString('base64'));
+}
+
+export async function getPdfFile(filename: string): Promise<Buffer | null> {
+  if (!redis) {
+    return null;
+  }
+
+  const pdfData = await redis.get<string>(`pdf:${filename}`);
+  return pdfData ? Buffer.from(pdfData, 'base64') : null;
 }
 
 export async function deletePdfFile(filename: string): Promise<void> {
