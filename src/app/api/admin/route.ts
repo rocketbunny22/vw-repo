@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { Redis } from '@upstash/redis';
 import { Resend } from 'resend';
 import { getAllPdfs, saveAllPdfs, deletePdfFile } from '@/data/pdfs';
+import { backfillPdfSearchText } from '@/lib/pdfBackfill';
 import { PdfDocument, User } from '@/types';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
@@ -99,8 +100,9 @@ export async function POST(request: NextRequest) {
       generation?: string;
       system?: string;
       model?: string;
+      force?: boolean;
     };
-    const { action, userId, pdfId, role, title, description, generation, system, model } = body;
+    const { action, userId, pdfId, role, force } = body;
 
     if (action === 'deleteUser') {
       const users = await getUsers();
@@ -200,6 +202,11 @@ export async function POST(request: NextRequest) {
         console.error('Resend error:', err);
         return NextResponse.json({ error: 'Failed to send email', details: String(err) }, { status: 500 });
       }
+    }
+
+    if (action === 'backfillPdfText') {
+      const result = await backfillPdfSearchText({ force: Boolean(force) });
+      return NextResponse.json({ success: true, result });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

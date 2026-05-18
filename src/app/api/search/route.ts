@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generations } from '@/data/generations';
 import { diyGuides } from '@/data/diyGuides';
-import { getAllPdfs, getPdfFile, saveAllPdfs } from '@/data/pdfs';
-import { extractPdfText } from '@/lib/pdfText';
+import { getAllPdfs } from '@/data/pdfs';
+import { ensurePdfSearchText } from '@/lib/pdfBackfill';
 import { DiyGuide, PdfDocument } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -48,31 +48,6 @@ export async function GET(request: NextRequest) {
     .slice(0, MAX_RESULTS);
 
   return NextResponse.json({ results });
-}
-
-async function ensurePdfSearchText(pdfs: PdfDocument[]): Promise<PdfDocument[]> {
-  const missingText = pdfs.filter((pdf) => !pdf.searchText && pdf.filename);
-  if (missingText.length === 0) return pdfs;
-
-  let changed = false;
-
-  for (const pdf of missingText) {
-    const buffer = await getPdfFile(pdf.filename);
-    if (!buffer) continue;
-
-    const searchText = await extractPdfText(buffer);
-    if (!searchText) continue;
-
-    pdf.searchText = searchText;
-    pdf.searchTextExtractedAt = new Date().toISOString();
-    changed = true;
-  }
-
-  if (changed) {
-    await saveAllPdfs(pdfs);
-  }
-
-  return pdfs;
 }
 
 function searchPdfs(pdfs: PdfDocument[], query: string, terms: string[]): SearchResult[] {

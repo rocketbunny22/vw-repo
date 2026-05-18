@@ -24,6 +24,20 @@ interface Pdf {
   uploadedAt: string;
 }
 
+interface BackfillResult {
+  total: number;
+  candidates: number;
+  processed: number;
+  updated: number;
+  skipped: number;
+  failed: number;
+  failures: Array<{
+    id: string;
+    title: string;
+    reason: string;
+  }>;
+}
+
 const generationOptions = generations.map(g => ({ value: g.id, label: g.name }));
 const systemOptions = ['engine', 'transmission', 'suspension', 'brakes', 'electrical', 'body', 'interior', 'cooling', 'fuel', 'exhaust'];
 
@@ -38,6 +52,8 @@ export default function AdminPage() {
   const [error, setError] = useState('');
   const [editingPdf, setEditingPdf] = useState<Pdf | null>(null);
   const [editForm, setEditForm] = useState({ title: '', description: '', generation: '', system: '', model: '' });
+  const [forceBackfill, setForceBackfill] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<BackfillResult | null>(null);
 
   async function checkAdmin() {
     try {
@@ -171,6 +187,33 @@ export default function AdminPage() {
       }
     } catch {
       setError('Failed to send test email');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const runBackfill = async () => {
+    setActionLoading('backfillPdfText');
+    setError('');
+    setBackfillResult(null);
+
+    try {
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'backfillPdfText', force: forceBackfill }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setBackfillResult(data.result);
+        loadData();
+      } else {
+        setError(data.error || 'Backfill failed');
+      }
+    } catch {
+      setError('Backfill failed');
     } finally {
       setActionLoading(null);
     }
@@ -358,23 +401,99 @@ export default function AdminPage() {
           )}
 
           {activeTab === 'tools' && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-bold mb-4">Email Test</h3>
-              <p className="text-gray-600 mb-4">
-                Send a test email to verify your Resend setup is working correctly.
-              </p>
-              {testEmailSent && (
-                <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-md">
-                  Test email sent successfully! Check your inbox.
-                </div>
-              )}
-              <button
-                onClick={sendTestEmail}
-                disabled={actionLoading === 'testEmail'}
-                className="px-4 py-2 bg-vw-blue text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              >
-                {actionLoading === 'testEmail' ? ' Sending...' : 'Send Test Email'}
-              </button>
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold mb-4">PDF Search Backfill</h3>
+                <p className="text-gray-600 mb-4">
+                  Extract searchable text for stored PDFs that do not have an index yet.
+                </p>
+                <label className="mb-4 flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={forceBackfill}
+                    onChange={(e) => setForceBackfill(e.target.checked)}
+                  />
+                  Reindex PDFs that already have extracted text
+                </label>
+                <button
+                  onClick={runBackfill}
+                  disabled={actionLoading === 'backfillPdfText'}
+                  className="px-4 py-2 bg-vw-blue text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {actionLoading === 'backfillPdfText' ? 'Running...' : 'Run Backfill'}
+                </button>
+
+                {backfillResult && (
+                  <div className="mt-6">
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                      <div className="rounded-md bg-gray-50 p-3">
+                        <div className="text-xs uppercase text-gray-500">Total</div>
+                        <div className="text-lg font-bold text-gray-900">{backfillResult.total}</div>
+                      </div>
+                      <div className="rounded-md bg-gray-50 p-3">
+                        <div className="text-xs uppercase text-gray-500">Candidates</div>
+                        <div className="text-lg font-bold text-gray-900">{backfillResult.candidates}</div>
+                      </div>
+                      <div className="rounded-md bg-gray-50 p-3">
+                        <div className="text-xs uppercase text-gray-500">Processed</div>
+                        <div className="text-lg font-bold text-gray-900">{backfillResult.processed}</div>
+                      </div>
+                      <div className="rounded-md bg-green-50 p-3">
+                        <div className="text-xs uppercase text-green-700">Updated</div>
+                        <div className="text-lg font-bold text-green-900">{backfillResult.updated}</div>
+                      </div>
+                      <div className="rounded-md bg-yellow-50 p-3">
+                        <div className="text-xs uppercase text-yellow-700">Skipped</div>
+                        <div className="text-lg font-bold text-yellow-900">{backfillResult.skipped}</div>
+                      </div>
+                      <div className="rounded-md bg-red-50 p-3">
+                        <div className="text-xs uppercase text-red-700">Failed</div>
+                        <div className="text-lg font-bold text-red-900">{backfillResult.failed}</div>
+                      </div>
+                    </div>
+
+                    {backfillResult.failures.length > 0 && (
+                      <div className="mt-4 overflow-hidden rounded-md border border-gray-200">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">PDF</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">Reason</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200 bg-white">
+                            {backfillResult.failures.map((failure) => (
+                              <tr key={failure.id}>
+                                <td className="px-4 py-2 text-sm font-medium text-gray-900">{failure.title}</td>
+                                <td className="px-4 py-2 text-sm text-gray-600">{failure.reason}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold mb-4">Email Test</h3>
+                <p className="text-gray-600 mb-4">
+                  Send a test email to verify your Resend setup is working correctly.
+                </p>
+                {testEmailSent && (
+                  <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-md">
+                    Test email sent successfully! Check your inbox.
+                  </div>
+                )}
+                <button
+                  onClick={sendTestEmail}
+                  disabled={actionLoading === 'testEmail'}
+                  className="px-4 py-2 bg-vw-blue text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {actionLoading === 'testEmail' ? 'Sending...' : 'Send Test Email'}
+                </button>
+              </div>
             </div>
           )}
 
