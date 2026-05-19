@@ -47,19 +47,19 @@ export async function backfillPdfSearchText(options: { force?: boolean } = {}): 
         continue;
       }
 
-      const searchText = await extractPdfText(buffer);
+      const extraction = await extractPdfText(buffer);
 
-      if (!searchText) {
+      if ('error' in extraction) {
         result.skipped += 1;
         result.failures.push({
           id: pdf.id,
           title: pdf.title,
-          reason: 'No searchable text could be extracted',
+          reason: extraction.error,
         });
         continue;
       }
 
-      pdf.searchText = searchText;
+      pdf.searchText = extraction.text;
       pdf.searchTextExtractedAt = new Date().toISOString();
       changed = true;
       result.updated += 1;
@@ -90,10 +90,10 @@ export async function ensurePdfSearchText(pdfs: PdfDocument[]): Promise<PdfDocum
     const buffer = await getPdfFile(pdf.filename);
     if (!buffer) continue;
 
-    const searchText = await extractPdfText(buffer);
-    if (!searchText) continue;
+    const extraction = await extractPdfText(buffer);
+    if ('error' in extraction) continue;
 
-    pdf.searchText = searchText;
+    pdf.searchText = extraction.text;
     pdf.searchTextExtractedAt = new Date().toISOString();
     changed = true;
   }

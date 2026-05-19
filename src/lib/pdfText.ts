@@ -1,16 +1,27 @@
 const MAX_INDEXED_TEXT_LENGTH = 200_000;
 
-export async function extractPdfText(buffer: Buffer): Promise<string> {
+export type PdfTextExtractionResult =
+  | { text: string }
+  | { error: string };
+
+export async function extractPdfText(buffer: Buffer): Promise<PdfTextExtractionResult> {
   let parser: { getText: () => Promise<{ text: string }>; destroy: () => Promise<void> } | null = null;
 
   try {
     const { PDFParse } = await import('pdf-parse');
     parser = new PDFParse({ data: buffer });
     const result = await parser.getText();
-    return normalizePdfText(result.text).slice(0, MAX_INDEXED_TEXT_LENGTH);
+    const text = normalizePdfText(result.text).slice(0, MAX_INDEXED_TEXT_LENGTH);
+
+    if (!text) {
+      return { error: 'No searchable text could be extracted' };
+    }
+
+    return { text };
   } catch (error) {
-    console.error('PDF text extraction failed:', error);
-    return '';
+    const message = formatExtractionError(error);
+    console.error('PDF text extraction failed:', message);
+    return { error: message };
   } finally {
     await parser?.destroy().catch(() => undefined);
   }
@@ -22,4 +33,12 @@ function normalizePdfText(text: string): string {
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+function formatExtractionError(error: unknown): string {
+  if (error instanceof Error) {
+    return `${error.name}: ${error.message}`;
+  }
+
+  return String(error || 'Unknown PDF text extraction error');
 }

@@ -71,7 +71,8 @@ export async function POST(request: NextRequest) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const searchText = await extractPdfText(buffer);
+    const extraction = await extractPdfText(buffer);
+    const searchText = 'text' in extraction ? extraction.text : '';
 
     const pdfs = await getAllPdfs();
     const created: PdfDocument[] = [];

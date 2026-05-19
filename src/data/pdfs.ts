@@ -1,5 +1,7 @@
 import { Redis } from '@upstash/redis';
 import { PdfDocument } from '@/types';
+import path from 'path';
+import { readFile } from 'fs/promises';
 
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
   ? new Redis({
@@ -33,12 +35,16 @@ export async function savePdfFile(filename: string, buffer: Buffer): Promise<voi
 }
 
 export async function getPdfFile(filename: string): Promise<Buffer | null> {
-  if (!redis) {
-    return null;
+  if (!isSafePdfFilename(filename)) return null;
+
+  if (redis) {
+    const pdfData = await redis.get<string>(`pdf:${filename}`);
+    if (pdfData) {
+      return Buffer.from(pdfData, 'base64');
+    }
   }
 
-  const pdfData = await redis.get<string>(`pdf:${filename}`);
-  return pdfData ? Buffer.from(pdfData, 'base64') : null;
+  return getPublicPdfFile(filename);
 }
 
 export async function deletePdfFile(filename: string): Promise<void> {
@@ -46,4 +52,16 @@ export async function deletePdfFile(filename: string): Promise<void> {
     throw new Error('Redis not configured');
   }
   await redis.del(`pdf:${filename}`);
+}
+
+function isSafePdfFilename(filename: string): boolean {
+  return path.basename(filename) === filename && filename.endsWith('.pdf');
+}
+
+async function getPublicPdfFile(filename: string): Promise<Buffer | null> {
+  try {
+    return await readFile(path.join(process.cwd(), 'public', 'pdfs', filename));
+  } catch {
+    return null;
+  }
 }

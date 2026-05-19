@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
-import { getAllPdfs, saveAllPdfs } from '@/data/pdfs';
-
-const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : null;
+import { getAllPdfs, getPdfFile, saveAllPdfs } from '@/data/pdfs';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ filename: string }> }) {
   try {
@@ -19,13 +11,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Invalid file' }, { status: 400 });
     }
 
-    if (!redis) {
-      return NextResponse.json({ error: 'Redis not configured' }, { status: 500 });
-    }
+    const fileBuffer = await getPdfFile(filename);
 
-    const pdfData = await redis.get<string>(`pdf:${filename}`);
-
-    if (!pdfData) {
+    if (!fileBuffer) {
       return NextResponse.json({ error: 'PDF not found' }, { status: 404 });
     }
 
@@ -42,10 +30,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    const fileBuffer = Buffer.from(pdfData, 'base64');
     const disposition = view === 'true' ? 'inline' : 'attachment';
 
-    return new NextResponse(fileBuffer, {
+    const body = Uint8Array.from(fileBuffer).buffer;
+
+    return new NextResponse(body, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `${disposition}; filename="${filename}"`,

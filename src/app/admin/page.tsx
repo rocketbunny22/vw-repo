@@ -458,7 +458,7 @@ export default function AdminPage() {
                           <thead className="bg-gray-50">
                             <tr>
                               <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">PDF</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">Reason</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">Error / Reason</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-200 bg-white">
