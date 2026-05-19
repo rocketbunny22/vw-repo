@@ -1,4 +1,11 @@
+import path from 'path';
+import { pathToFileURL } from 'url';
+
 const MAX_INDEXED_TEXT_LENGTH = 200_000;
+const PDF_WORKER_SRC = pathToFileURL(
+  path.join(process.cwd(), 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.worker.mjs')
+).toString();
+let pdfWorkerConfigured = false;
 
 export type PdfTextExtractionResult =
   | { text: string }
@@ -10,6 +17,7 @@ export async function extractPdfText(buffer: Buffer): Promise<PdfTextExtractionR
   try {
     await ensurePdfCanvasGlobals();
     const { PDFParse } = await import('pdf-parse');
+    configurePdfWorker(PDFParse);
     parser = new PDFParse({ data: buffer });
     const result = await parser.getText();
     const text = normalizePdfText(result.text).slice(0, MAX_INDEXED_TEXT_LENGTH);
@@ -26,6 +34,13 @@ export async function extractPdfText(buffer: Buffer): Promise<PdfTextExtractionR
   } finally {
     await parser?.destroy().catch(() => undefined);
   }
+}
+
+function configurePdfWorker(PDFParse: { setWorker: (workerSrc?: string) => string }): void {
+  if (pdfWorkerConfigured) return;
+
+  PDFParse.setWorker(PDF_WORKER_SRC);
+  pdfWorkerConfigured = true;
 }
 
 async function ensurePdfCanvasGlobals(): Promise<void> {
