@@ -89,6 +89,11 @@ export interface VehicleProfile {
   nickname?: string;
 }
 
+export interface UserBookmarks {
+  pdfIds: string[];
+  guideIds: string[];
+}
+
 export interface User {
   id: string;
   email: string;
@@ -98,4 +103,5 @@ export interface User {
   createdAt: string;
   lastLogin: string;
   vehicle?: VehicleProfile;
+  bookmarks?: UserBookmarks;
 }

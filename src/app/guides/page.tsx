@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { DiyGuide, VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
+import BookmarkButton from '@/components/BookmarkButton';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -22,6 +23,7 @@ export default function GuidesPage({ searchParams }: { searchParams: Promise<{ g
   const [selectedSystem, setSelectedSystem] = useState<string>('all');
   const [difficulty, setDifficulty] = useState<string>('all');
   const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
+  const [bookmarkedGuideIds, setBookmarkedGuideIds] = useState<string[]>([]);
 
   useEffect(() => {
     async function loadVehicle() {
@@ -33,6 +35,29 @@ export default function GuidesPage({ searchParams }: { searchParams: Promise<{ g
     }
     loadVehicle();
   }, []);
+
+  useEffect(() => {
+    async function loadBookmarks() {
+      try {
+        const response = await fetch('/api/user/bookmarks');
+        if (!response.ok) return;
+        const data = await response.json();
+        if (Array.isArray(data.bookmarks?.guideIds)) {
+          setBookmarkedGuideIds(data.bookmarks.guideIds);
+        }
+      } catch {
+        // Bookmarks are optional for anonymous users.
+      }
+    }
+
+    void loadBookmarks();
+  }, []);
+
+  function updateGuideBookmark(guideId: string, bookmarked: boolean) {
+    setBookmarkedGuideIds((ids) => (
+      bookmarked ? [...new Set([...ids, guideId])] : ids.filter((id) => id !== guideId)
+    ));
+  }
 
   useEffect(() => {
     async function init() {
@@ -177,21 +202,30 @@ export default function GuidesPage({ searchParams }: { searchParams: Promise<{ g
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredGuides.map((guide) => (
-                <Link
+                <div
                   key={guide.id}
-                  href={`/guides/${guide.slug}`}
-                  className="block bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all"
+                  className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all"
                 >
                   <div className="p-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      {guide.featured && (
-                        <span className="badge bg-vw-gold text-vw-blue">Featured</span>
-                      )}
-                      <span className={`badge ${getDifficultyColor(guide.difficulty)}`}>
-                        {guide.difficulty.charAt(0).toUpperCase() + guide.difficulty.slice(1)}
-                      </span>
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-2">
+                        {guide.featured && (
+                          <span className="badge bg-vw-gold text-vw-blue">Featured</span>
+                        )}
+                        <span className={`badge ${getDifficultyColor(guide.difficulty)}`}>
+                          {guide.difficulty.charAt(0).toUpperCase() + guide.difficulty.slice(1)}
+                        </span>
+                      </div>
+                      <BookmarkButton
+                        itemType="guide"
+                        itemId={guide.id}
+                        initialBookmarked={bookmarkedGuideIds.includes(guide.id)}
+                        onChange={(bookmarked) => updateGuideBookmark(guide.id, bookmarked)}
+                      />
                     </div>
-                    <h3 className="font-bold text-vw-dark mb-2 line-clamp-2">{guide.title}</h3>
+                    <Link href={`/guides/${guide.slug}`} className="block">
+                      <h3 className="font-bold text-vw-dark mb-2 line-clamp-2 hover:text-vw-blue">{guide.title}</h3>
+                    </Link>
                     <div className="flex flex-wrap gap-2 mb-3">
                       <span className="badge badge-blue">{getGenerationName(guide.generation)}</span>
                       <span className="badge badge-gold">{getSystemName(guide.system)}</span>
@@ -204,7 +238,7 @@ export default function GuidesPage({ searchParams }: { searchParams: Promise<{ g
                       <span>{formatDate(guide.createdAt)}</span>
                     </div>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}

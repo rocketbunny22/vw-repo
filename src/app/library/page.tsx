@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PdfDocument, VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
+import BookmarkButton from '@/components/BookmarkButton';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -23,6 +24,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
   const [loading, setLoading] = useState(true);
   const [viewingPdf, setViewingPdf] = useState<PdfDocument | null>(null);
   const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
+  const [bookmarkedPdfIds, setBookmarkedPdfIds] = useState<string[]>([]);
 
   useEffect(() => {
     async function loadVehicle() {
@@ -34,6 +36,29 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
     }
     loadVehicle();
   }, []);
+
+  useEffect(() => {
+    async function loadBookmarks() {
+      try {
+        const response = await fetch('/api/user/bookmarks');
+        if (!response.ok) return;
+        const data = await response.json();
+        if (Array.isArray(data.bookmarks?.pdfIds)) {
+          setBookmarkedPdfIds(data.bookmarks.pdfIds);
+        }
+      } catch {
+        // Bookmarks are optional for anonymous users.
+      }
+    }
+
+    void loadBookmarks();
+  }, []);
+
+  function updatePdfBookmark(pdfId: string, bookmarked: boolean) {
+    setBookmarkedPdfIds((ids) => (
+      bookmarked ? [...new Set([...ids, pdfId])] : ids.filter((id) => id !== pdfId)
+    ));
+  }
 
   async function fetchPdfs() {
     try {
@@ -196,6 +221,12 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
                       </div>
+                      <BookmarkButton
+                        itemType="pdf"
+                        itemId={pdf.id}
+                        initialBookmarked={bookmarkedPdfIds.includes(pdf.id)}
+                        onChange={(bookmarked) => updatePdfBookmark(pdf.id, bookmarked)}
+                      />
                     </div>
                     <h3 className="font-bold text-vw-dark mb-2 line-clamp-2">{pdf.title}</h3>
                     {pdf.description && (

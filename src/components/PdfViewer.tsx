@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { PdfDocument } from '@/types';
+import BookmarkButton from './BookmarkButton';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
@@ -20,7 +21,10 @@ export function PdfCard({ pdf }: PdfCardProps) {
     <>
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
         <div className="p-4">
-          <h3 className="font-bold text-vw-dark mb-2">{pdf.title}</h3>
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <h3 className="font-bold text-vw-dark">{pdf.title}</h3>
+            <BookmarkButton itemType="pdf" itemId={pdf.id} />
+          </div>
           {pdf.description && (
             <p className="text-sm text-gray-600 mb-3 line-clamp-2">{pdf.description}</p>
           )}
@@ -91,4 +95,3 @@ export function PdfCard({ pdf }: PdfCardProps) {
     </>
   );
 }
-

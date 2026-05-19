@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { generations } from '@/data/generations';
 import { VehicleProfile } from '@/types';
 
@@ -60,22 +59,9 @@ export default function Navbar() {
   return (
     <nav className="bg-vw-blue text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/images/vwrepo_log_nobg.png"
-                alt="VW Repo"
-                width={200}
-                height={133}
-                className="object-contain"
-                priority
-              />
-            </Link>
-          </div>
-
+        <div className="flex items-center justify-end h-16">
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-2">
+            <div className="flex items-baseline space-x-2">
               <Link href="/" className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
                 Home
               </Link>
@@ -145,6 +131,9 @@ export default function Navbar() {
                       <Link href="/upload" className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
                         Upload PDF
                       </Link>
+                      <Link href="/bookmarks" className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
+                        Saved Items
+                      </Link>
                       <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
                         Sign Out
                       </button>
@@ -198,6 +187,9 @@ export default function Navbar() {
               <>
                 <Link href="/profile" className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
                   Profile
+                </Link>
+                <Link href="/bookmarks" className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+                  Saved Items
                 </Link>
                 <button onClick={handleLogout} className="block w-full text-left px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
                   Sign Out

@@ -7,6 +7,7 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
 import CommentsSection from '@/components/CommentsSection';
+import BookmarkButton from '@/components/BookmarkButton';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -95,7 +96,10 @@ export default async function GuidePage({
             <span className="badge badge-blue">{gen?.name}</span>
             <span className="badge badge-gold">{sys?.name}</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{guide.title}</h1>
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{guide.title}</h1>
+            <BookmarkButton itemType="guide" itemId={guide.id} className="mt-1 shrink-0" />
+          </div>
           <p className="text-gray-300">
             By {guide.author} • {guide.timeEstimate || '2-4 hours'} • {guide.views?.toLocaleString() || 0} views
           </p>
