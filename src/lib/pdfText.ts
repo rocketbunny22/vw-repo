@@ -8,6 +8,7 @@ export async function extractPdfText(buffer: Buffer): Promise<PdfTextExtractionR
   let parser: { getText: () => Promise<{ text: string }>; destroy: () => Promise<void> } | null = null;
 
   try {
+    await ensurePdfCanvasGlobals();
     const { PDFParse } = await import('pdf-parse');
     parser = new PDFParse({ data: buffer });
     const result = await parser.getText();
@@ -25,6 +26,21 @@ export async function extractPdfText(buffer: Buffer): Promise<PdfTextExtractionR
   } finally {
     await parser?.destroy().catch(() => undefined);
   }
+}
+
+async function ensurePdfCanvasGlobals(): Promise<void> {
+  if (
+    typeof globalThis.DOMMatrix !== 'undefined' &&
+    typeof globalThis.ImageData !== 'undefined' &&
+    typeof globalThis.Path2D !== 'undefined'
+  ) {
+    return;
+  }
+
+  const { DOMMatrix, ImageData, Path2D } = await import('@napi-rs/canvas');
+  if (typeof globalThis.DOMMatrix === 'undefined') Reflect.set(globalThis, 'DOMMatrix', DOMMatrix);
+  if (typeof globalThis.ImageData === 'undefined') Reflect.set(globalThis, 'ImageData', ImageData);
+  if (typeof globalThis.Path2D === 'undefined') Reflect.set(globalThis, 'Path2D', Path2D);
 }
 
 function normalizePdfText(text: string): string {
