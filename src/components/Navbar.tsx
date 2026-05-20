@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { generations } from '@/data/generations';
 import { VehicleProfile } from '@/types';
 
@@ -59,7 +60,18 @@ export default function Navbar() {
   return (
     <nav className="bg-vw-blue text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-end h-16">
+        <div className="flex items-center justify-between h-16">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/images/vwrepo_log_nobg.png"
+              alt="VW Repo"
+              width={200}
+              height={133}
+              className="h-12 w-auto object-contain"
+              priority
+            />
+          </Link>
+
           <div className="hidden md:block">
             <div className="flex items-baseline space-x-2">
               <Link href="/" className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
@@ -100,6 +112,12 @@ export default function Navbar() {
                 DIY Guides
               </Link>
 
+              {user && (
+                <Link href="/my-vw" className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
+                  My VW
+                </Link>
+              )}
+
               <Link href="/feedback" className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
                 Feedback
               </Link>
@@ -125,6 +143,9 @@ export default function Navbar() {
                   </button>
                   <div className="absolute right-0 mt-0 w-40 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                     <div className="py-1">
+                      <Link href="/my-vw" className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
+                        My VW
+                      </Link>
                       <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
                         Profile
                       </Link>
@@ -185,6 +206,9 @@ export default function Navbar() {
             </Link>
             {user ? (
               <>
+                <Link href="/my-vw" className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+                  My VW
+                </Link>
                 <Link href="/profile" className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
                   Profile
                 </Link>

@@ -94,6 +94,29 @@ export interface UserBookmarks {
   guideIds: string[];
 }
 
+export interface MaintenanceChecklistItem {
+  id: string;
+  label: string;
+  detail: string;
+  system?: string;
+  href?: string;
+}
+
+export interface MaintenanceChecklist {
+  id: string;
+  title: string;
+  description: string;
+  generation?: string;
+  system?: string;
+  difficulty: 'easy' | 'moderate' | 'hard';
+  items: MaintenanceChecklistItem[];
+}
+
+export interface UserChecklists {
+  completedItemIdsByChecklist: Record<string, string[]>;
+  updatedAt?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -104,4 +127,5 @@ export interface User {
   lastLogin: string;
   vehicle?: VehicleProfile;
   bookmarks?: UserBookmarks;
+  checklists?: UserChecklists;
 }

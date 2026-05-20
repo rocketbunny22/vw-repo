@@ -1,0 +1,145 @@
+import { MaintenanceChecklist } from '@/types';
+
+export const maintenanceChecklists: MaintenanceChecklist[] = [
+  {
+    id: 'baseline-inspection',
+    title: 'New-to-you VW baseline',
+    description: 'A first pass for learning the car, catching neglected basics, and deciding what needs deeper research.',
+    difficulty: 'easy',
+    items: [
+      {
+        id: 'identify-generation',
+        label: 'Confirm generation, model, year, and engine code',
+        detail: 'Make the garage profile specific enough that searches and recommendations stay useful.',
+        href: '/profile',
+      },
+      {
+        id: 'fluid-inventory',
+        label: 'Check oil, coolant, brake fluid, and transmission fluid',
+        detail: 'Record condition, level, leaks, and unknown service history before chasing upgrades.',
+        system: 'engine',
+        href: '/search?q=fluid%20capacity',
+      },
+      {
+        id: 'scan-common-issues',
+        label: 'Read common issues for your generation',
+        detail: 'Use the generation page to spot the failure patterns that match your car.',
+        href: '/search?q=common%20issues',
+      },
+      {
+        id: 'save-core-docs',
+        label: 'Bookmark at least one manual or guide',
+        detail: 'Build a quick reference shelf for the car before the next repair session.',
+        href: '/library',
+      },
+    ],
+  },
+  {
+    id: 'weekend-maintenance',
+    title: 'First weekend maintenance path',
+    description: 'A practical sequence for turning research into a clean, drivable baseline.',
+    difficulty: 'moderate',
+    items: [
+      {
+        id: 'air-and-fuel',
+        label: 'Inspect air intake and fuel delivery basics',
+        detail: 'Look for cracked hoses, dirty filters, brittle clamps, and obvious vacuum leaks.',
+        system: 'engine',
+        href: '/systems/engine',
+      },
+      {
+        id: 'brake-check',
+        label: 'Check pads, rotors, soft lines, and brake feel',
+        detail: 'Brakes are a good first system because inspection is visual and safety-critical.',
+        system: 'brakes',
+        href: '/systems/brakes',
+      },
+      {
+        id: 'suspension-shake',
+        label: 'Inspect bushings, ball joints, tie rods, and strut mounts',
+        detail: 'Most older VWs get more fun after the loose front-end parts are found.',
+        system: 'suspension',
+        href: '/systems/suspension',
+      },
+      {
+        id: 'document-results',
+        label: 'Save the guides or PDFs that match what you found',
+        detail: 'Use saved items as a repair queue instead of relying on browser tabs.',
+        href: '/bookmarks',
+      },
+    ],
+  },
+  {
+    id: 'electrical-confidence',
+    title: 'Electrical confidence builder',
+    description: 'A focused path for reducing mystery electrical issues before they become parts-swapping.',
+    system: 'electrical',
+    difficulty: 'moderate',
+    items: [
+      {
+        id: 'battery-baseline',
+        label: 'Test battery voltage and charging voltage',
+        detail: 'Start with voltage at rest and while running so later symptoms have context.',
+        system: 'electrical',
+        href: '/systems/electrical',
+      },
+      {
+        id: 'grounds',
+        label: 'Clean and inspect the main grounds',
+        detail: 'Ground faults can look like bad sensors, bad relays, and random module problems.',
+        system: 'electrical',
+        href: '/search?q=ground%20strap',
+      },
+      {
+        id: 'fuses-relays',
+        label: 'Map the fuse and relay panel',
+        detail: 'Bookmark the correct wiring reference or manual for the car.',
+        system: 'electrical',
+        href: '/library?system=electrical',
+      },
+      {
+        id: 'symptom-notes',
+        label: 'Write down when the symptom happens',
+        detail: 'Cold start, rain, bumps, heat, and accessory load all point to different failures.',
+        system: 'electrical',
+        href: '/guides?system=electrical',
+      },
+    ],
+  },
+  {
+    id: 'body-rust-pass',
+    title: 'Body and rust reality check',
+    description: 'A quick survey for deciding whether the car needs preservation, repair, or deeper teardown.',
+    system: 'body',
+    difficulty: 'easy',
+    items: [
+      {
+        id: 'usual-rust-areas',
+        label: 'Inspect the known rust areas',
+        detail: 'Check floors, arches, tray areas, rocker panels, and mounts for your generation.',
+        system: 'body',
+        href: '/systems/body',
+      },
+      {
+        id: 'interior-water',
+        label: 'Look for wet carpet, window leaks, and stale smells',
+        detail: 'Water intrusion often explains electrical faults and hidden floor damage.',
+        system: 'body',
+        href: '/search?q=water%20leak',
+      },
+      {
+        id: 'photo-baseline',
+        label: 'Take baseline photos before cleaning or repair',
+        detail: 'Photos help compare whether rust, leaks, or cracks are spreading.',
+        system: 'body',
+      },
+      {
+        id: 'parts-research',
+        label: 'Save body guides and PDFs before buying panels',
+        detail: 'Fitment details matter more than generic part names on older VW bodywork.',
+        system: 'body',
+        href: '/guides?system=body',
+      },
+    ],
+  },
+];
