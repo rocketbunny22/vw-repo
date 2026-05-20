@@ -67,7 +67,7 @@ export default function Navbar() {
               alt="VW Repo"
               width={200}
               height={133}
-              className="h-12 w-auto object-contain"
+              className="h-[6.5rem] w-auto object-contain"
               priority
             />
           </Link>
