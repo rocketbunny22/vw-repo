@@ -38,7 +38,7 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (data.success) {
-        window.location.assign('/');
+        window.location.assign('/my-vw?welcome=1');
       } else {
         setError(data.error || 'Signup failed');
       }

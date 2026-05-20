@@ -50,6 +50,10 @@ interface User {
   role: 'user' | 'admin';
   createdAt: string;
   lastLogin: string;
+  onboarding?: {
+    hasSeenWelcome: boolean;
+    welcomeSeenAt?: string;
+  };
 }
 
 interface RateLimitEntry {
@@ -194,6 +198,9 @@ export async function POST(request: NextRequest) {
         role,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
+        onboarding: {
+          hasSeenWelcome: false,
+        },
       };
 
       users.push(newUser);

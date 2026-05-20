@@ -26,9 +26,43 @@ interface BookmarkPayload {
   guides?: DiyGuide[];
 }
 
+interface OnboardingPayload {
+  onboarding?: {
+    hasSeenWelcome?: boolean;
+  };
+}
+
 const emptyProgress: UserChecklists = {
   completedItemIdsByChecklist: {},
 };
+
+const welcomeActions = [
+  {
+    title: 'Add your VW',
+    description: 'Save your generation, model, year, and engine details for better recommendations.',
+    href: '/profile',
+  },
+  {
+    title: 'Search everything',
+    description: 'Find manuals, searchable PDF text, DIY guides, systems, and models from one place.',
+    href: '/search',
+  },
+  {
+    title: 'Save references',
+    description: 'Bookmark PDFs and guides so your repair queue stays easy to find.',
+    href: '/bookmarks',
+  },
+  {
+    title: 'Start a checklist',
+    description: 'Track baseline inspections and first-weekend maintenance tasks from this dashboard.',
+    href: '#maintenance-checklists',
+  },
+  {
+    title: 'Contribute',
+    description: 'Upload a PDF or submit a DIY guide when you have something useful to share.',
+    href: '/submit-guide',
+  },
+];
 
 function getCompletedCount(checklist: MaintenanceChecklist, progress: UserChecklists) {
   const completed = progress.completedItemIdsByChecklist[checklist.id] || [];
@@ -58,6 +92,8 @@ export default function MyVwPage() {
   const [pdfs, setPdfs] = useState<PdfDocument[]>([]);
   const [checklists, setChecklists] = useState<MaintenanceChecklist[]>([]);
   const [progress, setProgress] = useState<UserChecklists>(emptyProgress);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [dismissingWelcome, setDismissingWelcome] = useState(false);
   const [loading, setLoading] = useState(true);
   const [updatingItem, setUpdatingItem] = useState<string | null>(null);
 
@@ -74,11 +110,12 @@ export default function MyVwPage() {
           return;
         }
 
-        const [vehicleResponse, bookmarkResponse, checklistResponse, pdfResponse] = await Promise.all([
+        const [vehicleResponse, bookmarkResponse, checklistResponse, pdfResponse, onboardingResponse] = await Promise.all([
           fetch('/api/user/vehicle'),
           fetch('/api/user/bookmarks'),
           fetch('/api/user/checklists'),
           fetch('/api/pdfs'),
+          fetch('/api/user/onboarding'),
         ]);
 
         if (!isActive) return;
@@ -87,6 +124,10 @@ export default function MyVwPage() {
         const bookmarkData: BookmarkPayload = bookmarkResponse.ok ? await bookmarkResponse.json() : {};
         const checklistData = checklistResponse.ok ? await checklistResponse.json() : {};
         const pdfData = pdfResponse.ok ? await pdfResponse.json() : {};
+        const onboardingData: OnboardingPayload = onboardingResponse.ok ? await onboardingResponse.json() : {};
+        const welcomeRequested = typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search).get('welcome') === '1'
+          : false;
 
         setUser(authData.user);
         setVehicle(vehicleData.vehicle || null);
@@ -95,6 +136,7 @@ export default function MyVwPage() {
         setChecklists(checklistData.checklists || []);
         setProgress(checklistData.progress || emptyProgress);
         setPdfs(pdfData.pdfs || []);
+        setShowWelcome(welcomeRequested || onboardingData.onboarding?.hasSeenWelcome === false);
       } catch {
         if (isActive) {
           setSavedPdfs([]);
@@ -184,6 +226,23 @@ export default function MyVwPage() {
     }
   }
 
+  async function dismissWelcome() {
+    setDismissingWelcome(true);
+    setShowWelcome(false);
+
+    try {
+      await fetch('/api/user/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hasSeenWelcome: true }),
+      });
+    } catch {
+      // The panel is non-critical; keep it dismissed for this page view.
+    } finally {
+      setDismissingWelcome(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col">
@@ -238,6 +297,37 @@ export default function MyVwPage() {
 
       <section className="py-10 bg-gray-50 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {showWelcome && (
+            <div className="mb-8 overflow-hidden rounded-lg border border-vw-gold bg-white shadow-md">
+              <div className="bg-vw-blue px-6 py-5 text-white">
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-vw-gold">Welcome to VW Repo</p>
+                    <h2 className="mt-1 text-2xl font-bold">Start with the tools built around your car.</h2>
+                    <p className="mt-2 max-w-3xl text-sm text-gray-200">
+                      Use this dashboard as your home base for garage details, saved references, recommended systems, and maintenance progress.
+                    </p>
+                  </div>
+                  <button
+                    onClick={dismissWelcome}
+                    disabled={dismissingWelcome}
+                    className="self-start rounded-md bg-white px-4 py-2 text-sm font-medium text-vw-blue hover:bg-gray-100 disabled:opacity-60"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 divide-y divide-gray-200 md:grid-cols-5 md:divide-x md:divide-y-0">
+                {welcomeActions.map((action) => (
+                  <Link key={action.title} href={action.href} className="block p-5 hover:bg-gray-50">
+                    <h3 className="font-bold text-vw-dark">{action.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-gray-600">{action.description}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
@@ -293,7 +383,7 @@ export default function MyVwPage() {
                 )}
               </div>
 
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+              <div id="maintenance-checklists" className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                 <div className="flex items-center justify-between gap-4 mb-5">
                   <div>
                     <h2 className="text-2xl font-bold text-vw-blue">Maintenance Checklists</h2>

@@ -117,6 +117,11 @@ export interface UserChecklists {
   updatedAt?: string;
 }
 
+export interface UserOnboarding {
+  hasSeenWelcome: boolean;
+  welcomeSeenAt?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -128,4 +133,5 @@ export interface User {
   vehicle?: VehicleProfile;
   bookmarks?: UserBookmarks;
   checklists?: UserChecklists;
+  onboarding?: UserOnboarding;
 }
