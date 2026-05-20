@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function SignupPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -40,7 +38,7 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (data.success) {
-        router.push('/');
+        window.location.assign('/');
       } else {
         setError(data.error || 'Signup failed');
       }
