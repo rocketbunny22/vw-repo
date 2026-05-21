@@ -54,6 +54,10 @@ interface User {
     hasSeenWelcome: boolean;
     welcomeSeenAt?: string;
   };
+  profileLinks?: {
+    instagram?: string;
+    vwVortex?: string;
+  };
 }
 
 interface RateLimitEntry {
@@ -160,6 +164,33 @@ function verifySessionToken(token: string): { valid: boolean; user?: { id: strin
   }
 }
 
+function sanitizeOptionalUrl(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  const candidate = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined;
+    return url.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function userResponse(user: User) {
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    role: user.role,
+    profileLinks: user.profileLinks || {},
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -210,7 +241,7 @@ export async function POST(request: NextRequest) {
       const sessionToken = createSessionToken(newUser);
       const response = NextResponse.json({ 
         success: true, 
-        user: { id: newUser.id, email: newUser.email, username: newUser.username, role: newUser.role }
+        user: userResponse(newUser)
       });
 
       response.cookies.set('vw_auth', sessionToken, {
@@ -248,7 +279,7 @@ export async function POST(request: NextRequest) {
       const sessionToken = createSessionToken(user);
       const response = NextResponse.json({ 
         success: true, 
-        user: { id: user.id, email: user.email, username: user.username, role: user.role }
+        user: userResponse(user)
       });
 
       response.cookies.set('vw_auth', sessionToken, {
@@ -328,17 +359,20 @@ export async function POST(request: NextRequest) {
         users[userIndex].email = newEmail;
       }
 
+      const instagram = sanitizeOptionalUrl(body.instagram);
+      const vwVortex = sanitizeOptionalUrl(body.vwVortex);
+
+      users[userIndex].profileLinks = {
+        ...(instagram ? { instagram } : {}),
+        ...(vwVortex ? { vwVortex } : {}),
+      };
+
       await saveUsers(users);
 
       const newSessionToken = createSessionToken(users[userIndex]);
       const response = NextResponse.json({ 
         success: true, 
-        user: { 
-          id: users[userIndex].id, 
-          email: users[userIndex].email, 
-          username: users[userIndex].username, 
-          role: users[userIndex].role 
-        }
+        user: userResponse(users[userIndex])
       });
 
       response.cookies.set('vw_auth', newSessionToken, {
@@ -467,7 +501,14 @@ export async function GET(request: NextRequest) {
     if (!sessionVerify.valid || !sessionVerify.user) {
       return NextResponse.json({ authenticated: false });
     }
-    return NextResponse.json({ authenticated: true, user: sessionVerify.user });
+
+    const users = await getUsers();
+    const user = users.find(u => u.id === sessionVerify.user!.id);
+    if (!user) {
+      return NextResponse.json({ authenticated: false });
+    }
+
+    return NextResponse.json({ authenticated: true, user: userResponse(user) });
   } catch {
     return NextResponse.json({ authenticated: false });
   }

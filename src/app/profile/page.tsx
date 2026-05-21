@@ -10,6 +10,10 @@ interface User {
   email: string;
   username: string;
   role: string;
+  profileLinks?: {
+    instagram?: string;
+    vwVortex?: string;
+  };
 }
 
 export default function ProfilePage() {
@@ -23,6 +27,8 @@ export default function ProfilePage() {
   const [editMode, setEditMode] = useState(false);
   const [editUsername, setEditUsername] = useState('');
   const [editEmail, setEditEmail] = useState('');
+  const [editInstagram, setEditInstagram] = useState('');
+  const [editVwVortex, setEditVwVortex] = useState('');
   const [saving, setSaving] = useState(false);
   
   // Password change states
@@ -67,6 +73,8 @@ export default function ProfilePage() {
         setUser(data.user);
         setEditUsername(data.user.username);
         setEditEmail(data.user.email);
+        setEditInstagram(data.user.profileLinks?.instagram || '');
+        setEditVwVortex(data.user.profileLinks?.vwVortex || '');
       } catch {
         router.push('/login');
       } finally {
@@ -203,7 +211,9 @@ export default function ProfilePage() {
         body: JSON.stringify({ 
           action: 'updateProfile', 
           newUsername: editUsername, 
-          newEmail: editEmail 
+          newEmail: editEmail,
+          instagram: editInstagram,
+          vwVortex: editVwVortex,
         }),
       });
       
@@ -211,6 +221,8 @@ export default function ProfilePage() {
       
       if (data.success) {
         setUser(data.user);
+        setEditInstagram(data.user.profileLinks?.instagram || '');
+        setEditVwVortex(data.user.profileLinks?.vwVortex || '');
         setEditMode(false);
         setMessage({ type: 'success', text: 'Profile updated!' });
       } else {
@@ -370,6 +382,26 @@ export default function ProfilePage() {
                           required
                         />
                       </div>
+                      <div>
+                        <label className="block text-sm text-gray-500">Instagram</label>
+                        <input
+                          type="text"
+                          value={editInstagram}
+                          onChange={(e) => setEditInstagram(e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          placeholder="instagram.com/yourname"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-500">VWVortex Profile</label>
+                        <input
+                          type="text"
+                          value={editVwVortex}
+                          onChange={(e) => setEditVwVortex(e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          placeholder="vwvortex.com/members/yourname"
+                        />
+                      </div>
                       <div className="flex gap-2">
                         <button
                           type="submit"
@@ -384,6 +416,8 @@ export default function ProfilePage() {
                             setEditMode(false);
                             setEditUsername(user.username);
                             setEditEmail(user.email);
+                            setEditInstagram(user.profileLinks?.instagram || '');
+                            setEditVwVortex(user.profileLinks?.vwVortex || '');
                           }}
                           className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
                         >
@@ -405,6 +439,35 @@ export default function ProfilePage() {
                     <div>
                       <label className="text-sm text-gray-500">Role</label>
                       <p className="text-lg font-medium capitalize">{user.role}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-500">Social Links</label>
+                      {user.profileLinks?.instagram || user.profileLinks?.vwVortex ? (
+                        <div className="mt-1 flex flex-wrap gap-3">
+                          {user.profileLinks?.instagram && (
+                            <a
+                              href={user.profileLinks.instagram}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-vw-blue hover:underline font-medium"
+                            >
+                              Instagram
+                            </a>
+                          )}
+                          {user.profileLinks?.vwVortex && (
+                            <a
+                              href={user.profileLinks.vwVortex}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-vw-blue hover:underline font-medium"
+                            >
+                              VWVortex
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-lg text-gray-500">No social links added</p>
+                      )}
                     </div>
                   </div>
                 )}

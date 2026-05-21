@@ -122,6 +122,11 @@ export interface UserOnboarding {
   welcomeSeenAt?: string;
 }
 
+export interface UserProfileLinks {
+  instagram?: string;
+  vwVortex?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -134,4 +139,5 @@ export interface User {
   bookmarks?: UserBookmarks;
   checklists?: UserChecklists;
   onboarding?: UserOnboarding;
+  profileLinks?: UserProfileLinks;
 }
