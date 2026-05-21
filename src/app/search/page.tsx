@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { generations } from '@/data/generations';
 import { VehicleProfile } from '@/types';
@@ -37,6 +37,26 @@ export default function SearchPage() {
   const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
   const [myCarOnly, setMyCarOnly] = useState(false);
 
+  const runSearch = useCallback(async (searchQuery: string) => {
+    const trimmedQuery = searchQuery.trim();
+    if (!trimmedQuery) return;
+
+    setQuery(trimmedQuery);
+    setLoading(true);
+    setSearched(true);
+
+    try {
+      const response = await fetch(`/api/search?q=${encodeURIComponent(trimmedQuery)}`);
+      const data = await response.json();
+      setResults(data.results || []);
+    } catch (error) {
+      console.error('Search error:', error);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     async function load() {
       try {
@@ -52,23 +72,19 @@ export default function SearchPage() {
     load();
   }, []);
 
+  useEffect(() => {
+    const initialQuery = new URLSearchParams(window.location.search).get('q');
+    if (initialQuery) {
+      const timer = window.setTimeout(() => {
+        void runSearch(initialQuery);
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+  }, [runSearch]);
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
-
-    setLoading(true);
-    setSearched(true);
-
-    try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
-      const data = await response.json();
-      setResults(data.results || []);
-    } catch (error) {
-      console.error('Search error:', error);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
+    void runSearch(query);
   };
 
   const displayResults = myCarOnly && vehicle
