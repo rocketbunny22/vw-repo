@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { generations } from '@/data/generations';
+import { PdfDocument } from '@/types';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -13,6 +14,9 @@ const systemsList = [
   { id: 'body', name: 'Body & Interior' },
   { id: 'cooling', name: 'Cooling System' },
 ];
+
+const MAX_PDF_SIZE_MB = 10;
+const MAX_PDF_SIZE_BYTES = MAX_PDF_SIZE_MB * 1024 * 1024;
 
 export default function UploadPage() {
   const router = useRouter();
@@ -25,6 +29,7 @@ export default function UploadPage() {
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [existingPdfs, setExistingPdfs] = useState<PdfDocument[]>([]);
 
   const availableModels = generationsSelected.length === 1
     ? generations.find((gen) => gen.id === generationsSelected[0])?.models || []
@@ -39,6 +44,14 @@ export default function UploadPage() {
         router.push('/login');
         return;
       }
+
+      try {
+        const pdfResponse = await fetch('/api/pdfs');
+        const pdfData = await pdfResponse.json();
+        setExistingPdfs(pdfData.pdfs || []);
+      } catch {
+        setExistingPdfs([]);
+      }
     } catch {
       router.push('/login');
     } finally {
@@ -47,8 +60,21 @@ export default function UploadPage() {
   }
 
   useEffect(() => {
-    checkAuth();
+    const timer = window.setTimeout(() => {
+      void checkAuth();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
+
+  const duplicateWarnings = existingPdfs.filter((pdf) => {
+    const sameFile = file && pdf.originalName.toLowerCase() === file.name.toLowerCase();
+    const sameTitle = title.trim() && pdf.title.toLowerCase() === title.trim().toLowerCase();
+    const sameSystem = !system || pdf.system === system;
+    const sameGeneration = generationsSelected.length === 0 || generationsSelected.includes(pdf.generation);
+    return (sameFile || sameTitle) && sameSystem && sameGeneration;
+  });
+
+  const fileTooLarge = file ? file.size > MAX_PDF_SIZE_BYTES : false;
 
   if (loading) {
     return (
@@ -75,6 +101,11 @@ export default function UploadPage() {
       return;
     }
 
+    if (fileTooLarge) {
+      setMessage({ type: 'error', text: `PDF is too large. Maximum file size is ${MAX_PDF_SIZE_MB} MB.` });
+      return;
+    }
+
     setUploading(true);
     setMessage(null);
 
@@ -98,7 +129,7 @@ export default function UploadPage() {
         setMessage({ type: 'success', text: 'PDF uploaded successfully. It will appear in the library after admin approval.' });
         setFile(null);
         setGenerationsSelected([]);
-                      setModels([]);
+        setModels([]);
         setSystem('');
         setTitle('');
         setDescription('');
@@ -126,6 +157,28 @@ export default function UploadPage() {
       <section className="py-12 bg-gray-50 flex-1">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
+            <div className="mb-6 rounded-lg border border-vw-gold/50 bg-vw-gold/10 p-4">
+              <h2 className="font-bold text-vw-blue">Before uploading</h2>
+              <div className="mt-3 grid gap-3 text-sm text-gray-700 md:grid-cols-2">
+                <div>
+                  <div className="font-medium text-gray-900">Accepted file</div>
+                  <p>PDF only, up to {MAX_PDF_SIZE_MB} MB.</p>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">Required metadata</div>
+                  <p>Generation, system, and clear title are required so people can find it.</p>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">Duplicate check</div>
+                  <p>The form warns if a matching title or original filename already exists.</p>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">After submission</div>
+                  <p>Uploads enter the admin moderation queue before appearing publicly.</p>
+                </div>
+              </div>
+            </div>
+
             {message && (
               <div className={`mb-6 p-4 rounded-md ${
                 message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -146,9 +199,16 @@ export default function UploadPage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
                 />
                 {file && (
-                  <p className="mt-1 text-sm text-gray-500">
-                    Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                  </p>
+                  <div className="mt-1 text-sm">
+                    <p className={fileTooLarge ? 'text-red-700' : 'text-gray-500'}>
+                      Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                    {fileTooLarge && (
+                      <p className="mt-1 text-red-700">
+                        This file is over the {MAX_PDF_SIZE_MB} MB limit.
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -274,11 +334,30 @@ export default function UploadPage() {
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
                 />
+                <p className="mt-1 text-sm text-gray-500">
+                  Include what the document covers, source if known, and any model-year limits.
+                </p>
               </div>
+
+              {duplicateWarnings.length > 0 && (
+                <div className="rounded-md border border-yellow-300 bg-yellow-50 p-4">
+                  <h3 className="font-semibold text-yellow-900">Possible duplicate</h3>
+                  <p className="mt-1 text-sm text-yellow-800">
+                    A similar PDF already exists. Review it before uploading another copy.
+                  </p>
+                  <ul className="mt-3 space-y-1 text-sm text-yellow-900">
+                    {duplicateWarnings.slice(0, 3).map((pdf) => (
+                      <li key={pdf.id}>
+                        {pdf.title} ({pdf.generation} / {pdf.system})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <button
                 type="submit"
-                disabled={uploading}
+                disabled={uploading || fileTooLarge}
                 className="w-full btn-primary py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? 'Uploading...' : 'Upload PDF'}
