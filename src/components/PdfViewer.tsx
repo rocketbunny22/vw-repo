@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { PdfDocument } from '@/types';
 import BookmarkButton from './BookmarkButton';
 
@@ -42,6 +43,14 @@ export function PdfCard({ pdf }: PdfCardProps) {
               {pdf.downloads || 0}
             </span>
           </div>
+          {pdf.uploadedBy && (
+            <div className="mt-2 text-sm text-gray-500">
+              Uploaded by{' '}
+              <Link href={`/users/${encodeURIComponent(pdf.uploadedBy)}`} className="text-vw-blue hover:underline">
+                {pdf.uploadedBy}
+              </Link>
+            </div>
+          )}
           <div className="flex gap-2 mt-4">
             <button
               onClick={() => setViewingPdf(pdf)}

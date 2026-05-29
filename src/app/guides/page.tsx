@@ -231,7 +231,15 @@ export default function GuidesPage({ searchParams }: { searchParams: Promise<{ g
                       <span className="badge badge-gold">{getSystemName(guide.system)}</span>
                     </div>
                     <p className="text-sm text-gray-500 mb-3">
-                      By {guide.author} • {guide.timeEstimate}
+                      By{' '}
+                      {guide.authorId ? (
+                        <Link href={`/users/${encodeURIComponent(guide.author)}`} className="text-vw-blue hover:underline">
+                          {guide.author}
+                        </Link>
+                      ) : (
+                        guide.author
+                      )}{' '}
+                      • {guide.timeEstimate}
                     </p>
                     <div className="flex items-center justify-between text-sm text-gray-500">
                       <span>{guide.views.toLocaleString()} views</span>

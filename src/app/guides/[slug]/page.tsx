@@ -101,7 +101,15 @@ export default async function GuidePage({
             <BookmarkButton itemType="guide" itemId={guide.id} className="mt-1 shrink-0" />
           </div>
           <p className="text-gray-300">
-            By {guide.author} • {guide.timeEstimate || '2-4 hours'} • {guide.views?.toLocaleString() || 0} views
+            By{' '}
+            {guide.authorId ? (
+              <Link href={`/users/${encodeURIComponent(guide.author)}`} className="hover:text-vw-gold hover:underline">
+                {guide.author}
+              </Link>
+            ) : (
+              guide.author
+            )}{' '}
+            • {guide.timeEstimate || '2-4 hours'} • {guide.views?.toLocaleString() || 0} views
           </p>
         </div>
       </section>
@@ -136,7 +144,15 @@ export default async function GuidePage({
                   
                   <div>
                     <span className="text-sm text-gray-500">Author</span>
-                    <p className="font-medium">{guide.author}</p>
+                    <p className="font-medium">
+                      {guide.authorId ? (
+                        <Link href={`/users/${encodeURIComponent(guide.author)}`} className="text-vw-blue hover:underline">
+                          {guide.author}
+                        </Link>
+                      ) : (
+                        guide.author
+                      )}
+                    </p>
                   </div>
                   
                   {guide.tools && guide.tools.length > 0 && (

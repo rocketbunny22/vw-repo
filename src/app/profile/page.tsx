@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
 
@@ -350,12 +351,20 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-vw-blue">Account Information</h2>
                   {!editMode && (
-                    <button
-                      onClick={() => setEditMode(true)}
-                      className="text-vw-blue hover:underline text-sm"
-                    >
-                      Edit
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/users/${encodeURIComponent(user.username)}`}
+                        className="text-vw-blue hover:underline text-sm"
+                      >
+                        View Public Profile
+                      </Link>
+                      <button
+                        onClick={() => setEditMode(true)}
+                        className="text-vw-blue hover:underline text-sm"
+                      >
+                        Edit
+                      </button>
+                    </div>
                   )}
                 </div>
                 

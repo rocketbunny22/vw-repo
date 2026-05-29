@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface Comment {
   id: string;
@@ -180,7 +181,12 @@ export default function CommentsSection({ guideId }: Props) {
               <div className="flex-1 min-w-0">
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center justify-between gap-3 mb-1">
-                    <span className="font-semibold text-vw-dark text-sm">{comment.authorName}</span>
+                    <Link
+                      href={`/users/${encodeURIComponent(comment.authorName)}`}
+                      className="font-semibold text-vw-dark text-sm hover:text-vw-blue hover:underline"
+                    >
+                      {comment.authorName}
+                    </Link>
                     <div className="flex items-center gap-3">
                       {user && user.id !== comment.authorId && (
                         <button
