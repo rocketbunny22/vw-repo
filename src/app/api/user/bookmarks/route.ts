@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { existsSync } from 'fs';
-import { readFile } from 'fs/promises';
-import path from 'path';
 import { Redis } from '@upstash/redis';
 import { diyGuides } from '@/data/diyGuides';
 import { getAllPdfs } from '@/data/pdfs';
+import { getUserGuides } from '@/data/guides';
 import { DiyGuide, User, UserBookmarks } from '@/types';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
-const guidesFile = path.resolve(process.cwd(), 'user-guides.json');
 
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
   ? new Redis({
@@ -50,18 +47,7 @@ function normalizeBookmarks(bookmarks?: UserBookmarks): UserBookmarks {
 }
 
 async function getApprovedGuides(): Promise<DiyGuide[]> {
-  let userGuides: DiyGuide[] = [];
-
-  try {
-    if (existsSync(guidesFile)) {
-      const data = await readFile(guidesFile, 'utf-8');
-      const parsed = JSON.parse(data) as DiyGuide[];
-      userGuides = Array.isArray(parsed) ? parsed.filter((guide) => guide.approved) : [];
-    }
-  } catch {
-    userGuides = [];
-  }
-
+  const userGuides = (await getUserGuides()).filter((guide) => guide.approved);
   return [...diyGuides, ...userGuides];
 }
 

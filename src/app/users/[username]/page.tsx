@@ -1,12 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Redis } from '@upstash/redis';
-import { existsSync } from 'fs';
-import { readFile } from 'fs/promises';
-import path from 'path';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
-import { DiyGuide, User } from '@/types';
+import { getUserGuides } from '@/data/guides';
+import { User } from '@/types';
 import { PdfCard } from '@/components/PdfViewer';
 
 export const dynamic = 'force-dynamic';
@@ -18,23 +16,10 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
     })
   : null;
 
-const guidesFile = path.resolve(process.cwd(), 'user-guides.json');
-
 async function getUsers(): Promise<User[]> {
   if (!redis) return [];
   const users = await redis.get<User[]>('users');
   return Array.isArray(users) ? users : [];
-}
-
-async function getUserGuides(): Promise<DiyGuide[]> {
-  try {
-    if (!existsSync(guidesFile)) return [];
-    const data = await readFile(guidesFile, 'utf-8');
-    const guides = JSON.parse(data) as DiyGuide[];
-    return Array.isArray(guides) ? guides : [];
-  } catch {
-    return [];
-  }
 }
 
 function formatDate(dateStr: string) {

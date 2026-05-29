@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { existsSync } from 'fs';
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
 import { Redis } from '@upstash/redis';
 import { Resend } from 'resend';
 import { getAllPdfs, saveAllPdfs, deletePdfFile } from '@/data/pdfs';
+import { getUserGuides, saveUserGuides } from '@/data/guides';
 import { backfillPdfSearchText } from '@/lib/pdfBackfill';
-import { Comment, DiyGuide, PdfDocument, User } from '@/types';
+import { Comment, PdfDocument, User } from '@/types';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
-const guidesFile = path.resolve(process.cwd(), 'user-guides.json');
 
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
   ? new Redis({
@@ -42,21 +39,6 @@ interface Feedback {
   moderationStatus?: 'pending' | 'reviewed';
   reviewedAt?: string;
   reviewedBy?: string;
-}
-
-async function getUserGuides(): Promise<DiyGuide[]> {
-  try {
-    if (!existsSync(guidesFile)) return [];
-    const data = await readFile(guidesFile, 'utf-8');
-    const guides = JSON.parse(data) as DiyGuide[];
-    return Array.isArray(guides) ? guides : [];
-  } catch {
-    return [];
-  }
-}
-
-async function saveGuides(guides: DiyGuide[]): Promise<void> {
-  await writeFile(guidesFile, JSON.stringify(guides, null, 2));
 }
 
 async function getComments(): Promise<Comment[]> {
@@ -303,7 +285,7 @@ export async function POST(request: NextRequest) {
 
       guides[guideIndex].approved = true;
       guides[guideIndex].updatedAt = new Date().toISOString();
-      await saveGuides(guides);
+      await saveUserGuides(guides);
 
       return NextResponse.json({ success: true, guide: guides[guideIndex] });
     }
@@ -317,7 +299,7 @@ export async function POST(request: NextRequest) {
       }
 
       guides.splice(guideIndex, 1);
-      await saveGuides(guides);
+      await saveUserGuides(guides);
 
       return NextResponse.json({ success: true });
     }

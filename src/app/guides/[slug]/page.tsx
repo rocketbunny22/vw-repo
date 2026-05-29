@@ -3,9 +3,7 @@ import { notFound } from 'next/navigation';
 import { diyGuides } from '@/data/diyGuides';
 import { generations } from '@/data/generations';
 import { DiyGuide } from '@/types';
-import { readFile } from 'fs/promises';
-import path from 'path';
-import { existsSync } from 'fs';
+import { getUserGuides } from '@/data/guides';
 import CommentsSection from '@/components/CommentsSection';
 import BookmarkButton from '@/components/BookmarkButton';
 
@@ -22,21 +20,6 @@ const systemsList = [
 export async function generateStaticParams() {
   const params = diyGuides.map((guide) => ({ slug: guide.slug }));
   
-  // Also include approved user guides
-  try {
-    const guidesFile = path.resolve(process.cwd(), 'user-guides.json');
-      if (existsSync(guidesFile)) {
-        const data = await readFile(guidesFile, 'utf-8');
-        const userGuides: DiyGuide[] = JSON.parse(data);
-        userGuides.filter((guide) => guide.approved).forEach((guide) => {
-          params.push({ slug: guide.slug });
-        });
-      }
-
-  } catch {
-    // No user guides
-  }
-  
   return params;
 }
 
@@ -52,14 +35,8 @@ export default async function GuidePage({
   
   // Then check user submitted guides
   if (!guide) {
-    try {
-      const guidesFile = path.resolve(process.cwd(), 'user-guides.json');
-      const data = await readFile(guidesFile, 'utf-8');
-      const userGuides: DiyGuide[] = JSON.parse(data);
-      guide = userGuides.find((userGuide) => userGuide.slug === slug && userGuide.approved);
-    } catch {
-      // No user guides yet
-    }
+    const userGuides: DiyGuide[] = await getUserGuides();
+    guide = userGuides.find((userGuide) => userGuide.slug === slug && userGuide.approved);
   }
   
   if (!guide) {

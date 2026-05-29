@@ -1,61 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
-import { existsSync } from 'fs';
 import crypto from 'crypto';
+import { getUserGuides, saveUserGuides } from '@/data/guides';
+import { DiyGuide } from '@/types';
 
-const guidesFile = path.resolve(process.cwd(), 'user-guides.json');
-const staticGuidesFile = path.resolve(process.cwd(), 'src/data/diyGuides.ts');
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
-
-interface DiyGuide {
-  id: string;
-  title: string;
-  slug: string;
-  generation: string;
-  system: string;
-  author: string;
-  authorId?: string;
-  content: string;
-  difficulty: string;
-  timeEstimate: string;
-  tools: string[];
-  parts: string[];
-  createdAt: string;
-  updatedAt: string;
-  views: number;
-  featured: boolean;
-  approved?: boolean;
-  isStatic?: boolean;
-}
-
-async function getUserGuides(): Promise<DiyGuide[]> {
-  try {
-    if (!existsSync(guidesFile)) return [];
-    const data = await readFile(guidesFile, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
-
-async function getStaticGuides(): Promise<DiyGuide[]> {
-  try {
-    const data = await readFile(staticGuidesFile, 'utf-8');
-    const match = data.match(/export const diyGuides: DiyGuide\[\] = ([\s\S]*?\]);/);
-    if (match) {
-      const jsonStr = match[1];
-      return JSON.parse(jsonStr);
-    }
-    return [];
-  } catch {
-    return [];
-  }
-}
-
-async function saveGuides(guides: DiyGuide[]): Promise<void> {
-  await writeFile(guidesFile, JSON.stringify(guides, null, 2));
-}
 
 function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
   try {
@@ -95,7 +43,8 @@ export async function GET(request: NextRequest) {
   const system = searchParams.get('system');
   const showAll = searchParams.get('all');
   
-  const staticGuides = await getStaticGuides();
+  const { diyGuides } = await import('@/data/diyGuides');
+  const staticGuides = diyGuides;
   const userGuides = await getUserGuides();
   
   const auth = checkAuth(request);
@@ -108,7 +57,6 @@ export async function GET(request: NextRequest) {
     showAll === 'true' && auth.role === 'admin' ? true : g.approved
   );
   approvedUserGuides.forEach((g: DiyGuide) => {
-    g.isStatic = false;
     allGuides.push(g);
   });
   
@@ -164,11 +112,10 @@ export async function POST(request: NextRequest) {
         views: 0,
         featured: false,
         approved: auth.role === 'admin',
-        isStatic: false,
       };
 
       userGuides.push(newGuide);
-      await saveGuides(userGuides);
+      await saveUserGuides(userGuides);
 
       return NextResponse.json({ success: true, guide: newGuide });
     }
@@ -183,7 +130,7 @@ export async function POST(request: NextRequest) {
       }
 
       userGuides[guideIndex].approved = true;
-      await saveGuides(userGuides);
+      await saveUserGuides(userGuides);
 
       return NextResponse.json({ success: true });
     }
@@ -198,7 +145,7 @@ export async function POST(request: NextRequest) {
       }
 
       userGuides.splice(guideIndex, 1);
-      await saveGuides(userGuides);
+      await saveUserGuides(userGuides);
 
       return NextResponse.json({ success: true });
     }
