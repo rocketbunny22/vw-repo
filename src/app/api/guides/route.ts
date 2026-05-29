@@ -60,9 +60,9 @@ async function saveGuides(guides: DiyGuide[]): Promise<void> {
 function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
   try {
     const [payload, signature] = token.split('.');
-    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
-    if (signature !== expectedSig) return { valid: false };
     const data = JSON.parse(Buffer.from(payload, 'base64').toString());
+    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(JSON.stringify(data)).digest('hex');
+    if (signature !== expectedSig) return { valid: false };
     if (data.exp < Date.now()) return { valid: false };
     return { valid: true, user: { id: data.id, username: data.username, role: data.role } };
   } catch {
