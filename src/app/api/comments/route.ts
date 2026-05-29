@@ -74,7 +74,27 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { guideId, content } = await request.json();
+    const { action, guideId, commentId, content } = await request.json();
+
+    if (action === 'report') {
+      if (!commentId) {
+        return NextResponse.json({ error: 'commentId is required' }, { status: 400 });
+      }
+
+      const allComments = await getComments();
+      const commentIndex = allComments.findIndex((comment) => comment.id === commentId);
+
+      if (commentIndex === -1) {
+        return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
+      }
+
+      allComments[commentIndex].reported = true;
+      allComments[commentIndex].reportedAt = new Date().toISOString();
+      allComments[commentIndex].moderationStatus = 'pending';
+      await saveComments(allComments);
+
+      return NextResponse.json({ success: true });
+    }
 
     if (!guideId || !content || !content.trim()) {
       return NextResponse.json({ error: 'guideId and content are required' }, { status: 400 });

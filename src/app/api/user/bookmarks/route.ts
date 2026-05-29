@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     bookmarks,
-    pdfs: pdfs.filter((pdf) => bookmarks.pdfIds.includes(pdf.id)),
+    pdfs: pdfs.filter((pdf) => pdf.approved !== false && bookmarks.pdfIds.includes(pdf.id)),
     guides: guides.filter((guide) => bookmarks.guideIds.includes(guide.id)),
   });
 }

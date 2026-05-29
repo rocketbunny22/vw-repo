@@ -49,6 +49,9 @@ export interface PdfDocument {
   fileSize: number;
   url: string;
   downloads: number;
+  approved?: boolean;
+  reviewedAt?: string;
+  reviewedBy?: string;
 }
 
 export interface Comment {
@@ -58,6 +61,9 @@ export interface Comment {
   authorName: string;
   content: string;
   createdAt: string;
+  reported?: boolean;
+  reportedAt?: string;
+  moderationStatus?: 'pending' | 'reviewed';
 }
 
 export interface DiyGuide {

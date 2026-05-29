@@ -15,6 +15,7 @@ interface Feedback {
   category: string;
   message: string;
   createdAt: string;
+  moderationStatus?: 'pending' | 'reviewed';
 }
 
 async function getFeedback(): Promise<Feedback[]> {
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
       category,
       message,
       createdAt: new Date().toISOString(),
+      moderationStatus: 'pending',
     };
 
     const allFeedback = await getFeedback();

@@ -43,7 +43,7 @@ export default async function SystemsPage({
   const systemInfo = filteredSystems[0];
   const selectedGen = gen ? generations.find((g) => g.slug === gen) : null;
 
-  const pdfs = await getAllPdfs();
+  const pdfs = (await getAllPdfs()).filter((pdf) => pdf.approved !== false);
   const relatedPdfs = pdfs.filter((pdf) => {
     if (pdf.system !== slug) return false;
 

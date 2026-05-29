@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { existsSync } from 'fs';
+import { readFile, writeFile } from 'fs/promises';
+import path from 'path';
 import { Redis } from '@upstash/redis';
 import { Resend } from 'resend';
 import { getAllPdfs, saveAllPdfs, deletePdfFile } from '@/data/pdfs';
 import { backfillPdfSearchText } from '@/lib/pdfBackfill';
-import { PdfDocument, User } from '@/types';
+import { Comment, DiyGuide, PdfDocument, User } from '@/types';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+const guidesFile = path.resolve(process.cwd(), 'user-guides.json');
 
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
   ? new Redis({
@@ -26,6 +30,55 @@ async function getUsers(): Promise<User[]> {
 async function saveUsers(users: User[]): Promise<void> {
   if (!redis) return;
   await redis.set('users', users);
+}
+
+interface Feedback {
+  id: string;
+  name: string;
+  email: string;
+  category: string;
+  message: string;
+  createdAt: string;
+  moderationStatus?: 'pending' | 'reviewed';
+  reviewedAt?: string;
+  reviewedBy?: string;
+}
+
+async function getUserGuides(): Promise<DiyGuide[]> {
+  try {
+    if (!existsSync(guidesFile)) return [];
+    const data = await readFile(guidesFile, 'utf-8');
+    const guides = JSON.parse(data) as DiyGuide[];
+    return Array.isArray(guides) ? guides : [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveGuides(guides: DiyGuide[]): Promise<void> {
+  await writeFile(guidesFile, JSON.stringify(guides, null, 2));
+}
+
+async function getComments(): Promise<Comment[]> {
+  if (!redis) return [];
+  const comments = await redis.get<Comment[]>('comments');
+  return Array.isArray(comments) ? comments : [];
+}
+
+async function saveComments(comments: Comment[]): Promise<void> {
+  if (!redis) return;
+  await redis.set('comments', comments);
+}
+
+async function getFeedback(): Promise<Feedback[]> {
+  if (!redis) return [];
+  const feedback = await redis.get<Feedback[]>('feedback');
+  return Array.isArray(feedback) ? feedback : [];
+}
+
+async function saveFeedback(feedback: Feedback[]): Promise<void> {
+  if (!redis) return;
+  await redis.set('feedback', feedback);
 }
 
 function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
@@ -69,6 +122,9 @@ export async function GET(request: NextRequest) {
 
   const users = await getUsers();
   const pdfs = await getAllPdfs();
+  const guides = await getUserGuides();
+  const comments = await getComments();
+  const feedback = await getFeedback();
 
   const usersWithoutPassword = users.map((u) => ({
     id: u.id,
@@ -79,7 +135,16 @@ export async function GET(request: NextRequest) {
     lastLogin: u.lastLogin,
   }));
 
-  return NextResponse.json({ users: usersWithoutPassword, pdfs });
+  const moderation = {
+    pendingPdfs: pdfs.filter((pdf) => pdf.approved === false),
+    pendingGuides: guides.filter((guide) => !guide.approved),
+    feedback: feedback.filter((item) => item.moderationStatus !== 'reviewed').reverse(),
+    comments: comments
+      .filter((comment) => comment.reported || comment.moderationStatus === 'pending')
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+  };
+
+  return NextResponse.json({ users: usersWithoutPassword, pdfs, moderation });
 }
 
 export async function POST(request: NextRequest) {
@@ -101,6 +166,9 @@ export async function POST(request: NextRequest) {
       system?: string;
       model?: string;
       force?: boolean;
+      guideId?: string;
+      feedbackId?: string;
+      commentId?: string;
     };
     const { action, userId, pdfId, role, force } = body;
 
@@ -155,6 +223,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    if (action === 'approvePdf') {
+      const pdfs = await getAllPdfs();
+      const pdfIndex = pdfs.findIndex((p: PdfDocument) => p.id === pdfId);
+
+      if (pdfIndex === -1) {
+        return NextResponse.json({ error: 'PDF not found' }, { status: 404 });
+      }
+
+      pdfs[pdfIndex].approved = true;
+      pdfs[pdfIndex].reviewedAt = new Date().toISOString();
+      pdfs[pdfIndex].reviewedBy = auth.username;
+      await saveAllPdfs(pdfs);
+
+      return NextResponse.json({ success: true, pdf: pdfs[pdfIndex] });
+    }
+
     if (action === 'updatePdf') {
       const pdfs = await getAllPdfs();
       const pdfIndex = pdfs.findIndex((p: PdfDocument) => p.id === pdfId);
@@ -207,6 +291,74 @@ export async function POST(request: NextRequest) {
     if (action === 'backfillPdfText') {
       const result = await backfillPdfSearchText({ force: Boolean(force) });
       return NextResponse.json({ success: true, result });
+    }
+
+    if (action === 'approveGuide') {
+      const guides = await getUserGuides();
+      const guideIndex = guides.findIndex((guide) => guide.id === body.guideId);
+
+      if (guideIndex === -1) {
+        return NextResponse.json({ error: 'Guide not found' }, { status: 404 });
+      }
+
+      guides[guideIndex].approved = true;
+      guides[guideIndex].updatedAt = new Date().toISOString();
+      await saveGuides(guides);
+
+      return NextResponse.json({ success: true, guide: guides[guideIndex] });
+    }
+
+    if (action === 'rejectGuide') {
+      const guides = await getUserGuides();
+      const guideIndex = guides.findIndex((guide) => guide.id === body.guideId);
+
+      if (guideIndex === -1) {
+        return NextResponse.json({ error: 'Guide not found' }, { status: 404 });
+      }
+
+      guides.splice(guideIndex, 1);
+      await saveGuides(guides);
+
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === 'reviewFeedback' || action === 'deleteFeedback') {
+      const feedback = await getFeedback();
+      const feedbackIndex = feedback.findIndex((item) => item.id === body.feedbackId);
+
+      if (feedbackIndex === -1) {
+        return NextResponse.json({ error: 'Feedback not found' }, { status: 404 });
+      }
+
+      if (action === 'deleteFeedback') {
+        feedback.splice(feedbackIndex, 1);
+      } else {
+        feedback[feedbackIndex].moderationStatus = 'reviewed';
+        feedback[feedbackIndex].reviewedAt = new Date().toISOString();
+        feedback[feedbackIndex].reviewedBy = auth.username;
+      }
+
+      await saveFeedback(feedback);
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === 'reviewComment' || action === 'deleteComment') {
+      const comments = await getComments();
+      const commentIndex = comments.findIndex((comment) => comment.id === body.commentId);
+
+      if (commentIndex === -1) {
+        return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
+      }
+
+      if (action === 'deleteComment') {
+        comments.splice(commentIndex, 1);
+      } else {
+        comments[commentIndex].reported = false;
+        comments[commentIndex].moderationStatus = 'reviewed';
+      }
+
+      await saveComments(comments);
+      return NextResponse.json({ success: true });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

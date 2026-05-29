@@ -20,7 +20,7 @@ function verifySessionToken(token: string): { valid: boolean; user?: { id: strin
   }
 }
 
-function checkAuth(request: NextRequest): { authenticated: boolean; user?: { id: string; username: string } } {
+function checkAuth(request: NextRequest): { authenticated: boolean; user?: { id: string; username: string; role: string } } {
   const authCookie = request.cookies.get('vw_auth');
   
   if (!authCookie) {
@@ -37,7 +37,7 @@ function checkAuth(request: NextRequest): { authenticated: boolean; user?: { id:
 
 export async function GET() {
   const pdfs = await getAllPdfs();
-  return NextResponse.json({ pdfs });
+  return NextResponse.json({ pdfs: pdfs.filter((pdf) => pdf.approved !== false) });
 }
 
 export async function POST(request: NextRequest) {
@@ -98,6 +98,9 @@ export async function POST(request: NextRequest) {
         url: `/api/pdfs/${filename}`,
         uploadedBy: auth.user?.username,
         downloads: 0,
+        approved: auth.user?.role === 'admin',
+        reviewedAt: auth.user?.role === 'admin' ? new Date().toISOString() : undefined,
+        reviewedBy: auth.user?.role === 'admin' ? auth.user.username : undefined,
       };
 
       await savePdfFile(filename, buffer);

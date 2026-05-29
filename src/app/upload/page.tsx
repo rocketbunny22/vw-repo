@@ -95,7 +95,7 @@ export default function UploadPage() {
       const data = await response.json();
 
       if (data.success) {
-        setMessage({ type: 'success', text: 'PDF uploaded successfully!' });
+        setMessage({ type: 'success', text: 'PDF uploaded successfully. It will appear in the library after admin approval.' });
         setFile(null);
         setGenerationsSelected([]);
                       setModels([]);

@@ -11,6 +11,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Invalid file' }, { status: 400 });
     }
 
+    const pdfs = await getAllPdfs();
+    const pdf = pdfs.find((p) => p.filename === filename);
+
+    if (pdf?.approved === false) {
+      return NextResponse.json({ error: 'PDF not found' }, { status: 404 });
+    }
+
     const fileBuffer = await getPdfFile(filename);
 
     if (!fileBuffer) {
@@ -19,8 +26,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (view !== 'true') {
       try {
-        const pdfs = await getAllPdfs();
-        const pdf = pdfs.find((p) => p.filename === filename);
         if (pdf) {
           pdf.downloads = (pdf.downloads || 0) + 1;
           await saveAllPdfs(pdfs);

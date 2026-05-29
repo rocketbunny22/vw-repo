@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [] });
   }
 
-  const pdfs = await ensurePdfSearchText(await getAllPdfs());
+  const pdfs = await ensurePdfSearchText((await getAllPdfs()).filter((pdf) => pdf.approved !== false));
 
   const results = [
     ...searchGenerationSystems(query, terms),

@@ -9,6 +9,7 @@ interface Comment {
   authorName: string;
   content: string;
   createdAt: string;
+  reported?: boolean;
 }
 
 interface Props {
@@ -22,6 +23,7 @@ export default function CommentsSection({ guideId }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [user, setUser] = useState<{ id: string; username: string } | null>(null);
   const [error, setError] = useState('');
+  const [reportingId, setReportingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchComments();
@@ -70,6 +72,33 @@ export default function CommentsSection({ guideId }: Props) {
       setError('Failed to post comment');
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function reportComment(commentId: string) {
+    if (!user || reportingId) return;
+    setReportingId(commentId);
+    setError('');
+
+    try {
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'report', commentId }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setComments((items) => items.map((item) => (
+          item.id === commentId ? { ...item, reported: true } : item
+        )));
+      } else {
+        setError(data.error || 'Failed to report comment');
+      }
+    } catch {
+      setError('Failed to report comment');
+    } finally {
+      setReportingId(null);
     }
   }
 
@@ -150,9 +179,21 @@ export default function CommentsSection({ guideId }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between gap-3 mb-1">
                     <span className="font-semibold text-vw-dark text-sm">{comment.authorName}</span>
-                    <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
+                    <div className="flex items-center gap-3">
+                      {user && user.id !== comment.authorId && (
+                        <button
+                          type="button"
+                          onClick={() => reportComment(comment.id)}
+                          disabled={reportingId === comment.id || comment.reported}
+                          className="text-xs text-gray-400 hover:text-red-600 disabled:cursor-not-allowed disabled:text-gray-300"
+                        >
+                          {comment.reported ? 'Reported' : 'Report'}
+                        </button>
+                      )}
+                      <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
+                    </div>
                   </div>
                   <p className="text-gray-700 text-sm whitespace-pre-wrap break-words">{comment.content}</p>
                 </div>

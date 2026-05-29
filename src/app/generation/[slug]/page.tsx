@@ -16,7 +16,7 @@ export default async function GenerationPage({
   
   if (!generation) notFound();
 
-  const pdfs = await getAllPdfs();
+  const pdfs = (await getAllPdfs()).filter((pdf) => pdf.approved !== false);
   const relatedPdfs = pdfs.filter(
     (pdf) => pdf.generation === generation.id || pdf.generation === generation.slug
   );
