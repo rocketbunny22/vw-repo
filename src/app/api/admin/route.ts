@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
   };
 
-  return NextResponse.json({ users: usersWithoutPassword, pdfs, moderation });
+  return NextResponse.json({ users: usersWithoutPassword, pdfs, guides, moderation });
 }
 
 export async function POST(request: NextRequest) {
@@ -290,7 +290,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, guide: guides[guideIndex] });
     }
 
-    if (action === 'rejectGuide') {
+    if (action === 'rejectGuide' || action === 'deleteGuide') {
       const guides = await getUserGuides();
       const guideIndex = guides.findIndex((guide) => guide.id === body.guideId);
 

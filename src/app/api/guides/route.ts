@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date().toISOString(),
         views: 0,
         featured: false,
-        approved: auth.role === 'admin',
+        approved: false,
       };
 
       userGuides.push(newGuide);

@@ -27,6 +27,7 @@ interface Pdf {
 
 interface ModerationGuide {
   id: string;
+  slug: string;
   title: string;
   generation: string;
   system: string;
@@ -34,6 +35,7 @@ interface ModerationGuide {
   createdAt: string;
   difficulty: string;
   content: string;
+  approved?: boolean;
 }
 
 interface ModerationFeedback {
@@ -89,7 +91,8 @@ export default function AdminPage() {
     feedback: [],
     comments: [],
   });
-  const [activeTab, setActiveTab] = useState<'moderation' | 'users' | 'pdfs' | 'tools'>('moderation');
+  const [guides, setGuides] = useState<ModerationGuide[]>([]);
+  const [activeTab, setActiveTab] = useState<'moderation' | 'users' | 'pdfs' | 'guides' | 'tools'>('moderation');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [testEmailSent, setTestEmailSent] = useState(false);
   const [error, setError] = useState('');
@@ -133,6 +136,7 @@ export default function AdminPage() {
       
       setUsers(data.users || []);
       setPdfs(data.pdfs || []);
+      setGuides(data.guides || []);
       setModeration(data.moderation || { pendingPdfs: [], pendingGuides: [], feedback: [], comments: [] });
     } catch {
       setError('Failed to load data');
@@ -357,6 +361,14 @@ export default function AdminPage() {
               }`}
             >
               PDFs ({pdfs.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('guides')}
+              className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                activeTab === 'guides' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-vw-dark hover:text-white'
+              }`}
+            >
+              Guides ({guides.length})
             </button>
             <button
               onClick={() => setActiveTab('tools')}
@@ -687,6 +699,74 @@ export default function AdminPage() {
                         <button
                           onClick={() => handleAction('deletePdf', pdf.id)}
                           disabled={actionLoading === pdf.id}
+                          className="text-red-600 hover:underline text-sm"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'guides' && (
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Author</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {guides.map((guide) => (
+                    <tr key={guide.id}>
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-900">{guide.title}</div>
+                        {guide.approved && (
+                          <a
+                            href={`/guides/${guide.slug}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-sm text-vw-blue hover:underline"
+                          >
+                            View
+                          </a>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-500">{guide.generation}</span>
+                        <span className="text-gray-300"> / </span>
+                        <span className="text-sm text-gray-500">{guide.system}</span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{guide.author}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          guide.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {guide.approved ? 'Approved' : 'Pending'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{formatDate(guide.createdAt)}</td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        {!guide.approved && (
+                          <button
+                            onClick={() => handleModerationAction('approveGuide', { guideId: guide.id })}
+                            disabled={actionLoading === guide.id}
+                            className="text-green-700 hover:underline text-sm"
+                          >
+                            Approve
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleModerationAction('deleteGuide', { guideId: guide.id })}
+                          disabled={actionLoading === guide.id}
                           className="text-red-600 hover:underline text-sm"
                         >
                           Delete

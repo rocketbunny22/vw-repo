@@ -7,6 +7,8 @@ import { getUserGuides } from '@/data/guides';
 import CommentsSection from '@/components/CommentsSection';
 import BookmarkButton from '@/components/BookmarkButton';
 
+export const dynamic = 'force-dynamic';
+
 const systemsList = [
   { id: 'engine', name: 'Engine' },
   { id: 'suspension', name: 'Suspension' },
@@ -16,12 +18,6 @@ const systemsList = [
   { id: 'body', name: 'Body & Interior' },
   { id: 'cooling', name: 'Cooling System' },
 ];
-
-export async function generateStaticParams() {
-  const params = diyGuides.map((guide) => ({ slug: guide.slug }));
-  
-  return params;
-}
 
 export default async function GuidePage({
   params,
