@@ -3,6 +3,7 @@ import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
 import { PdfCard } from '@/components/PdfViewer';
+import UiIcon from '@/components/UiIcon';
 
 export async function generateStaticParams() {
   const systemSlugs = new Set<string>();
@@ -111,7 +112,7 @@ export default async function SystemsPage({
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {systemInfo.commonIssues.map((issue: string, index: number) => (
                 <li key={index} className="flex items-start gap-2">
-                  <span className="text-red-600 mt-1">⚠️</span>
+                  <UiIcon name="warning" className="mt-1 h-4 w-4 shrink-0 text-red-600" />
                   <span className="text-gray-700">{issue}</span>
                 </li>
               ))}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { DiyGuide, VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
 import BookmarkButton from '@/components/BookmarkButton';
+import UiIcon from '@/components/UiIcon';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -172,13 +173,14 @@ export default function GuidesPage({ searchParams }: { searchParams: Promise<{ g
             {vehicle && (
               <button
                 onClick={() => setSelectedGeneration(selectedGeneration === vehicle.generation ? 'all' : vehicle.generation)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedGeneration === vehicle.generation
                     ? 'bg-vw-blue text-white'
                     : 'bg-white text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                🚗 My Car
+                <UiIcon name="vehicle" className="mr-1.5 h-4 w-4" />
+                My Car
               </button>
             )}
           </div>

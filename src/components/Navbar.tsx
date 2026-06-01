@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { generations } from '@/data/generations';
 import { VehicleProfile } from '@/types';
+import UiIcon from '@/components/UiIcon';
 
 interface User {
   id: string;
@@ -135,7 +136,13 @@ export default function Navbar() {
               {user ? (
                 <div className="relative group">
                   <button className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5">
-                    {vehicle && <span title={`${vehicle.nickname || ''} ${vehicle.model}`}>🚗</span>}
+                    {vehicle && (
+                      <UiIcon
+                        name="vehicle"
+                        title={`${vehicle.nickname || ''} ${vehicle.model}`}
+                        className="h-4 w-4"
+                      />
+                    )}
                     {user.username}
                     <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

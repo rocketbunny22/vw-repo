@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { generations } from '@/data/generations';
 import { VehicleProfile } from '@/types';
+import UiIcon, { IconName } from '@/components/UiIcon';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -91,12 +92,12 @@ export default function SearchPage() {
     ? results.filter(r => r.generation === vehicle.generation)
     : results;
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string): IconName => {
     switch (type) {
-      case 'generation': return '🏎️';
-      case 'pdf': return '📄';
-      case 'guide': return '🔧';
-      default: return '📌';
+      case 'generation': return 'generation';
+      case 'pdf': return 'pdf';
+      case 'guide': return 'guide';
+      default: return 'pin';
     }
   };
 
@@ -160,13 +161,14 @@ export default function SearchPage() {
                 {vehicle && (
                   <button
                     onClick={() => setMyCarOnly(!myCarOnly)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                       myCarOnly
                         ? 'bg-vw-gold text-vw-blue'
                         : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                     }`}
                   >
-                    🚗 My car only
+                    <UiIcon name="vehicle" className="mr-1.5 h-3.5 w-3.5" />
+                    My car only
                   </button>
                 )}
               </div>
@@ -190,7 +192,9 @@ export default function SearchPage() {
                     className="block bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-xl transition-all"
                   >
                     <div className="flex items-start gap-4">
-                      <span className="text-2xl">{getTypeIcon(result.type)}</span>
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-vw-blue/10 bg-vw-blue/5 text-vw-blue">
+                        <UiIcon name={getTypeIcon(result.type)} className="h-5 w-5" />
+                      </span>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs uppercase text-gray-500">{result.type}</span>

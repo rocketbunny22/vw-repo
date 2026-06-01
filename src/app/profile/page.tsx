@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
+import UiIcon from '@/components/UiIcon';
 
 interface User {
   id: string;
@@ -661,7 +662,9 @@ export default function ProfilePage() {
                 ) : vehicle ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl">🚗</span>
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-vw-blue/10 bg-vw-blue/5 text-vw-blue">
+                        <UiIcon name="vehicle" className="h-6 w-6" />
+                      </span>
                       <div>
                         <p className="text-lg font-medium">
                           {vehicle.nickname && `${vehicle.nickname} - `}{getGenerationName(vehicle.generation)} {vehicle.model}

@@ -5,14 +5,15 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { generations } from '@/data/generations';
 import { VehicleProfile } from '@/types';
+import UiIcon, { IconName } from '@/components/UiIcon';
 
-const systemsList = [
-  { name: 'Engine', icon: '⚙️', slug: 'engine' },
-  { name: 'Suspension', icon: '🔧', slug: 'suspension' },
-  { name: 'Brakes', icon: '🛑', slug: 'brakes' },
-  { name: 'Electrical', icon: '⚡', slug: 'electrical' },
-  { name: 'Transmission', icon: '🔄', slug: 'transmission' },
-  { name: 'Body', icon: '🚗', slug: 'body' },
+const systemsList: Array<{ name: string; icon: IconName; slug: string }> = [
+  { name: 'Engine', icon: 'engine', slug: 'engine' },
+  { name: 'Suspension', icon: 'suspension', slug: 'suspension' },
+  { name: 'Brakes', icon: 'brakes', slug: 'brakes' },
+  { name: 'Electrical', icon: 'electrical', slug: 'electrical' },
+  { name: 'Transmission', icon: 'transmission', slug: 'transmission' },
+  { name: 'Body', icon: 'body', slug: 'body' },
 ];
 
 export default function Home() {
@@ -93,7 +94,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <p className="text-vw-blue text-sm">Hey {user.username}! 👋</p>
+                <p className="text-vw-blue text-sm">Hey {user.username}.</p>
                 <h2 className="text-xl font-bold text-vw-blue">Set up your garage to get personalized content</h2>
               </div>
               <div className="flex items-center gap-3">
@@ -212,7 +213,9 @@ export default function Home() {
                     href={`/systems/${system.slug}?gen=${vehicle.generation}`}
                     className="flex flex-col items-center p-5 bg-gray-50 rounded-lg hover:bg-vw-blue hover:text-white transition-colors group"
                   >
-                    <span className="text-2xl mb-2">{sysInfo?.icon || '🔧'}</span>
+                    <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-md border border-vw-blue/15 bg-white text-vw-blue group-hover:border-white/30 group-hover:bg-white/10 group-hover:text-white">
+                      <UiIcon name={sysInfo?.icon || 'guide'} className="h-5 w-5" />
+                    </span>
                     <span className="font-medium text-sm text-center">{system.name}</span>
                     {system.commonIssues && system.commonIssues.length > 0 && (
                       <span className="text-xs text-vw-red mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -297,7 +300,9 @@ export default function Home() {
                 href={`/systems/${system.slug}`}
                 className="flex flex-col items-center p-6 bg-gray-50 rounded-lg hover:bg-vw-blue hover:text-white transition-colors group"
               >
-                <span className="text-3xl mb-2">{system.icon}</span>
+                <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-md border border-vw-blue/15 bg-white text-vw-blue group-hover:border-white/30 group-hover:bg-white/10 group-hover:text-white">
+                  <UiIcon name={system.icon} className="h-6 w-6" />
+                </span>
                 <span className="font-medium">{system.name}</span>
               </Link>
             ))}
