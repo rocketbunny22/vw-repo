@@ -117,7 +117,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative bg-[url('/images/all_gens.webp')] bg-cover bg-center overflow-hidden">
         <div className="absolute inset-0 bg-black/60" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 pt-24 relative">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-vw-gold rounded-full mb-6">
               <span className="text-vw-blue font-bold text-xl">VW</span>
@@ -159,7 +159,7 @@ export default function Home() {
               </button>
             </form>
             <div className="flex justify-center">
-              <Link href="#generations" className="bg-white text-vw-blue hover:bg-gray-100 px-8 py-3 rounded-md font-medium transition-colors text-lg">
+              <Link href="#generations" className="bg-white/95 text-vw-blue hover:bg-white px-8 py-3 rounded-md font-medium transition-colors text-lg shadow-lg">
                 Browse Generations
               </Link>
             </div>
@@ -168,24 +168,24 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="bg-vw-gold py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
+      <section className="relative z-10 -mt-16 bg-slate-50 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-vw-blue/10 bg-vw-blue/10 shadow-xl md:grid-cols-4">
+            <div className="bg-white/95 px-4 py-6 text-center">
               <div className="text-3xl font-bold text-vw-blue">{generations.length}</div>
-              <div className="text-vw-dark text-sm">Generations</div>
+              <div className="text-vw-dark/70 text-sm">Generations</div>
             </div>
-            <div>
+            <div className="bg-white/95 px-4 py-6 text-center">
               <div className="text-3xl font-bold text-vw-blue">6</div>
-              <div className="text-vw-dark text-sm">Core Systems</div>
+              <div className="text-vw-dark/70 text-sm">Core Systems</div>
             </div>
-            <div>
+            <div className="bg-white/95 px-4 py-6 text-center">
               <div className="text-3xl font-bold text-vw-blue">50+</div>
-              <div className="text-vw-dark text-sm">Vehicle Models</div>
+              <div className="text-vw-dark/70 text-sm">Vehicle Models</div>
             </div>
-            <div>
+            <div className="bg-white/95 px-4 py-6 text-center">
               <div className="text-3xl font-bold text-vw-blue">80+</div>
-              <div className="text-vw-dark text-sm">Years of VW History</div>
+              <div className="text-vw-dark/70 text-sm">Years of VW History</div>
             </div>
           </div>
         </div>
@@ -193,9 +193,9 @@ export default function Home() {
 
       {/* Recommended Systems for Your Vehicle */}
       {vehicle && userGen && (
-        <section className="py-12 bg-white border-b">
+        <section className="bg-slate-50 pt-12 pb-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-8">
+            <div className="mb-8 flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-vw-blue">Recommended for Your {getGenerationName(vehicle.generation)}</h2>
                 <p className="text-gray-600 text-sm mt-1">Common systems and known issues for your generation.</p>
@@ -211,9 +211,9 @@ export default function Home() {
                   <Link
                     key={system.id}
                     href={`/systems/${system.slug}?gen=${vehicle.generation}`}
-                    className="flex flex-col items-center p-5 bg-gray-50 rounded-lg hover:bg-vw-blue hover:text-white transition-colors group"
+                    className="group flex flex-col items-center rounded-md border border-vw-blue/10 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-vw-gold/70 hover:shadow-md"
                   >
-                    <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-md border border-vw-blue/15 bg-white text-vw-blue group-hover:border-white/30 group-hover:bg-white/10 group-hover:text-white">
+                    <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-md border border-vw-blue/15 bg-vw-blue/5 text-vw-blue group-hover:border-vw-gold/60 group-hover:bg-vw-gold/10">
                       <UiIcon name={sysInfo?.icon || 'guide'} className="h-5 w-5" />
                     </span>
                     <span className="font-medium text-sm text-center">{system.name}</span>
@@ -231,7 +231,7 @@ export default function Home() {
       )}
 
       {/* Generations Grid */}
-      <section id="generations" className="py-16 bg-gray-50">
+      <section id="generations" className="bg-slate-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-vw-blue mb-4">Explore by Generation</h2>
@@ -247,7 +247,7 @@ export default function Home() {
                 href={`/generation/${gen.slug}`}
                 className="group"
               >
-                <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1">
+                <div className="overflow-hidden rounded-md border border-vw-blue/10 bg-white shadow-sm transition-all hover:-translate-y-1 hover:border-vw-gold/70 hover:shadow-lg">
                   {gen.image ? (
                     <div className="h-24 relative bg-gradient-to-br from-vw-blue to-vw-blue-light">
                       <Image 
@@ -284,7 +284,7 @@ export default function Home() {
       </section>
 
       {/* Featured Systems */}
-      <section className="py-16 bg-white">
+      <section className="bg-gradient-to-b from-slate-50 to-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-vw-blue mb-4">Vehicle Systems</h2>
@@ -298,9 +298,9 @@ export default function Home() {
               <Link 
                 key={system.slug}
                 href={`/systems/${system.slug}`}
-                className="flex flex-col items-center p-6 bg-gray-50 rounded-lg hover:bg-vw-blue hover:text-white transition-colors group"
+                className="group flex flex-col items-center rounded-md border border-vw-blue/10 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-vw-gold/70 hover:shadow-md"
               >
-                <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-md border border-vw-blue/15 bg-white text-vw-blue group-hover:border-white/30 group-hover:bg-white/10 group-hover:text-white">
+                <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-md border border-vw-blue/15 bg-vw-blue/5 text-vw-blue group-hover:border-vw-gold/60 group-hover:bg-vw-gold/10">
                   <UiIcon name={system.icon} className="h-6 w-6" />
                 </span>
                 <span className="font-medium">{system.name}</span>
