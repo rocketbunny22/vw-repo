@@ -6,6 +6,7 @@ import { DiyGuide } from '@/types';
 import { getUserGuides } from '@/data/guides';
 import CommentsSection from '@/components/CommentsSection';
 import BookmarkButton from '@/components/BookmarkButton';
+import MarkdownContent from '@/components/MarkdownContent';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,11 +92,7 @@ export default async function GuidePage({
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div className="prose max-w-none">
-                <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-                  {guide.content}
-                </div>
-              </div>
+              <MarkdownContent content={guide.content} />
             </div>
             
             <div className="lg:col-span-1">
