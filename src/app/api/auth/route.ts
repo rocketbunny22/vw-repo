@@ -216,9 +216,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
       }
 
-      const adminCode = body.adminCode;
-      const role: 'user' | 'admin' = adminCode === 'VWADMIN2024' ? 'admin' : 'user';
-
       const passwordHash = await bcrypt.hash(password, 12);
 
       const newUser: User = {
@@ -226,7 +223,7 @@ export async function POST(request: NextRequest) {
         email,
         username,
         passwordHash,
-        role,
+        role: 'user',
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         onboarding: {

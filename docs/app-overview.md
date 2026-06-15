@@ -148,6 +148,5 @@ At the time this documentation was created, the production build passed. Lint co
 - Session verification is duplicated across route handlers.
 - `AuthProvider` exists but is not mounted in the root layout and is not currently used by pages.
 - Missing stable `SESSION_SECRET` or `RESET_TOKEN_SECRET` causes random fallback secrets, which invalidates sessions or reset tokens across process restarts.
-- The signup admin code is hardcoded in `/api/auth`.
 - Admin tables are desktop-oriented and should be reviewed for smaller screens before major admin UI expansion.
 - Some client pages use async `searchParams` props; this builds now, but future Next.js changes could make this pattern worth revisiting.

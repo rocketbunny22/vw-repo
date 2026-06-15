@@ -8,7 +8,6 @@ export default function SignupPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [adminCode, setAdminCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -32,7 +31,7 @@ export default function SignupPage() {
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'signup', email, username, password, adminCode }),
+        body: JSON.stringify({ action: 'signup', email, username, password }),
       });
 
       const data = await response.json();
@@ -130,19 +129,6 @@ export default function SignupPage() {
               >
                 {loading ? 'Creating Account...' : 'Create Account'}
               </button>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Admin Code (optional)
-                </label>
-                <input
-                  type="password"
-                  value={adminCode}
-                  onChange={(e) => setAdminCode(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
-                  placeholder="Leave blank for regular user"
-                />
-              </div>
             </div>
 
             <p className="mt-6 text-center text-sm text-gray-600">
