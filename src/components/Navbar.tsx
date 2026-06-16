@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { generations } from '@/data/generations';
 import { VehicleProfile } from '@/types';
 import UiIcon from '@/components/UiIcon';
+import LanguageToggle from '@/components/LanguageToggle';
 
 interface User {
   id: string;
@@ -133,6 +134,8 @@ export default function Navbar() {
                 Submit Guide
               </Link>
 
+              <LanguageToggle />
+
               {user ? (
                 <div className="relative group">
                   <button className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5">
@@ -211,6 +214,9 @@ export default function Navbar() {
             <Link href="/submit-guide" className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
               Submit Guide
             </Link>
+            <div className="px-3 py-2">
+              <LanguageToggle />
+            </div>
             {user ? (
               <>
                 <Link href="/my-vw" className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
