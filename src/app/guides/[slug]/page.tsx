@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { diyGuides } from '@/data/diyGuides';
@@ -7,6 +8,7 @@ import { getUserGuides } from '@/data/guides';
 import CommentsSection from '@/components/CommentsSection';
 import BookmarkButton from '@/components/BookmarkButton';
 import MarkdownContent from '@/components/MarkdownContent';
+import { absoluteUrl, breadcrumbJsonLd, createMetadata, jsonLd, siteName, truncateDescription } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,21 +22,54 @@ const systemsList = [
   { id: 'cooling', name: 'Cooling System' },
 ];
 
+async function getApprovedGuide(slug: string) {
+  const staticGuide = diyGuides.find((guide) => guide.slug === slug);
+
+  if (staticGuide) {
+    return staticGuide;
+  }
+
+  const userGuides: DiyGuide[] = await getUserGuides();
+  return userGuides.find((guide) => guide.slug === slug && guide.approved);
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const guide = await getApprovedGuide(slug);
+
+  if (!guide) {
+    return {
+      title: 'DIY Guide Not Found',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const gen = generations.find((generation) => generation.id === guide.generation);
+  const sys = systemsList.find((system) => system.id === guide.system);
+  const description = truncateDescription(
+    `${guide.title}: step-by-step Volkswagen DIY guide for ${gen?.name || 'VW'} ${sys?.name || 'maintenance'} with tools, parts, difficulty, and time estimate.`
+  );
+
+  return createMetadata({
+    title: /\bguide\b/i.test(guide.title) ? guide.title : `${guide.title} DIY Guide`,
+    description,
+    path: `/guides/${guide.slug}`,
+    image: gen?.image,
+    type: 'article',
+  });
+}
+
 export default async function GuidePage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  
-  // Check static guides first
-  let guide = diyGuides.find((g) => g.slug === slug);
-  
-  // Then check user submitted guides
-  if (!guide) {
-    const userGuides: DiyGuide[] = await getUserGuides();
-    guide = userGuides.find((userGuide) => userGuide.slug === slug && userGuide.approved);
-  }
+  const guide = await getApprovedGuide(slug);
   
   if (!guide) {
     notFound();
@@ -42,6 +77,39 @@ export default async function GuidePage({
   
   const gen = generations.find((g) => g.id === guide.generation);
   const sys = systemsList.find((s) => s.id === guide.system);
+  const pagePath = `/guides/${guide.slug}`;
+  const guideJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: guide.title,
+    description: truncateDescription(guide.content),
+    url: absoluteUrl(pagePath),
+    datePublished: guide.createdAt,
+    dateModified: guide.updatedAt || guide.createdAt,
+    author: {
+      '@type': 'Person',
+      name: guide.author,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: siteName,
+      url: absoluteUrl('/'),
+    },
+    about: [
+      gen ? `${gen.name} Volkswagen` : 'Volkswagen',
+      sys?.name || 'Volkswagen maintenance',
+    ],
+    timeRequired: guide.timeEstimate,
+    proficiencyLevel: guide.difficulty,
+    tool: guide.tools?.map((tool) => ({ '@type': 'HowToTool', name: tool })),
+    supply: guide.parts?.map((part) => ({ '@type': 'HowToSupply', name: part })),
+    mainEntityOfPage: absoluteUrl(pagePath),
+  };
+  const breadcrumbs = breadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'DIY Guides', path: '/guides' },
+    { name: guide.title, path: pagePath },
+  ]);
   
   const getDifficultyColor = (diff: string) => {
     switch (diff) {
@@ -54,6 +122,14 @@ export default async function GuidePage({
 
   return (
     <div className="flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(guideJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) }}
+      />
       <section className="bg-vw-blue py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">

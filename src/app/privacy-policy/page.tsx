@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { createMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy - VW Repo',
-  description: 'Privacy policy for VW Repo',
-};
+export const metadata: Metadata = createMetadata({
+  title: 'Privacy Policy',
+  description: 'Privacy policy for VW Repo, including account, submitted content, usage, and security information.',
+  path: '/privacy-policy',
+});
 
 export default function PrivacyPolicy() {
   return (

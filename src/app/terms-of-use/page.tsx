@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { createMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Terms of Use - VW Repo',
-  description: 'Terms of use for VW Repo',
-};
+export const metadata: Metadata = createMetadata({
+  title: 'Terms of Use',
+  description: 'Terms of use for VW Repo, including site access, submitted content, user conduct, and limitations.',
+  path: '/terms-of-use',
+});
 
 export default function TermsOfUse() {
   return (

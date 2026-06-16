@@ -1,9 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
 import { PdfCard } from '@/components/PdfViewer';
 import UiIcon from '@/components/UiIcon';
+import { absoluteUrl, breadcrumbJsonLd, createMetadata, jsonLd, siteName, truncateDescription } from '@/lib/seo';
 
 export async function generateStaticParams() {
   const systemSlugs = new Set<string>();
@@ -13,6 +15,47 @@ export async function generateStaticParams() {
     });
   });
   return Array.from(systemSlugs).map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ gen?: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const { gen } = await searchParams;
+  const allSystems = generations.flatMap((generation) =>
+    generation.systems
+      .filter((system) => system.slug === slug)
+      .map((system) => ({ ...system, generation, generationSlug: generation.slug }))
+  );
+
+  if (allSystems.length === 0) {
+    return {
+      title: 'Volkswagen System Not Found',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const selectedGeneration = gen ? generations.find((generation) => generation.slug === gen) : null;
+  const systemInfo = selectedGeneration
+    ? allSystems.find((system) => system.generationSlug === selectedGeneration.slug) || allSystems[0]
+    : allSystems[0];
+  const title = selectedGeneration
+    ? `${selectedGeneration.name} Volkswagen ${systemInfo.name} Specs, Issues & Manuals`
+    : `Volkswagen ${systemInfo.name} Specs, Issues & Manuals`;
+  const description = selectedGeneration
+    ? `${selectedGeneration.name} Volkswagen ${systemInfo.name}: ${systemInfo.description} Find common issues, maintenance tips, specifications, DIY guides, and manuals.`
+    : `Volkswagen ${systemInfo.name} reference across generations. Compare common issues, maintenance tips, specifications, DIY guides, and manuals.`;
+
+  return createMetadata({
+    title,
+    description: truncateDescription(description),
+    path: selectedGeneration ? `/systems/${slug}?gen=${selectedGeneration.slug}` : `/systems/${slug}`,
+    image: selectedGeneration?.image,
+  });
 }
 
 export default async function SystemsPage({
@@ -58,14 +101,41 @@ export default async function SystemsPage({
     return genValues.includes(String(pdf.generation));
   });
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  const pagePath = selectedGen ? `/systems/${slug}?gen=${selectedGen.slug}` : `/systems/${slug}`;
+  const systemJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: selectedGen ? `${selectedGen.name} ${systemInfo.name}` : `Volkswagen ${systemInfo.name}`,
+    description: systemInfo.description,
+    url: absoluteUrl(pagePath),
+    publisher: {
+      '@type': 'Organization',
+      name: siteName,
+      url: absoluteUrl('/'),
+    },
+    about: selectedGen
+      ? {
+          '@type': 'Car',
+          name: `${selectedGen.name} Volkswagen`,
+        }
+      : 'Volkswagen repair and maintenance',
   };
+  const breadcrumbs = breadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    ...(selectedGen ? [{ name: selectedGen.name, path: `/generation/${selectedGen.slug}` }] : []),
+    { name: systemInfo.name, path: pagePath },
+  ]);
 
   return (
     <div className="flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(systemJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) }}
+      />
       {/* Header */}
       <section className="bg-vw-blue py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

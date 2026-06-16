@@ -1,10 +1,37 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
 import { PdfCard } from '@/components/PdfViewer';
+import { absoluteUrl, breadcrumbJsonLd, createMetadata, jsonLd, siteName, truncateDescription } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const generation = generations.find((g) => g.slug === slug);
+
+  if (!generation) {
+    return {
+      title: 'Volkswagen Generation Not Found',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  return createMetadata({
+    title: `${generation.name} Volkswagen ${generation.years} Guides, Specs & Manuals`,
+    description: truncateDescription(
+      `${generation.name} Volkswagen ${generation.years}: ${generation.description} Browse models, systems, technical specs, DIY guides, and PDF manuals.`
+    ),
+    path: `/generation/${generation.slug}`,
+    image: generation.image,
+  });
+}
 
 export default async function GenerationPage({
   params,
@@ -20,9 +47,39 @@ export default async function GenerationPage({
   const relatedPdfs = pdfs.filter(
     (pdf) => pdf.generation === generation.id || pdf.generation === generation.slug
   );
+  const pageUrl = absoluteUrl(`/generation/${generation.slug}`);
+  const generationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${generation.name} Volkswagen ${generation.years}`,
+    description: generation.description,
+    url: pageUrl,
+    image: absoluteUrl(generation.image),
+    isPartOf: {
+      '@type': 'WebSite',
+      name: siteName,
+      url: absoluteUrl('/'),
+    },
+    about: generation.models.map((model) => ({
+      '@type': 'Car',
+      name: `Volkswagen ${model}`,
+    })),
+  };
+  const breadcrumbs = breadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: generation.name, path: `/generation/${generation.slug}` },
+  ]);
   
   return (
     <div className="flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(generationJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) }}
+      />
       <section className="bg-vw-blue py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-2 text-sm text-gray-300 mb-2">

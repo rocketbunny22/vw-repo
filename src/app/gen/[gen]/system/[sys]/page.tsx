@@ -1,6 +1,34 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { generations } from '@/data/generations';
 import { notFound } from 'next/navigation';
+import { createMetadata, truncateDescription } from '@/lib/seo';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ gen: string; sys: string }>;
+}): Promise<Metadata> {
+  const { gen, sys } = await params;
+  const generation = generations.find((item) => item.slug === gen);
+  const system = generation?.systems.find((item) => item.slug === sys);
+
+  if (!generation || !system) {
+    return {
+      title: 'Volkswagen System Not Found',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  return createMetadata({
+    title: `${generation.name} Volkswagen ${system.name} Specs`,
+    description: truncateDescription(
+      `${generation.name} Volkswagen ${system.name}: ${system.description} Browse specifications, common issues, maintenance notes, and related resources.`
+    ),
+    path: `/systems/${sys}?gen=${gen}`,
+    image: generation.image,
+  });
+}
 
 export default async function SystemPage({
   params,
