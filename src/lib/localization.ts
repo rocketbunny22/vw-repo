@@ -18,6 +18,10 @@ const directEnglishToSpanish: Record<string, string> = {
   '/terms-of-use': '/es-mx/terminos-de-uso',
 };
 
+const directSpanishToEnglish = Object.fromEntries(
+  Object.entries(directEnglishToSpanish).map(([englishPath, spanishPath]) => [spanishPath, englishPath]),
+) as Record<string, string>;
+
 export const generationSlugsEs: Record<string, string> = {
   mk1: 'mk1', mk2: 'mk2', mk3: 'mk3', mk4: 'mk4', mk5: 'mk5', mk6: 'mk6', mk7: 'mk7', mk8: 'mk8',
   type1: 'tipo-1', type2: 'tipo-2', aircooled: 'enfriados-por-aire', watercooled: 'enfriados-por-agua',
@@ -61,8 +65,16 @@ export function toSpanishPath(pathname: string) {
 
 export function toEnglishPath(pathname: string) {
   const { path, query } = splitPath(pathname);
-  const direct = Object.entries(directEnglishToSpanish).find(([, spanish]) => spanish === path);
-  if (direct) return `${direct[0]}${query}`;
+  if (Object.prototype.hasOwnProperty.call(directEnglishToSpanish, path)) {
+    return `${path}${query}`;
+  }
+
+  const direct = directSpanishToEnglish[path];
+  if (direct) return `${direct}${query}`;
+
+  if (!path.startsWith('/es-mx/')) {
+    return `${path}${query}`;
+  }
 
   if (path.startsWith('/es-mx/generaciones/')) {
     const slug = path.slice('/es-mx/generaciones/'.length);
