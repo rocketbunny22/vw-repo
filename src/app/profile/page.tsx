@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
 import UiIcon from '@/components/UiIcon';
+import LanguageToggle from '@/components/LanguageToggle';
 
 interface User {
   id: string;
@@ -481,6 +482,16 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-vw-blue">Language</h2>
+                    <p className="mt-1 text-sm text-gray-500">Display language</p>
+                  </div>
+                  <LanguageToggle variant="settings" />
+                </div>
               </div>
 
               {/* Password Change Card */}
