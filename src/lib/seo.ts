@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SiteLocale, toEnglishPath, toSpanishPath } from '@/lib/localization';
 
 export const siteName = 'VW Repo';
 export const defaultSiteUrl = 'https://vwrepo.com';
@@ -15,6 +16,16 @@ export const defaultKeywords = [
   'VW PDF manuals',
   'air-cooled VW',
   'water-cooled VW',
+];
+
+export const spanishKeywords = [
+  'manuales de reparación Volkswagen',
+  'manuales VW',
+  'guías de reparación Volkswagen',
+  'especificaciones técnicas VW',
+  'mantenimiento Volkswagen',
+  'manuales PDF Volkswagen',
+  'Volkswagen enfriado por aire',
 ];
 
 export function absoluteUrl(path = '/') {
@@ -38,6 +49,7 @@ export function createMetadata({
   image = '/images/mk1.jpg',
   robots,
   type = 'website',
+  locale = 'en',
 }: {
   title?: string;
   description?: string;
@@ -45,16 +57,24 @@ export function createMetadata({
   image?: string;
   robots?: Metadata['robots'];
   type?: 'website' | 'article';
+  locale?: SiteLocale;
 }): Metadata {
   const url = absoluteUrl(path);
   const imageUrl = absoluteUrl(image);
+  const englishPath = locale === 'es-MX' ? toEnglishPath(path) : path;
+  const spanishPath = locale === 'es-MX' ? path : toSpanishPath(path);
 
   return {
     title: title ? { absolute: `${title} | ${siteName}` } : undefined,
     description,
-    keywords: defaultKeywords,
+    keywords: locale === 'es-MX' ? spanishKeywords : defaultKeywords,
     alternates: {
       canonical: url,
+      languages: {
+        'en-US': absoluteUrl(englishPath),
+        'es-MX': absoluteUrl(spanishPath),
+        'x-default': absoluteUrl(englishPath),
+      },
     },
     openGraph: {
       title: title ? `${title} | ${siteName}` : siteName,
@@ -66,10 +86,13 @@ export function createMetadata({
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: title ? `${title} on ${siteName}` : `${siteName} Volkswagen knowledge base`,
+          alt: title
+            ? locale === 'es-MX' ? `${title} en ${siteName}` : `${title} on ${siteName}`
+            : locale === 'es-MX' ? `Recursos Volkswagen en ${siteName}` : `${siteName} Volkswagen knowledge base`,
         },
       ],
-      locale: 'en_US',
+      locale: locale === 'es-MX' ? 'es_MX' : 'en_US',
+      alternateLocale: locale === 'es-MX' ? ['en_US'] : ['es_MX'],
       type,
     },
     twitter: {

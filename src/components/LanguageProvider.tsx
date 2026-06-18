@@ -19,11 +19,14 @@ const originalText = new WeakMap<Text, string>();
 const localeStorageKey = 'vw_repo_locale';
 let translating = false;
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window === 'undefined') return 'en';
-    return window.localStorage.getItem(localeStorageKey) === 'es-MX' ? 'es-MX' : 'en';
-  });
+export function LanguageProvider({
+  children,
+  initialLocale = 'en',
+}: {
+  children: React.ReactNode;
+  initialLocale?: Locale;
+}) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   useEffect(() => {
     document.documentElement.lang = locale === 'es-MX' ? 'es-MX' : 'en';

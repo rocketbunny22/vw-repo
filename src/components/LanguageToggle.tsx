@@ -1,6 +1,8 @@
 'use client';
 
 import { useLanguage } from '@/components/LanguageProvider';
+import { usePathname, useRouter } from 'next/navigation';
+import { localizedPath } from '@/lib/localization';
 
 export default function LanguageToggle({
   className = '',
@@ -9,7 +11,9 @@ export default function LanguageToggle({
   className?: string;
   variant?: 'nav' | 'settings';
 }) {
-  const { locale, toggleLocale } = useLanguage();
+  const { locale, setLocale } = useLanguage();
+  const pathname = usePathname();
+  const router = useRouter();
   const spanishActive = locale === 'es-MX';
   const isSettings = variant === 'settings';
   const baseClassName = isSettings
@@ -24,11 +28,16 @@ export default function LanguageToggle({
   const dividerClassName = isSettings
     ? 'bg-gray-300'
     : 'bg-white/30 transition-colors group-hover:bg-white/50';
+  const changeLocale = () => {
+    const nextLocale = spanishActive ? 'en' : 'es-MX';
+    setLocale(nextLocale);
+    router.push(localizedPath(pathname, nextLocale));
+  };
 
   return (
     <button
       type="button"
-      onClick={toggleLocale}
+      onClick={changeLocale}
       className={`group inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium ${baseClassName} ${className}`}
       aria-label={spanishActive ? 'Switch to English' : 'Cambiar a español'}
       title={spanishActive ? 'Switch to English' : 'Cambiar a español'}

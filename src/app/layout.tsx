@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -35,6 +36,11 @@ export const metadata: Metadata = {
   publisher: siteName,
   alternates: {
     canonical: absoluteUrl('/'),
+    languages: {
+      'en-US': absoluteUrl('/'),
+      'es-MX': absoluteUrl('/es-mx'),
+      'x-default': absoluteUrl('/'),
+    },
   },
   openGraph: {
     title: "VW Repo | Volkswagen Repair Manuals, DIY Guides & Technical Specs",
@@ -75,13 +81,27 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const locale = requestHeaders.get('x-vw-locale') === 'es-MX' ? 'es-MX' : 'en';
+  const localizedWebsiteJsonLd = locale === 'es-MX'
+    ? {
+        ...websiteJsonLd,
+        inLanguage: 'es-MX',
+        description: 'Manuales, guías de reparación y datos técnicos para entusiastas de Volkswagen en México.',
+        potentialAction: {
+          ...websiteJsonLd.potentialAction,
+          target: `${absoluteUrl('/es-mx/buscar')}?q={search_term_string}`,
+        },
+      }
+    : { ...websiteJsonLd, inLanguage: 'en-US' };
+
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang={locale} className="h-full antialiased">
       <body className={`${inter.variable} min-h-full flex flex-col font-sans`}>
         <script
           type="application/ld+json"
@@ -89,9 +109,9 @@ export default function RootLayout({
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: jsonLd(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLd(localizedWebsiteJsonLd) }}
         />
-        <LanguageProvider>
+        <LanguageProvider initialLocale={locale}>
           <Navbar />
           <main className="flex-grow">
             {children}
