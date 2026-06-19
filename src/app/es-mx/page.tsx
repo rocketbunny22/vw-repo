@@ -34,14 +34,29 @@ export default function SpanishHomePage() {
           <p className="mx-auto mb-8 max-w-3xl text-xl text-gray-200">
             Manuales, guías de reparación y datos técnicos para entusiastas de Volkswagen en México.
           </p>
-          <form action="/search" method="get" className="mx-auto flex max-w-3xl flex-col gap-3 bg-white p-2 shadow-2xl sm:flex-row">
-            <input
-              type="search"
-              name="q"
-              placeholder="Buscar manuales, guías, sistemas o modelos"
-              className="min-w-0 flex-1 border border-gray-300 px-4 py-3 text-gray-950 focus:border-vw-gold focus:outline-none"
-            />
-            <button type="submit" className="bg-vw-gold px-7 py-3 font-bold text-vw-blue hover:bg-vw-gold-light">
+          <form
+            action="/es-mx/buscar"
+            method="get"
+            className="mx-auto mb-5 flex max-w-3xl flex-col gap-3 rounded-xl bg-white p-2 text-left shadow-2xl ring-4 ring-vw-gold/50 sm:flex-row"
+          >
+            <div className="relative flex-1">
+              <svg
+                className="absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-vw-blue"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m1.1-5.4a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
+              </svg>
+              <input
+                type="text"
+                name="q"
+                placeholder="Buscar manuales, guías, sistemas o modelos..."
+                className="w-full rounded-lg border-2 border-vw-blue/20 bg-white py-4 pl-14 pr-5 text-lg font-medium text-gray-950 placeholder:text-gray-500 focus:border-vw-gold focus:outline-none focus:ring-4 focus:ring-vw-gold/30"
+              />
+            </div>
+            <button type="submit" className="rounded-lg bg-vw-gold px-8 py-4 text-lg font-bold text-vw-blue shadow-md transition-colors hover:bg-vw-gold-light">
               Buscar
             </button>
           </form>
