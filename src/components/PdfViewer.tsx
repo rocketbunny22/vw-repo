@@ -51,19 +51,27 @@ export function PdfCard({ pdf }: PdfCardProps) {
               </Link>
             </div>
           )}
-          <div className="flex gap-2 mt-4">
+          <div className="grid grid-cols-1 gap-2 mt-4 sm:grid-cols-3">
             <button
               onClick={() => setViewingPdf(pdf)}
-              className="flex-1 text-center btn-secondary py-2"
+              className="text-center btn-secondary py-2"
             >
-              View
+              Preview
             </button>
             <a
               href={pdf.url}
               download
-              className="flex-1 text-center btn-primary py-2"
+              className="text-center btn-primary py-2"
             >
               Download
+            </a>
+            <a
+              href={`${pdf.url}?view=true`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-center btn-secondary py-2"
+            >
+              Open
             </a>
           </div>
         </div>
@@ -88,15 +96,25 @@ export function PdfCard({ pdf }: PdfCardProps) {
                 title={viewingPdf.title}
               />
             </div>
-            <div className="p-4 border-t flex justify-between items-center">
+            <div className="p-4 border-t flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
               <span className="text-sm text-gray-500">{formatFileSize(viewingPdf.fileSize)}</span>
-              <a
-                href={viewingPdf.url}
-                download
-                className="px-4 py-2 bg-vw-blue text-white rounded-md hover:bg-blue-700"
-              >
-                Download PDF
-              </a>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href={viewingPdf.url}
+                  download
+                  className="btn-primary px-4 py-2"
+                >
+                  Download
+                </a>
+                <a
+                  href={`${viewingPdf.url}?view=true`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-secondary px-4 py-2"
+                >
+                  Open
+                </a>
+              </div>
             </div>
           </div>
         </div>

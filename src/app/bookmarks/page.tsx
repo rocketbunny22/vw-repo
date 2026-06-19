@@ -82,12 +82,14 @@ export default function BookmarksPage() {
                             <h3 className="font-bold text-vw-dark">{pdf.title}</h3>
                             {pdf.description && <p className="text-sm text-gray-600 mt-1">{pdf.description}</p>}
                             <div className="flex gap-2 mt-3">
-                              <button
-                                onClick={() => window.open(`${pdf.url}?view=true`, '_blank')}
+                              <a
+                                href={`${pdf.url}?view=true`}
+                                target="_blank"
+                                rel="noreferrer"
                                 className="btn-secondary px-4 py-2"
                               >
-                                View
-                              </button>
+                                Open
+                              </a>
                               <a href={pdf.url} download className="btn-primary px-4 py-2">Download</a>
                             </div>
                           </div>

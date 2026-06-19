@@ -41,7 +41,10 @@ export default async function SpanishLibraryPage() {
                       <span className="badge badge-blue">{generation?.name || pdf.generation}</span>
                       <span className="badge badge-gold">{systemNamesEs[pdf.system] || pdf.system}</span>
                     </div>
-                    <a href={pdf.url} download className="btn-primary mt-5 inline-block">Descargar PDF</a>
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      <a href={pdf.url} download className="btn-primary">Descargar</a>
+                      <a href={`${pdf.url}?view=true`} target="_blank" rel="noreferrer" className="btn-secondary">Abrir</a>
+                    </div>
                   </article>
                 );
               })}
