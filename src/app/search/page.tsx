@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { generations } from '@/data/generations';
 import { VehicleProfile } from '@/types';
 import UiIcon, { IconName } from '@/components/UiIcon';
+import { useLanguage } from '@/components/LanguageProvider';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -31,6 +32,7 @@ interface SearchResult {
 }
 
 export default function SearchPage() {
+  const { locale } = useLanguage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -47,7 +49,7 @@ export default function SearchPage() {
     setSearched(true);
 
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(trimmedQuery)}`);
+      const response = await fetch(`/api/search?q=${encodeURIComponent(trimmedQuery)}&locale=${encodeURIComponent(locale)}`);
       const data = await response.json();
       setResults(data.results || []);
     } catch (error) {
@@ -56,7 +58,7 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     async function load() {

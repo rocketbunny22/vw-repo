@@ -6,6 +6,9 @@ import { PdfDocument, VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
 import BookmarkButton from '@/components/BookmarkButton';
 import UiIcon from '@/components/UiIcon';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath, systemNamesEs } from '@/lib/localization';
+import { translateMexicanSpanish } from '@/lib/translations';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -18,6 +21,8 @@ const systemsList = [
 ];
 
 export default function LibraryPage({ searchParams }: { searchParams: Promise<{ generation?: string; system?: string; model?: string }> }) {
+  const { locale } = useLanguage();
+  const t = (value: string) => locale === 'es-MX' ? translateMexicanSpanish(value) : value;
   const [selectedGeneration, setSelectedGeneration] = useState<string>('all');
   const [selectedModel, setSelectedModel] = useState<string>('all');
   const [selectedSystem, setSelectedSystem] = useState<string>('all');
@@ -112,7 +117,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString(locale === 'es-MX' ? 'es-MX' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -123,9 +128,9 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
     <div className="flex flex-col">
       <section className="bg-vw-blue py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-white mb-4">PDF Library</h1>
+          <h1 className="text-4xl font-bold text-white mb-4">{t('PDF Library')}</h1>
           <p className="text-xl text-gray-300">
-            Download technical documents organized by generation and system.
+            {t('Download technical documents organized by generation and system.')}
           </p>
         </div>
       </section>
@@ -138,7 +143,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
               onChange={(e) => { setSelectedGeneration(e.target.value); setSelectedModel('all'); }}
               className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
             >
-              <option value="all">All Generations</option>
+              <option value="all">{t('All Generations')}</option>
               {generations.map((gen) => (
                 <option key={gen.id} value={gen.id}>
                   {gen.name}
@@ -151,7 +156,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
               className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
               disabled={!currentModels.length}
             >
-              <option value="all">All Models</option>
+              <option value="all">{t('All Models')}</option>
               {currentModels.map((model) => (
                 <option key={model} value={model}>
                   {model}
@@ -163,10 +168,10 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
               onChange={(e) => setSelectedSystem(e.target.value)}
               className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
             >
-              <option value="all">All Systems</option>
+              <option value="all">{t('All Systems')}</option>
               {systemsList.map((sys) => (
                 <option key={sys.id} value={sys.id}>
-                  {sys.name}
+                  {locale === 'es-MX' ? systemNamesEs[sys.id] || sys.name : sys.name}
                 </option>
               ))}
             </select>
@@ -180,14 +185,14 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
                 }`}
               >
                 <UiIcon name="vehicle" className="mr-1.5 h-4 w-4" />
-                My Car
+                {t('My Car')}
               </button>
             )}
             <Link
-              href="/upload"
+              href={localizedPath('/upload', locale)}
               className="ml-auto btn-secondary py-2 px-4 text-center"
             >
-              Upload PDF
+              {t('Upload PDF')}
             </Link>
           </div>
         </div>
@@ -197,16 +202,16 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {loading ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">Loading PDFs...</p>
+              <p className="text-gray-500">{t('Loading PDFs...')}</p>
             </div>
           ) : filteredPdfs.length === 0 ? (
             <div className="text-center py-12">
               <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <p className="text-gray-500">No PDFs found</p>
-              <Link href="/upload" className="mt-4 inline-block text-vw-blue hover:underline">
-                Upload your first PDF
+              <p className="text-gray-500">{t('No PDFs found')}</p>
+              <Link href={localizedPath('/upload', locale)} className="mt-4 inline-block text-vw-blue hover:underline">
+                {t('Upload your first PDF')}
               </Link>
             </div>
           ) : (
@@ -237,7 +242,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
                     <div className="flex flex-wrap gap-2 mb-4">
                       <span className="badge badge-blue">{getGenerationName(pdf.generation)}</span>
                       {pdf.model && <span className="badge badge-green">{pdf.model}</span>}
-                      <span className="badge badge-gold">{getSystemName(pdf.system)}</span>
+                      <span className="badge badge-gold">{locale === 'es-MX' ? systemNamesEs[pdf.system] || getSystemName(pdf.system) : getSystemName(pdf.system)}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm text-gray-500">
                       <span>{formatFileSize(pdf.fileSize)}</span>
@@ -256,14 +261,14 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
                         onClick={() => setViewingPdf(pdf)}
                         className="text-center btn-secondary py-2"
                       >
-                        Preview
+                        {t('Preview')}
                       </button>
                       <a
                         href={pdf.url}
                         download
                         className="text-center btn-primary py-2"
                       >
-                        Download
+                        {t('Download')}
                       </a>
                       <a
                         href={`${pdf.url}?view=true`}
@@ -271,7 +276,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
                         rel="noreferrer"
                         className="text-center btn-secondary py-2"
                       >
-                        Open
+                        {t('Open')}
                       </a>
                     </div>
                   </div>
@@ -307,7 +312,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
                       download
                       className="btn-primary px-4 py-2"
                     >
-                      Download
+                      {t('Download')}
                     </a>
                     <a
                       href={`${viewingPdf.url}?view=true`}
@@ -315,7 +320,7 @@ export default function LibraryPage({ searchParams }: { searchParams: Promise<{ 
                       rel="noreferrer"
                       className="btn-secondary px-4 py-2"
                     >
-                      Open
+                      {t('Open')}
                     </a>
                   </div>
                 </div>

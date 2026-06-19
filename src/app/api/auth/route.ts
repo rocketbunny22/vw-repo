@@ -13,27 +13,29 @@ const redis = process.env.UPSTASH_REDIS_REST_URL
   ? new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
   : null;
 
-async function sendPasswordResetEmail(email: string, resetToken: string) {
+async function sendPasswordResetEmail(email: string, resetToken: string, locale: 'en' | 'es-MX' = 'en') {
   if (!resend) {
     console.log(`PASSWORD RESET TOKEN for ${email}: ${resetToken}`);
     return;
   }
 
-  const resetUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+  const resetPath = locale === 'es-MX' ? '/es-mx/restablecer-contrasena' : '/reset-password';
+  const resetUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${resetPath}?token=${resetToken}`;
+  const spanish = locale === 'es-MX';
   
   try {
     await resend.emails.send({
       from: 'VW Repo <vwrepo@groundedcyber.com>',
       to: email,
-      subject: 'Reset your VW Repo password',
+      subject: spanish ? 'Restablece tu contraseña de VW Repo' : 'Reset your VW Repo password',
       html: `
-        <h1>Reset your password</h1>
-        <p>Click the button below to reset your password:</p>
+        <h1>${spanish ? 'Restablece tu contraseña' : 'Reset your password'}</h1>
+        <p>${spanish ? 'Usa el siguiente botón para restablecer tu contraseña:' : 'Click the button below to reset your password:'}</p>
         <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background: #0066cc; color: white; text-decoration: none; border-radius: 4px;">
-          Reset Password
+          ${spanish ? 'Restablecer contraseña' : 'Reset Password'}
         </a>
-        <p>Or copy this link: ${resetUrl}</p>
-        <p>This link expires in 15 minutes.</p>
+        <p>${spanish ? 'También puedes copiar este enlace:' : 'Or copy this link:'} ${resetUrl}</p>
+        <p>${spanish ? 'Este enlace vence en 15 minutos.' : 'This link expires in 15 minutes.'}</p>
       `,
     });
     console.log(`Password reset email sent to ${email}`);
@@ -435,7 +437,7 @@ export async function POST(request: NextRequest) {
         const tokens = await getResetTokens();
         tokens.push({ email, token, used: false });
         await saveResetTokens(tokens);
-        await sendPasswordResetEmail(email, token);
+        await sendPasswordResetEmail(email, token, body.locale === 'es-MX' ? 'es-MX' : 'en');
       }
 
       clearRateLimit(`reset:${email}`);

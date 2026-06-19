@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 export default function SignupPage() {
+  const { locale } = useLanguage();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -37,7 +40,7 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (data.success) {
-        window.location.assign('/my-vw?welcome=1');
+        window.location.assign(localizedPath('/my-vw?welcome=1', locale));
       } else {
         setError(data.error || 'Signup failed');
       }
@@ -133,7 +136,7 @@ export default function SignupPage() {
 
             <p className="mt-6 text-center text-sm text-gray-600">
               Already have an account?{' '}
-              <Link href="/login" className="text-vw-blue hover:underline">
+              <Link href={localizedPath('/login', locale)} className="text-vw-blue hover:underline">
                 Sign in
               </Link>
             </p>

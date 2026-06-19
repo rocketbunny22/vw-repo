@@ -5,6 +5,8 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { generations } from '@/data/generations';
 import { diyGuides } from '@/data/diyGuides';
 import { spanishGuideContent } from '@/data/diyGuides.es-MX';
+import { getAllPdfs } from '@/data/pdfs';
+import { PdfCard } from '@/components/PdfViewer';
 import { breadcrumbJsonLd, createMetadata, jsonLd, truncateDescription } from '@/lib/seo';
 import { englishGenerationSlug, generationDescriptionsEs, generationSlugsEs, systemNamesEs, toSpanishPath } from '@/lib/localization';
 
@@ -34,6 +36,9 @@ export default async function SpanishGenerationPage({ params }: { params: Promis
   if (slug !== generationSlugsEs[generation.slug]) permanentRedirect(path);
 
   const guides = diyGuides.filter((guide) => guide.generation === generation.id && spanishGuideContent[guide.slug]);
+  const relatedPdfs = (await getAllPdfs())
+    .filter((pdf) => pdf.approved !== false && pdf.generation === generation.id)
+    .slice(0, 6);
   const breadcrumbs = breadcrumbJsonLd([
     { name: 'Inicio', path: '/es-mx' },
     { name: generation.name, path },
@@ -68,6 +73,20 @@ export default async function SpanishGenerationPage({ params }: { params: Promis
           </div>
         </div>
       </section>
+
+      {relatedPdfs.length > 0 && (
+        <section className="bg-white py-12" aria-labelledby="pdfs-generacion-title">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <h2 id="pdfs-generacion-title" className="text-2xl font-bold text-vw-blue">PDFs relacionados</h2>
+              <Link href={toSpanishPath(`/library?generation=${generation.id}`)} className="font-medium text-vw-blue hover:underline">Ver todos</Link>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {relatedPdfs.map((pdf) => <PdfCard key={pdf.id} pdf={pdf} />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="bg-white py-12" aria-labelledby="modelos-title">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

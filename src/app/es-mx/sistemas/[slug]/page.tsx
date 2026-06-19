@@ -4,6 +4,8 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { generations } from '@/data/generations';
 import { diyGuides } from '@/data/diyGuides';
 import { spanishGuideContent } from '@/data/diyGuides.es-MX';
+import { getAllPdfs } from '@/data/pdfs';
+import { PdfCard } from '@/components/PdfViewer';
 import { breadcrumbJsonLd, createMetadata, jsonLd, truncateDescription } from '@/lib/seo';
 import { englishGenerationSlug, englishSystemSlug, generationDescriptionsEs, systemNamesEs, systemSlugsEs, toSpanishPath } from '@/lib/localization';
 
@@ -56,6 +58,9 @@ export default async function SpanishSystemPage({
   const availableGenerations = generations.filter((generation) => generation.systems.some((system) => system.slug === englishSlug));
   const selectedGeneration = gen ? availableGenerations.find((generation) => generation.slug === englishGenerationSlug(gen)) : null;
   const guides = diyGuides.filter((guide) => guide.system === englishSlug && spanishGuideContent[guide.slug] && (!selectedGeneration || guide.generation === selectedGeneration.id));
+  const relatedPdfs = selectedGeneration
+    ? (await getAllPdfs()).filter((pdf) => pdf.approved !== false && pdf.generation === selectedGeneration.id && pdf.system === englishSlug).slice(0, 6)
+    : [];
   const path = toSpanishPath(selectedGeneration ? `/systems/${englishSlug}?gen=${selectedGeneration.slug}` : `/systems/${englishSlug}`);
   const breadcrumbs = breadcrumbJsonLd([
     { name: 'Inicio', path: '/es-mx' },
@@ -93,6 +98,20 @@ export default async function SpanishSystemPage({
           </div>
         </div>
       </section>
+
+      {relatedPdfs.length > 0 && selectedGeneration && (
+        <section className="bg-white py-12" aria-labelledby="pdfs-sistema-title">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <h2 id="pdfs-sistema-title" className="text-2xl font-bold text-vw-blue">PDFs relacionados</h2>
+              <Link href={toSpanishPath(`/library?generation=${selectedGeneration.id}&system=${englishSlug}`)} className="font-medium text-vw-blue hover:underline">Ver todos</Link>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {relatedPdfs.map((pdf) => <PdfCard key={pdf.id} pdf={pdf} />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       {guides.length > 0 && (
         <section className="bg-white py-12" aria-labelledby="guias-sistema-title">

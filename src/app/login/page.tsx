@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 export default function LoginPage() {
+  const { locale } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,7 +29,7 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (data.success) {
-        window.location.assign('/profile');
+        window.location.assign(localizedPath('/profile', locale));
       } else {
         setError(data.error || 'Invalid credentials');
       }
@@ -46,7 +49,7 @@ export default function LoginPage() {
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'resetRequest', email }),
+        body: JSON.stringify({ action: 'resetRequest', email, locale }),
       });
 
       const data = await response.json();
@@ -76,7 +79,7 @@ export default function LoginPage() {
               <p className="text-lg text-gray-700 mb-6">
                 If that email exists, a reset link has been sent.
               </p>
-              <Link href="/login" className="text-vw-blue hover:underline">
+              <Link href={localizedPath('/login', locale)} className="text-vw-blue hover:underline">
                 Back to login
               </Link>
             </div>
@@ -196,7 +199,7 @@ export default function LoginPage() {
             </p>
             <p className="mt-4 text-center text-sm text-gray-600">
               Don&apos;t have an account?{' '}
-              <Link href="/signup" className="text-vw-blue hover:underline">
+              <Link href={localizedPath('/signup', locale)} className="text-vw-blue hover:underline">
                 Create one
               </Link>
             </p>

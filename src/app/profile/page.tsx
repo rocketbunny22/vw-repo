@@ -7,6 +7,8 @@ import { VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
 import UiIcon from '@/components/UiIcon';
 import LanguageToggle from '@/components/LanguageToggle';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 interface User {
   id: string;
@@ -21,6 +23,7 @@ interface User {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { locale } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -65,7 +68,7 @@ export default function ProfilePage() {
         const data = await response.json();
 
         if (!data.authenticated) {
-          router.push('/login');
+          router.push(localizedPath('/login', locale));
           return;
         }
 
@@ -79,7 +82,7 @@ export default function ProfilePage() {
         setEditInstagram(data.user.profileLinks?.instagram || '');
         setEditVwVortex(data.user.profileLinks?.vwVortex || '');
       } catch {
-        router.push('/login');
+        router.push(localizedPath('/login', locale));
       } finally {
         if (isActive) {
           setLoading(false);
@@ -92,7 +95,7 @@ export default function ProfilePage() {
     return () => {
       isActive = false;
     };
-  }, [router]);
+  }, [router, locale]);
 
   useEffect(() => {
     if (!user) return;
@@ -196,7 +199,7 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'logout' }),
       });
-      router.push('/');
+      router.push(localizedPath('/', locale));
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -296,7 +299,7 @@ export default function ProfilePage() {
       const data = await response.json();
 
       if (data.success) {
-        router.push('/');
+        router.push(localizedPath('/', locale));
       } else {
         alert(data.error || 'Failed to delete account');
       }

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { generations } from '@/data/generations';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 interface User {
   id: string;
@@ -82,6 +84,7 @@ const systemOptions = ['engine', 'transmission', 'suspension', 'brakes', 'electr
 
 export default function AdminPage() {
   const router = useRouter();
+  const { locale } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [pdfs, setPdfs] = useState<Pdf[]>([]);
@@ -107,18 +110,18 @@ export default function AdminPage() {
       const data = await response.json();
       
       if (!data.authenticated) {
-        router.push('/login');
+        router.push(localizedPath('/login', locale));
         return;
       }
       
       if (data.user.role !== 'admin') {
-        router.push('/');
+        router.push(localizedPath('/', locale));
         return;
       }
       
       loadData();
     } catch {
-      router.push('/login');
+      router.push(localizedPath('/login', locale));
     } finally {
       setLoading(false);
     }
@@ -297,7 +300,7 @@ export default function AdminPage() {
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString(locale === 'es-MX' ? 'es-MX' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

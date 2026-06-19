@@ -25,12 +25,14 @@ Public browsing:
 - `/library`
 - `/search`
 - `/users/[username]`
+- `/es-mx` and localized generation, system, guide, library, search, legal, and user-profile routes
 
 Account and personalization:
 
 - `/signup`
 - `/login`
 - `/reset-password`
+- `/es-mx/restablecer-contrasena`
 - `/profile`
 - `/my-vw`
 - `/bookmarks`
@@ -117,6 +119,14 @@ Authenticated users submit new guides through `/submit-guide`. Submitted guides 
 - Static DIY guide metadata and content
 
 Results are scored by exact query and token matches. PDF text matches include snippets and are marked with `matchSource: "pdf-text"`.
+
+Spanish searches send `locale=es-MX`, normalize accented queries, include Spanish generation, system, and built-in guide content, and return localized result URLs. Approved user-submitted guides are searchable in both locales.
+
+## Localization
+
+Spanish routes live under `/es-mx`. `src/proxy.ts` marks the request locale, the root layout emits the matching document language and structured data, and `src/lib/localization.ts` owns route and slug mappings. Public Spanish generation, system, guide, library, and search pages use localized metadata and content. The Spanish route layout also localizes shared interactive account, contribution, PDF, comment, and admin components while preserving their API behavior.
+
+Password-reset requests include the active locale so both the email copy and reset destination remain in the Spanish route tree. Spanish public user profiles are available under `/es-mx/usuarios/[username]`.
 
 ## Admin Flow
 

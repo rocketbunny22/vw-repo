@@ -2,9 +2,12 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 function ResetPasswordForm() {
   const router = useRouter();
+  const { locale } = useLanguage();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   
@@ -41,7 +44,7 @@ function ResetPasswordForm() {
 
       if (data.success) {
         setSuccess(true);
-        setTimeout(() => router.push('/login'), 2000);
+        setTimeout(() => router.push(localizedPath('/login', locale)), 2000);
       } else {
         setError(data.error || 'Failed to reset password');
       }

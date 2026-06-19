@@ -4,8 +4,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import BookmarkButton from '@/components/BookmarkButton';
 import { DiyGuide, PdfDocument } from '@/types';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 export default function BookmarksPage() {
+  const { locale } = useLanguage();
   const [pdfs, setPdfs] = useState<PdfDocument[]>([]);
   const [guides, setGuides] = useState<DiyGuide[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,14 +65,14 @@ export default function BookmarksPage() {
           ) : !authenticated ? (
             <div className="bg-white rounded-lg shadow-md p-8">
               <p className="text-gray-600 mb-4">Sign in to save PDFs and guides.</p>
-              <Link href="/login" className="btn-primary inline-block">Sign In</Link>
+              <Link href={localizedPath('/login', locale)} className="btn-primary inline-block">Sign In</Link>
             </div>
           ) : (
             <>
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-2xl font-bold text-vw-blue">PDFs</h2>
-                  <Link href="/library" className="text-sm text-vw-blue hover:underline">Browse PDFs</Link>
+                  <Link href={localizedPath('/library', locale)} className="text-sm text-vw-blue hover:underline">Browse PDFs</Link>
                 </div>
                 {pdfs.length === 0 ? (
                   <p className="text-gray-500 bg-white rounded-lg p-6">No saved PDFs yet.</p>
@@ -111,7 +114,7 @@ export default function BookmarksPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-2xl font-bold text-vw-blue">DIY Guides</h2>
-                  <Link href="/guides" className="text-sm text-vw-blue hover:underline">Browse Guides</Link>
+                  <Link href={localizedPath('/guides', locale)} className="text-sm text-vw-blue hover:underline">Browse Guides</Link>
                 </div>
                 {guides.length === 0 ? (
                   <p className="text-gray-500 bg-white rounded-lg p-6">No saved guides yet.</p>

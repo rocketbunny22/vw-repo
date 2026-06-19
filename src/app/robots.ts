@@ -24,6 +24,7 @@ export default function robots(): MetadataRoute.Robots {
         '/es-mx/mi-vw',
         '/es-mx/perfil',
         '/es-mx/registro',
+        '/es-mx/restablecer-contrasena',
         '/es-mx/subir-pdf',
       ],
     },

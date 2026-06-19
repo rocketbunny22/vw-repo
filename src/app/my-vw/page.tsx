@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { diyGuides } from '@/data/diyGuides';
 import { generations } from '@/data/generations';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath, systemNamesEs } from '@/lib/localization';
 import {
   DiyGuide,
   MaintenanceChecklist,
@@ -85,6 +87,10 @@ function getSystemName(systemId: string) {
 
 export default function MyVwPage() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const localizedSystemName = (systemId: string) => locale === 'es-MX'
+    ? systemNamesEs[systemId] || getSystemName(systemId)
+    : getSystemName(systemId);
   const [user, setUser] = useState<User | null>(null);
   const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
   const [savedPdfs, setSavedPdfs] = useState<PdfDocument[]>([]);
@@ -106,7 +112,7 @@ export default function MyVwPage() {
         const authData = await authResponse.json();
 
         if (!authData.authenticated) {
-          router.push('/login');
+          router.push(localizedPath('/login', locale));
           return;
         }
 
@@ -156,7 +162,7 @@ export default function MyVwPage() {
     return () => {
       isActive = false;
     };
-  }, [router]);
+  }, [router, locale]);
 
   const vehicleGeneration = useMemo(() => (
     vehicle ? generations.find((generation) => generation.id === vehicle.generation) || null : null
@@ -319,7 +325,7 @@ export default function MyVwPage() {
               </div>
               <div className="grid grid-cols-1 divide-y divide-gray-200 md:grid-cols-5 md:divide-x md:divide-y-0">
                 {welcomeActions.map((action) => (
-                  <Link key={action.title} href={action.href} className="block p-5 hover:bg-gray-50">
+                  <Link key={action.title} href={action.href.startsWith('#') ? action.href : localizedPath(action.href, locale)} className="block p-5 hover:bg-gray-50">
                     <h3 className="font-bold text-vw-dark">{action.title}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-gray-600">{action.description}</p>
                   </Link>
@@ -337,7 +343,7 @@ export default function MyVwPage() {
                       <h2 className="text-2xl font-bold text-vw-blue">Garage</h2>
                       <p className="text-gray-600 mt-1">Your current car context.</p>
                     </div>
-                    <Link href="/profile" className="btn-secondary px-4 py-2 text-sm">
+                    <Link href={localizedPath('/profile', locale)} className="btn-secondary px-4 py-2 text-sm">
                       {vehicle ? 'Edit Garage' : 'Add Car'}
                     </Link>
                   </div>
@@ -363,13 +369,13 @@ export default function MyVwPage() {
                       </p>
                       <p className="text-gray-700 mt-4">{vehicleGeneration.description}</p>
                       <div className="flex flex-wrap gap-2 mt-5">
-                        <Link href={`/generation/${vehicleGeneration.slug}`} className="btn-primary px-4 py-2 text-sm">
+                        <Link href={localizedPath(`/generation/${vehicleGeneration.slug}`, locale)} className="btn-primary px-4 py-2 text-sm">
                           View Generation
                         </Link>
-                        <Link href={`/library?generation=${vehicleGeneration.id}`} className="btn-secondary px-4 py-2 text-sm">
+                        <Link href={localizedPath(`/library?generation=${vehicleGeneration.id}`, locale)} className="btn-secondary px-4 py-2 text-sm">
                           Matching PDFs
                         </Link>
-                        <Link href={`/guides?generation=${vehicleGeneration.id}`} className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+                        <Link href={localizedPath(`/guides?generation=${vehicleGeneration.id}`, locale)} className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
                           Matching Guides
                         </Link>
                       </div>
@@ -378,7 +384,7 @@ export default function MyVwPage() {
                 ) : (
                   <div className="p-6">
                     <p className="text-gray-600 mb-4">Add a vehicle to turn this into a personalized VW workspace.</p>
-                    <Link href="/profile" className="btn-primary inline-block">Set Up Garage</Link>
+                    <Link href={localizedPath('/profile', locale)} className="btn-primary inline-block">Set Up Garage</Link>
                   </div>
                 )}
               </div>
@@ -409,7 +415,7 @@ export default function MyVwPage() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="font-bold text-vw-dark">{checklist.title}</h3>
                               <span className="badge badge-gold">{checklist.difficulty}</span>
-                              {checklist.system && <span className="badge badge-blue">{getSystemName(checklist.system)}</span>}
+                              {checklist.system && <span className="badge badge-blue">{localizedSystemName(checklist.system)}</span>}
                             </div>
                             <p className="text-sm text-gray-600 mt-1">{checklist.description}</p>
                           </div>
@@ -445,7 +451,7 @@ export default function MyVwPage() {
                                   <span className="block text-sm text-gray-600 mt-1">{item.detail}</span>
                                   {item.href && (
                                     <Link
-                                      href={item.href}
+                                      href={localizedPath(item.href, locale)}
                                       onClick={(event) => event.stopPropagation()}
                                       className="inline-block text-sm text-vw-blue hover:underline mt-2"
                                     >
@@ -468,7 +474,7 @@ export default function MyVwPage() {
               <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-vw-blue">Saved Items</h2>
-                  <Link href="/bookmarks" className="text-sm text-vw-blue hover:underline">View all</Link>
+                  <Link href={localizedPath('/bookmarks', locale)} className="text-sm text-vw-blue hover:underline">View all</Link>
                 </div>
                 {savedPdfs.length === 0 && savedGuides.length === 0 ? (
                   <p className="text-sm text-gray-600">Save PDFs and guides to build a quick repair queue.</p>
@@ -477,13 +483,13 @@ export default function MyVwPage() {
                     {savedGuides.slice(0, 2).map((guide) => (
                       <Link key={guide.id} href={`/guides/${guide.slug}`} className="block border-b border-gray-100 pb-3 last:border-b-0">
                         <p className="font-medium text-vw-dark hover:text-vw-blue">{guide.title}</p>
-                        <p className="text-xs text-gray-500 mt-1">{guide.timeEstimate} - {getSystemName(guide.system)}</p>
+                        <p className="text-xs text-gray-500 mt-1">{guide.timeEstimate} - {localizedSystemName(guide.system)}</p>
                       </Link>
                     ))}
                     {savedPdfs.slice(0, 2).map((pdf) => (
                       <a key={pdf.id} href={`${pdf.url}?view=true`} target="_blank" rel="noreferrer" className="block border-b border-gray-100 pb-3 last:border-b-0">
                         <p className="font-medium text-vw-dark hover:text-vw-blue">{pdf.title}</p>
-                        <p className="text-xs text-gray-500 mt-1">{getSystemName(pdf.system)}</p>
+                        <p className="text-xs text-gray-500 mt-1">{localizedSystemName(pdf.system)}</p>
                       </a>
                     ))}
                   </div>
@@ -496,7 +502,7 @@ export default function MyVwPage() {
                   {recommendedSystems.map((system) => (
                     <Link
                       key={system.id}
-                      href={`/systems/${system.slug}${vehicleGeneration ? `?gen=${vehicleGeneration.id}` : ''}`}
+                      href={localizedPath(`/systems/${system.slug}${vehicleGeneration ? `?gen=${vehicleGeneration.id}` : ''}`, locale)}
                       className="block rounded-md border border-gray-200 p-3 hover:border-vw-gold hover:bg-gray-50"
                     >
                       <p className="font-medium text-vw-dark">{system.name}</p>
@@ -509,7 +515,7 @@ export default function MyVwPage() {
               <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-vw-blue">Next Reads</h2>
-                  <Link href="/guides" className="text-sm text-vw-blue hover:underline">Guides</Link>
+                  <Link href={localizedPath('/guides', locale)} className="text-sm text-vw-blue hover:underline">Guides</Link>
                 </div>
                 <div className="space-y-3">
                   {recommendedGuides.map((guide) => (
@@ -527,13 +533,13 @@ export default function MyVwPage() {
               <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-vw-blue">Useful PDFs</h2>
-                  <Link href="/library" className="text-sm text-vw-blue hover:underline">Library</Link>
+                  <Link href={localizedPath('/library', locale)} className="text-sm text-vw-blue hover:underline">Library</Link>
                 </div>
                 <div className="space-y-3">
                   {recommendedPdfs.map((pdf) => (
                     <a key={pdf.id} href={`${pdf.url}?view=true`} target="_blank" rel="noreferrer" className="block border-b border-gray-100 pb-3 last:border-b-0">
                       <p className="font-medium text-vw-dark hover:text-vw-blue">{pdf.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">{getSystemName(pdf.system)}</p>
+                      <p className="text-xs text-gray-500 mt-1">{localizedSystemName(pdf.system)}</p>
                     </a>
                   ))}
                   {recommendedPdfs.length === 0 && (

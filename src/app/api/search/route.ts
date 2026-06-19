@@ -4,6 +4,9 @@ import { diyGuides } from '@/data/diyGuides';
 import { getAllPdfs } from '@/data/pdfs';
 import { ensurePdfSearchText } from '@/lib/pdfBackfill';
 import { DiyGuide, PdfDocument } from '@/types';
+import { spanishGuideContent } from '@/data/diyGuides.es-MX';
+import { generationDescriptionsEs, systemNamesEs, toSpanishPath } from '@/lib/localization';
+import { getUserGuides } from '@/data/guides';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +29,7 @@ const MAX_RESULTS = 80;
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q')?.trim() || '';
+  const locale = searchParams.get('locale') === 'es-MX' ? 'es-MX' : 'en';
 
   if (!query) {
     return NextResponse.json({ results: [] });
@@ -38,11 +42,20 @@ export async function GET(request: NextRequest) {
 
   const pdfs = await ensurePdfSearchText((await getAllPdfs()).filter((pdf) => pdf.approved !== false));
 
+  const approvedUserGuides = (await getUserGuides()).filter((guide) => guide.approved);
+  const allGuides = [...diyGuides, ...approvedUserGuides];
+  const searchableGuides = locale === 'es-MX'
+    ? allGuides.map((guide) => {
+        const translated = spanishGuideContent[guide.slug];
+        return translated ? { ...guide, title: translated.title, content: translated.content, tools: translated.tools, parts: translated.parts } : guide;
+      })
+    : allGuides;
+
   const results = [
-    ...searchGenerationSystems(query, terms),
-    ...searchGenerations(query, terms),
+    ...searchGenerationSystems(query, terms, locale),
+    ...searchGenerations(query, terms, locale),
     ...searchPdfs(pdfs, query, terms),
-    ...searchGuides(diyGuides, query, terms),
+    ...searchGuides(searchableGuides, query, terms, locale),
   ]
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
     .slice(0, MAX_RESULTS);
@@ -90,7 +103,7 @@ function searchPdfs(pdfs: PdfDocument[], query: string, terms: string[]): Search
     .filter((result): result is SearchResult => result !== null);
 }
 
-function searchGuides(guides: DiyGuide[], query: string, terms: string[]): SearchResult[] {
+function searchGuides(guides: DiyGuide[], query: string, terms: string[], locale: 'en' | 'es-MX'): SearchResult[] {
   return guides
     .map((guide): SearchResult | null => {
       const metadata = [
@@ -118,7 +131,7 @@ function searchGuides(guides: DiyGuide[], query: string, terms: string[]): Searc
         description: context || `${guide.content.substring(0, 150)}...`,
         generation: guide.generation,
         system: guide.system,
-        url: `/guides/${guide.slug}`,
+        url: locale === 'es-MX' ? toSpanishPath(`/guides/${guide.slug}`) : `/guides/${guide.slug}`,
         matchContext: context,
         matchSource: contentScore > 0 ? 'content' as const : 'metadata' as const,
         score,
@@ -127,14 +140,14 @@ function searchGuides(guides: DiyGuide[], query: string, terms: string[]): Searc
     .filter((result): result is SearchResult => result !== null);
 }
 
-function searchGenerations(query: string, terms: string[]): SearchResult[] {
+function searchGenerations(query: string, terms: string[], locale: 'en' | 'es-MX'): SearchResult[] {
   return generations
     .map((generation): SearchResult | null => {
       const text = [
         generation.name,
         generation.slug,
         generation.years,
-        generation.description,
+        locale === 'es-MX' ? generationDescriptionsEs[generation.slug] : generation.description,
         generation.models.join(' '),
       ].join(' ');
       const score = scoreText(text, query, terms, 8);
@@ -145,9 +158,9 @@ function searchGenerations(query: string, terms: string[]): SearchResult[] {
         type: 'generation' as const,
         id: generation.id,
         title: generation.name,
-        description: generation.description,
+        description: locale === 'es-MX' ? generationDescriptionsEs[generation.slug] : generation.description,
         generation: generation.id,
-        url: `/generation/${generation.slug}`,
+        url: locale === 'es-MX' ? toSpanishPath(`/generation/${generation.slug}`) : `/generation/${generation.slug}`,
         matchSource: 'metadata' as const,
         score,
       };
@@ -155,7 +168,7 @@ function searchGenerations(query: string, terms: string[]): SearchResult[] {
     .filter((result): result is SearchResult => result !== null);
 }
 
-function searchGenerationSystems(query: string, terms: string[]): SearchResult[] {
+function searchGenerationSystems(query: string, terms: string[], locale: 'en' | 'es-MX'): SearchResult[] {
   const results: SearchResult[] = [];
 
   generations.forEach((generation) => {
@@ -165,6 +178,7 @@ function searchGenerationSystems(query: string, terms: string[]): SearchResult[]
         generation.slug,
         generation.models.join(' '),
         system.name,
+        locale === 'es-MX' ? systemNamesEs[system.slug] : '',
         system.description,
         system.slug,
         Object.entries(system.specs || {}).map(([key, value]) => `${key} ${value}`).join(' '),
@@ -173,7 +187,7 @@ function searchGenerationSystems(query: string, terms: string[]): SearchResult[]
       ].filter(Boolean).join(' ');
 
       const metadataScore = scoreText(metadata, query, terms, 8);
-      const contentScore = scoreText(system.content, query, terms, 3);
+      const contentScore = locale === 'es-MX' ? 0 : scoreText(system.content, query, terms, 3);
       const score = metadataScore + contentScore;
 
       if (score <= 0) return;
@@ -183,11 +197,15 @@ function searchGenerationSystems(query: string, terms: string[]): SearchResult[]
       results.push({
         type: 'generation',
         id: `${generation.slug}-${system.slug}`,
-        title: `${generation.name} - ${system.name}`,
-        description: context || system.description,
+        title: `${generation.name} - ${locale === 'es-MX' ? systemNamesEs[system.slug] || system.name : system.name}`,
+        description: locale === 'es-MX'
+          ? `Información técnica, especificaciones y recursos de ${systemNamesEs[system.slug]?.toLowerCase() || system.name.toLowerCase()} para ${generation.name}.`
+          : context || system.description,
         generation: generation.slug,
         system: system.slug,
-        url: `/systems/${system.slug}?gen=${generation.slug}`,
+        url: locale === 'es-MX'
+          ? toSpanishPath(`/systems/${system.slug}?gen=${generation.slug}`)
+          : `/systems/${system.slug}?gen=${generation.slug}`,
         matchContext: context,
         matchSource: contentScore > 0 ? 'content' : 'metadata',
         score,
@@ -223,7 +241,12 @@ function tokenize(query: string): string[] {
 }
 
 function normalize(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 }
 
 function createSnippet(text: string, terms: string[]): string {

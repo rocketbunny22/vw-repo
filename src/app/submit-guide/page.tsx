@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { generations } from '@/data/generations';
 import { DiyGuide } from '@/types';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -30,6 +32,7 @@ const guideChecklistItems = [
 
 export default function SubmitGuidePage() {
   const router = useRouter();
+  const { locale } = useLanguage();
   const [loading, setLoading] = useState(true);
   
   const [title, setTitle] = useState('');
@@ -52,7 +55,7 @@ export default function SubmitGuidePage() {
       const data = await response.json();
       
       if (!data.authenticated) {
-        router.push('/login');
+        router.push(localizedPath('/login', locale));
         return;
       }
 
@@ -64,7 +67,7 @@ export default function SubmitGuidePage() {
         setExistingGuides([]);
       }
     } catch {
-      router.push('/login');
+      router.push(localizedPath('/login', locale));
     } finally {
       setLoading(false);
     }

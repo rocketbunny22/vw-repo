@@ -3,11 +3,15 @@ import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import BookmarkButton from '@/components/BookmarkButton';
 import MarkdownContent from '@/components/MarkdownContent';
+import CommentsSection from '@/components/CommentsSection';
 import { diyGuides } from '@/data/diyGuides';
 import { spanishGuideContent } from '@/data/diyGuides.es-MX';
+import { getUserGuides } from '@/data/guides';
 import { generations } from '@/data/generations';
 import { absoluteUrl, breadcrumbJsonLd, createMetadata, jsonLd, siteName, truncateDescription } from '@/lib/seo';
 import { difficultyNamesEs, englishGuideSlug, formatTimeEstimateEs, guideSlugsEs, systemNamesEs, toSpanishPath } from '@/lib/localization';
+
+export const dynamic = 'force-dynamic';
 
 export function generateStaticParams() {
   return diyGuides.filter((guide) => spanishGuideContent[guide.slug]).map((guide) => ({ slug: guideSlugsEs[guide.slug] }));
@@ -16,9 +20,11 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const englishSlug = englishGuideSlug(slug);
-  const guide = diyGuides.find((item) => item.slug === englishSlug);
-  const translated = spanishGuideContent[englishSlug];
-  if (!guide || !translated) return { title: 'Guía no encontrada', robots: { index: false, follow: false } };
+  const userGuides = await getUserGuides();
+  const guide = diyGuides.find((item) => item.slug === englishSlug)
+    || userGuides.find((item) => item.slug === englishSlug && item.approved);
+  if (!guide) return { title: 'Guía no encontrada', robots: { index: false, follow: false } };
+  const translated = spanishGuideContent[englishSlug] || guide;
 
   const generation = generations.find((item) => item.id === guide.generation);
   return createMetadata({
@@ -34,11 +40,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function SpanishGuidePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const englishSlug = englishGuideSlug(slug);
-  const guide = diyGuides.find((item) => item.slug === englishSlug);
-  const translated = spanishGuideContent[englishSlug];
-  if (!guide || !translated) notFound();
+  const userGuides = await getUserGuides();
+  const guide = diyGuides.find((item) => item.slug === englishSlug)
+    || userGuides.find((item) => item.slug === englishSlug && item.approved);
+  if (!guide) notFound();
+  const translated = spanishGuideContent[englishSlug] || guide;
   const canonicalPath = toSpanishPath(`/guides/${englishSlug}`);
-  if (slug !== guideSlugsEs[englishSlug]) permanentRedirect(canonicalPath);
+  if (slug !== (guideSlugsEs[englishSlug] || englishSlug)) permanentRedirect(canonicalPath);
 
   const generation = generations.find((item) => item.id === guide.generation);
   const path = canonicalPath;
@@ -97,6 +105,11 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
             <h3 className="mt-6 font-bold text-vw-blue">Refacciones</h3>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">{translated.parts.map((part) => <li key={part}>{part}</li>)}</ul>
           </aside>
+        </div>
+      </section>
+      <section className="border-t bg-gray-50 py-12">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <CommentsSection guideId={guide.id} />
         </div>
       </section>
     </article>

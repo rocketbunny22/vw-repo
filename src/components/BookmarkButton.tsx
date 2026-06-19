@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 type BookmarkType = 'pdf' | 'guide';
 
@@ -19,6 +21,7 @@ export default function BookmarkButton({
   className = '',
   onChange,
 }: BookmarkButtonProps) {
+  const { locale } = useLanguage();
   const [optimisticBookmarked, setOptimisticBookmarked] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const bookmarked = optimisticBookmarked ?? Boolean(initialBookmarked);
@@ -68,7 +71,7 @@ export default function BookmarkButton({
 
       if (response.status === 401) {
         setOptimisticBookmarked(bookmarked);
-        window.location.href = '/login';
+        window.location.href = localizedPath('/login', locale);
         return;
       }
 

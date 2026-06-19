@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 interface Comment {
   id: string;
@@ -18,6 +20,7 @@ interface Props {
 }
 
 export default function CommentsSection({ guideId }: Props) {
+  const { locale } = useLanguage();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
@@ -104,7 +107,7 @@ export default function CommentsSection({ guideId }: Props) {
   }
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('en-US', {
+    new Date(dateStr).toLocaleDateString(locale === 'es-MX' ? 'es-MX' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -155,7 +158,7 @@ export default function CommentsSection({ guideId }: Props) {
         </form>
       ) : (
         <div className="mb-10 p-4 bg-gray-50 rounded-lg text-center text-sm text-gray-500">
-          <a href="/login" className="text-vw-blue font-medium hover:underline">Sign in</a> to leave a comment.
+          <Link href={localizedPath('/login', locale)} className="text-vw-blue font-medium hover:underline">Sign in</Link> to leave a comment.
         </div>
       )}
 

@@ -10,6 +10,7 @@ const directEnglishToSpanish: Record<string, string> = {
   '/submit-guide': '/es-mx/enviar-guia',
   '/login': '/es-mx/iniciar-sesion',
   '/signup': '/es-mx/registro',
+  '/reset-password': '/es-mx/restablecer-contrasena',
   '/my-vw': '/es-mx/mi-vw',
   '/bookmarks': '/es-mx/guardados',
   '/upload': '/es-mx/subir-pdf',
@@ -59,6 +60,9 @@ export function toSpanishPath(pathname: string) {
   if (path.startsWith('/guides/')) {
     return `/es-mx/guias/${guideSlugsEs[path.slice('/guides/'.length)] || path.slice('/guides/'.length)}${query}`;
   }
+  if (path.startsWith('/users/')) {
+    return `/es-mx/usuarios/${path.slice('/users/'.length)}${query}`;
+  }
 
   return '/es-mx';
 }
@@ -87,6 +91,9 @@ export function toEnglishPath(pathname: string) {
   if (path.startsWith('/es-mx/guias/')) {
     const slug = path.slice('/es-mx/guias/'.length);
     return `/guides/${englishSlug(guideSlugsEs, slug)}${query}`;
+  }
+  if (path.startsWith('/es-mx/usuarios/')) {
+    return `/users/${path.slice('/es-mx/usuarios/'.length)}${query}`;
   }
 
   return '/';

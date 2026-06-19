@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { generations } from '@/data/generations';
 import { PdfDocument } from '@/types';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -20,6 +22,7 @@ const MAX_PDF_SIZE_BYTES = MAX_PDF_SIZE_MB * 1024 * 1024;
 
 export default function UploadPage() {
   const router = useRouter();
+  const { locale } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [file, setFile] = useState<File | null>(null);
   const [generationsSelected, setGenerationsSelected] = useState<string[]>([]);
@@ -41,7 +44,7 @@ export default function UploadPage() {
       const data = await response.json();
       
       if (!data.authenticated) {
-        router.push('/login');
+        router.push(localizedPath('/login', locale));
         return;
       }
 
@@ -53,7 +56,7 @@ export default function UploadPage() {
         setExistingPdfs([]);
       }
     } catch {
-      router.push('/login');
+      router.push(localizedPath('/login', locale));
     } finally {
       setLoading(false);
     }

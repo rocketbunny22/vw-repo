@@ -4,6 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { PdfDocument } from '@/types';
 import BookmarkButton from './BookmarkButton';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath, systemNamesEs } from '@/lib/localization';
+import { translateMexicanSpanish } from '@/lib/translations';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
@@ -16,6 +19,8 @@ interface PdfCardProps {
 }
 
 export function PdfCard({ pdf }: PdfCardProps) {
+  const { locale } = useLanguage();
+  const t = (value: string) => locale === 'es-MX' ? translateMexicanSpanish(value) : value;
   const [viewingPdf, setViewingPdf] = useState<PdfDocument | null>(null);
 
   return (
@@ -31,7 +36,7 @@ export function PdfCard({ pdf }: PdfCardProps) {
           )}
           <div className="flex flex-wrap gap-2 mb-3">
             <span className="badge badge-blue">{pdf.generation}</span>
-            <span className="badge badge-gold">{pdf.system}</span>
+            <span className="badge badge-gold">{locale === 'es-MX' ? systemNamesEs[pdf.system] || pdf.system : pdf.system}</span>
             {pdf.model && <span className="badge badge-green">{pdf.model}</span>}
           </div>
           <div className="flex items-center justify-between text-sm text-gray-500">
@@ -45,8 +50,8 @@ export function PdfCard({ pdf }: PdfCardProps) {
           </div>
           {pdf.uploadedBy && (
             <div className="mt-2 text-sm text-gray-500">
-              Uploaded by{' '}
-              <Link href={`/users/${encodeURIComponent(pdf.uploadedBy)}`} className="text-vw-blue hover:underline">
+              {t('Uploaded by')}{' '}
+              <Link href={localizedPath(`/users/${encodeURIComponent(pdf.uploadedBy)}`, locale)} className="text-vw-blue hover:underline">
                 {pdf.uploadedBy}
               </Link>
             </div>
@@ -56,14 +61,14 @@ export function PdfCard({ pdf }: PdfCardProps) {
               onClick={() => setViewingPdf(pdf)}
               className="text-center btn-secondary py-2"
             >
-              Preview
+              {t('Preview')}
             </button>
             <a
               href={pdf.url}
               download
               className="text-center btn-primary py-2"
             >
-              Download
+              {t('Download')}
             </a>
             <a
               href={`${pdf.url}?view=true`}
@@ -71,7 +76,7 @@ export function PdfCard({ pdf }: PdfCardProps) {
               rel="noreferrer"
               className="text-center btn-secondary py-2"
             >
-              Open
+              {t('Open')}
             </a>
           </div>
         </div>
@@ -104,7 +109,7 @@ export function PdfCard({ pdf }: PdfCardProps) {
                   download
                   className="btn-primary px-4 py-2"
                 >
-                  Download
+                  {t('Download')}
                 </a>
                 <a
                   href={`${viewingPdf.url}?view=true`}
@@ -112,7 +117,7 @@ export function PdfCard({ pdf }: PdfCardProps) {
                   rel="noreferrer"
                   className="btn-secondary px-4 py-2"
                 >
-                  Open
+                  {t('Open')}
                 </a>
               </div>
             </div>

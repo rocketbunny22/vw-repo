@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { diyGuides } from '@/data/diyGuides';
 import { spanishGuideContent } from '@/data/diyGuides.es-MX';
+import { getUserGuides } from '@/data/guides';
 import { generations } from '@/data/generations';
 import { createMetadata } from '@/lib/seo';
 import { difficultyNamesEs, formatTimeEstimateEs, systemNamesEs, toSpanishPath } from '@/lib/localization';
@@ -13,8 +14,14 @@ export const metadata: Metadata = createMetadata({
   locale: 'es-MX',
 });
 
-export default function SpanishGuidesPage() {
-  const guides = diyGuides.filter((guide) => spanishGuideContent[guide.slug]);
+export const dynamic = 'force-dynamic';
+
+export default async function SpanishGuidesPage() {
+  const userGuides = (await getUserGuides()).filter((guide) => guide.approved);
+  const guides = [
+    ...diyGuides.filter((guide) => spanishGuideContent[guide.slug]),
+    ...userGuides,
+  ];
 
   return (
     <div className="flex flex-col">
@@ -27,7 +34,7 @@ export default function SpanishGuidesPage() {
       <section className="flex-1 bg-gray-50 py-12">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-2 lg:grid-cols-3 sm:px-6 lg:px-8">
           {guides.map((guide) => {
-            const translated = spanishGuideContent[guide.slug];
+            const translated = spanishGuideContent[guide.slug] || guide;
             const generation = generations.find((item) => item.id === guide.generation);
             return (
               <article key={guide.id} className="border bg-white p-6 shadow-sm">

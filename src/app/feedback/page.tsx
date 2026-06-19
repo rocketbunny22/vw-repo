@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/components/LanguageProvider';
+import { localizedPath } from '@/lib/localization';
 
 export default function FeedbackPage() {
+  const { locale } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [category, setCategory] = useState('general');
@@ -52,7 +55,7 @@ export default function FeedbackPage() {
               <p className="text-lg text-gray-700 mb-6">
                 Your feedback has been submitted. We appreciate your input!
               </p>
-              <Link href="/" className="text-vw-blue hover:underline">
+              <Link href={localizedPath('/', locale)} className="text-vw-blue hover:underline">
                 Return to Home
               </Link>
             </div>
