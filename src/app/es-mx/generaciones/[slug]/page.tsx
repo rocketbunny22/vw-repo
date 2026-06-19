@@ -1,10 +1,7 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { generations } from '@/data/generations';
-import { diyGuides } from '@/data/diyGuides';
-import { spanishGuideContent } from '@/data/diyGuides.es-MX';
 import { getAllPdfs } from '@/data/pdfs';
 import { PdfCard } from '@/components/PdfViewer';
 import { breadcrumbJsonLd, createMetadata, jsonLd, truncateDescription } from '@/lib/seo';
@@ -35,10 +32,9 @@ export default async function SpanishGenerationPage({ params }: { params: Promis
   const path = toSpanishPath(`/generation/${generation.slug}`);
   if (slug !== generationSlugsEs[generation.slug]) permanentRedirect(path);
 
-  const guides = diyGuides.filter((guide) => guide.generation === generation.id && spanishGuideContent[guide.slug]);
-  const relatedPdfs = (await getAllPdfs())
-    .filter((pdf) => pdf.approved !== false && pdf.generation === generation.id)
-    .slice(0, 6);
+  const relatedPdfs = (await getAllPdfs()).filter(
+    (pdf) => pdf.approved !== false && (pdf.generation === generation.id || pdf.generation === generation.slug)
+  );
   const breadcrumbs = breadcrumbJsonLd([
     { name: 'Inicio', path: '/es-mx' },
     { name: generation.name, path },
@@ -47,30 +43,36 @@ export default async function SpanishGenerationPage({ params }: { params: Promis
   return (
     <div className="flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) }} />
-      <header className="bg-vw-blue py-14">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 md:grid-cols-[1fr_360px] md:items-center sm:px-6 lg:px-8">
-          <div>
-            <nav aria-label="Migas de pan" className="mb-3 flex gap-2 text-sm text-gray-300">
-              <Link href="/es-mx" className="hover:text-vw-gold">Inicio</Link><span>/</span><span className="text-vw-gold">{generation.name}</span>
-            </nav>
-            <h1 className="text-4xl font-bold text-white">Volkswagen {generation.name}</h1>
-            <p className="mt-2 text-xl text-vw-gold">{generation.years}</p>
-            <p className="mt-5 max-w-3xl text-gray-200">{generationDescriptionsEs[generation.slug]}</p>
+      <section className="bg-vw-blue py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-2 text-sm text-gray-300 mb-2">
+            <Link href="/es-mx" className="hover:text-vw-gold">Inicio</Link>
+            <span>/</span>
+            <span className="text-vw-gold">{generation.name}</span>
           </div>
-          <Image src={generation.image} alt={`Volkswagen ${generation.name}`} width={720} height={405} className="aspect-video w-full object-cover" priority />
+          <h1 className="text-4xl font-bold text-white mb-2">Volkswagen {generation.name}</h1>
+          <p className="text-xl text-gray-300">{generation.years}</p>
         </div>
-      </header>
+      </section>
 
-      <section className="bg-gray-50 py-12" aria-labelledby="sistemas-generacion-title">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 id="sistemas-generacion-title" className="mb-6 text-2xl font-bold text-vw-blue">Sistemas</h2>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <section className="bg-vw-gold py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+            <div><div className="text-2xl font-bold text-vw-blue">{generation.systems.length}</div><div className="text-sm text-vw-dark">Sistemas</div></div>
+            <div><div className="text-2xl font-bold text-vw-blue">{generation.models.length}</div><div className="text-sm text-vw-dark">Modelos</div></div>
+            <div><div className="text-2xl font-bold text-vw-blue">{relatedPdfs.length}</div><div className="text-sm text-vw-dark">PDFs</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-bold text-vw-blue mb-6">Sistemas</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {generation.systems.map((system, index) => (
-              <Link key={system.id} href={toSpanishPath(`/systems/${system.slug}?gen=${generation.slug}`)} className="block rounded-lg border bg-white p-6 text-center shadow transition-all hover:border-vw-gold hover:shadow-xl">
-                <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-vw-blue text-white">
-                  <span className="font-bold">{index + 1}</span>
-                </span>
-                <span className="font-bold text-vw-dark">{systemNamesEs[system.slug] || system.name}</span>
+              <Link key={system.id} href={toSpanishPath(`/systems/${system.slug}?gen=${generation.slug}`)} className="block p-6 bg-white rounded-lg shadow hover:shadow-xl border hover:border-vw-gold text-center">
+                <div className="w-12 h-12 bg-vw-blue rounded-full flex items-center justify-center mx-auto mb-3"><span className="text-white font-bold">{index + 1}</span></div>
+                <h3 className="font-bold text-vw-dark">{systemNamesEs[system.slug] || system.name}</h3>
               </Link>
             ))}
           </div>
@@ -78,42 +80,39 @@ export default async function SpanishGenerationPage({ params }: { params: Promis
       </section>
 
       {relatedPdfs.length > 0 && (
-        <section className="bg-white py-12" aria-labelledby="pdfs-generacion-title">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <h2 id="pdfs-generacion-title" className="text-2xl font-bold text-vw-blue">PDFs relacionados</h2>
-              <Link href={toSpanishPath(`/library?generation=${generation.id}`)} className="font-medium text-vw-blue hover:underline">Ver todos</Link>
+        <section className="py-12 px-4 bg-white border-t" aria-labelledby="pdfs-generacion-title">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-6 gap-4">
+              <div>
+                <h2 id="pdfs-generacion-title" className="text-2xl font-bold text-vw-blue">PDFs relacionados</h2>
+                <p className="text-gray-600 mt-1">Documentos subidos para {generation.name}.</p>
+              </div>
+              <Link href={toSpanishPath(`/library?generation=${generation.id}`)} className="text-vw-blue hover:underline">
+                Ver todos los PDFs →
+              </Link>
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {relatedPdfs.map((pdf) => <PdfCard key={pdf.id} pdf={pdf} />)}
-            </div>
-          </div>
-        </section>
-      )}
 
-      <section className="bg-white py-12" aria-labelledby="modelos-title">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 id="modelos-title" className="mb-6 text-2xl font-bold text-vw-blue">Modelos</h2>
-          <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {generation.models.map((model) => <li key={model} className="flex items-center rounded-lg bg-gray-50 p-4 font-medium">{model}</li>)}
-          </ul>
-        </div>
-      </section>
-
-      {guides.length > 0 && (
-        <section className="bg-gray-50 py-12" aria-labelledby="guias-generacion-title">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 id="guias-generacion-title" className="mb-6 text-2xl font-bold text-vw-blue">Guías relacionadas</h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {guides.map((guide) => (
-                <Link key={guide.id} href={toSpanishPath(`/guides/${guide.slug}`)} className="border bg-white p-5 font-semibold text-vw-blue hover:border-vw-gold hover:underline">
-                  {spanishGuideContent[guide.slug].title}
-                </Link>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {relatedPdfs.slice(0, 6).map((pdf) => (
+                <PdfCard key={pdf.id} pdf={pdf} />
               ))}
             </div>
           </div>
         </section>
       )}
+
+      <section className="py-12 px-4">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-bold text-vw-blue mb-6">Modelos</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {generation.models.map((model) => (
+              <div key={model} className="flex items-center p-4 bg-gray-50 rounded-lg">
+                <span className="font-medium">{model}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

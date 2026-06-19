@@ -68,50 +68,121 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
     { name: translated.title, path },
   ]);
 
+  const getDifficultyColor = (diff: string) => {
+    switch (diff) {
+      case 'easy': return 'bg-green-100 text-green-800';
+      case 'moderate': return 'bg-yellow-100 text-yellow-800';
+      case 'hard': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
-    <article>
+    <div className="flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(article) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) }} />
-      <header className="bg-vw-blue py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <nav aria-label="Migas de pan" className="mb-4 flex flex-wrap gap-2 text-sm text-gray-300">
-            <Link href="/es-mx" className="hover:text-vw-gold">Inicio</Link><span>/</span>
-            <Link href="/es-mx/guias" className="hover:text-vw-gold">Guías</Link><span>/</span>
+      <section className="bg-vw-blue py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
+            <Link href="/es-mx" className="hover:text-vw-gold">Inicio</Link>
+            <span>/</span>
+            <Link href="/es-mx/guias" className="hover:text-vw-gold">Guías de bricolaje</Link>
+            <span>/</span>
             <span className="text-vw-gold">{translated.title}</span>
-          </nav>
-          <div className="mb-4 flex flex-wrap gap-2">
+          </div>
+          <div className="flex items-center gap-3 mb-4">
+            <span className={`badge ${getDifficultyColor(guide.difficulty)}`}>
+              {difficultyNamesEs[guide.difficulty]}
+            </span>
             <span className="badge badge-blue">{generation?.name}</span>
             <span className="badge badge-gold">{systemNamesEs[guide.system]}</span>
-            <span className="badge bg-white text-vw-blue">{difficultyNamesEs[guide.difficulty]}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
-            <h1 className="text-3xl font-bold text-white md:text-4xl">{translated.title}</h1>
-            <BookmarkButton itemType="guide" itemId={guide.id} className="shrink-0" />
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{translated.title}</h1>
+            <BookmarkButton itemType="guide" itemId={guide.id} className="mt-1 shrink-0" />
           </div>
-          <p className="mt-3 text-gray-300">Por {guide.author} · {formatTimeEstimateEs(guide.timeEstimate)}</p>
-        </div>
-      </header>
-      <section className="bg-white py-12">
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-4 lg:grid-cols-[minmax(0,1fr)_280px] sm:px-6 lg:px-8">
-          <MarkdownContent content={translated.content} />
-          <aside className="h-fit border bg-gray-50 p-6 lg:sticky lg:top-4">
-            <h2 className="text-lg font-bold text-vw-blue">Información de la guía</h2>
-            <dl className="mt-4 space-y-4 text-sm">
-              <div><dt className="text-gray-500">Dificultad</dt><dd className="font-medium">{difficultyNamesEs[guide.difficulty]}</dd></div>
-              <div><dt className="text-gray-500">Tiempo estimado</dt><dd className="font-medium">{formatTimeEstimateEs(guide.timeEstimate)}</dd></div>
-            </dl>
-            <h3 className="mt-6 font-bold text-vw-blue">Herramientas</h3>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">{translated.tools.map((tool) => <li key={tool}>{tool}</li>)}</ul>
-            <h3 className="mt-6 font-bold text-vw-blue">Refacciones</h3>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">{translated.parts.map((part) => <li key={part}>{part}</li>)}</ul>
-          </aside>
+          <p className="text-gray-300">
+            Por{' '}
+            {guide.authorId ? (
+              <Link href={`/users/${encodeURIComponent(guide.author)}`} className="hover:text-vw-gold hover:underline">
+                {guide.author}
+              </Link>
+            ) : (
+              guide.author
+            )}{' '}
+            • {formatTimeEstimateEs(guide.timeEstimate)} • {guide.views?.toLocaleString() || 0} vistas
+          </p>
         </div>
       </section>
-      <section className="border-t bg-gray-50 py-12">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <CommentsSection guideId={guide.id} />
+
+      <section className="py-12 bg-white flex-1">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <MarkdownContent content={translated.content} />
+            </div>
+
+            <div className="lg:col-span-1">
+              <div className="bg-gray-50 rounded-lg p-6 sticky top-4">
+                <h3 className="font-bold text-vw-blue mb-4">Información de la guía</h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-sm text-gray-500">Dificultad</span>
+                    <p className={`inline-flex ml-2 badge ${getDifficultyColor(guide.difficulty)}`}>
+                      {difficultyNamesEs[guide.difficulty]}
+                    </p>
+                  </div>
+
+                  <div>
+                    <span className="text-sm text-gray-500">Tiempo estimado</span>
+                    <p className="font-medium">{formatTimeEstimateEs(guide.timeEstimate)}</p>
+                  </div>
+
+                  <div>
+                    <span className="text-sm text-gray-500">Autor</span>
+                    <p className="font-medium">
+                      {guide.authorId ? (
+                        <Link href={`/users/${encodeURIComponent(guide.author)}`} className="text-vw-blue hover:underline">
+                          {guide.author}
+                        </Link>
+                      ) : (
+                        guide.author
+                      )}
+                    </p>
+                  </div>
+
+                  {translated.tools.length > 0 && (
+                    <div>
+                      <span className="text-sm text-gray-500">Herramientas necesarias</span>
+                      <ul className="mt-1 space-y-1">
+                        {translated.tools.map((tool) => (
+                          <li key={tool} className="text-sm">• {tool}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {translated.parts.length > 0 && (
+                    <div>
+                      <span className="text-sm text-gray-500">Refacciones</span>
+                      <ul className="mt-1 space-y-1">
+                        {translated.parts.map((part) => (
+                          <li key={part} className="text-sm">• {part}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <CommentsSection guideId={guide.id} />
+          </div>
         </div>
       </section>
-    </article>
+    </div>
   );
 }
