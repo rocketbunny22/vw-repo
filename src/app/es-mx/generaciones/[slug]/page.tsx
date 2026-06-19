@@ -65,9 +65,12 @@ export default async function SpanishGenerationPage({ params }: { params: Promis
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 id="sistemas-generacion-title" className="mb-6 text-2xl font-bold text-vw-blue">Sistemas</h2>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-            {generation.systems.map((system) => (
-              <Link key={system.id} href={toSpanishPath(`/systems/${system.slug}?gen=${generation.slug}`)} className="border bg-white p-5 text-center font-semibold text-vw-blue hover:border-vw-gold">
-                {systemNamesEs[system.slug] || system.name}
+            {generation.systems.map((system, index) => (
+              <Link key={system.id} href={toSpanishPath(`/systems/${system.slug}?gen=${generation.slug}`)} className="block rounded-lg border bg-white p-6 text-center shadow transition-all hover:border-vw-gold hover:shadow-xl">
+                <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-vw-blue text-white">
+                  <span className="font-bold">{index + 1}</span>
+                </span>
+                <span className="font-bold text-vw-dark">{systemNamesEs[system.slug] || system.name}</span>
               </Link>
             ))}
           </div>
@@ -91,8 +94,8 @@ export default async function SpanishGenerationPage({ params }: { params: Promis
       <section className="bg-white py-12" aria-labelledby="modelos-title">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 id="modelos-title" className="mb-6 text-2xl font-bold text-vw-blue">Modelos</h2>
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-            {generation.models.map((model) => <li key={model} className="border bg-gray-50 px-4 py-3 font-medium">{model}</li>)}
+          <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {generation.models.map((model) => <li key={model} className="flex items-center rounded-lg bg-gray-50 p-4 font-medium">{model}</li>)}
           </ul>
         </div>
       </section>

@@ -4,8 +4,16 @@ import Link from 'next/link';
 import { generations } from '@/data/generations';
 import { createMetadata } from '@/lib/seo';
 import { generationDescriptionsEs, systemNamesEs, toSpanishPath } from '@/lib/localization';
+import UiIcon, { IconName } from '@/components/UiIcon';
 
-const systems = ['engine', 'suspension', 'brakes', 'electrical', 'transmission', 'body'];
+const systems: Array<{ slug: string; icon: IconName }> = [
+  { slug: 'engine', icon: 'engine' },
+  { slug: 'suspension', icon: 'suspension' },
+  { slug: 'brakes', icon: 'brakes' },
+  { slug: 'electrical', icon: 'electrical' },
+  { slug: 'transmission', icon: 'transmission' },
+  { slug: 'body', icon: 'body' },
+];
 
 export const metadata: Metadata = createMetadata({
   title: 'Manuales, guías y especificaciones Volkswagen',
@@ -54,21 +62,33 @@ export default function SpanishHomePage() {
 
       <section className="bg-gray-50 py-14" aria-labelledby="generaciones-title">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 id="generaciones-title" className="mb-3 text-3xl font-bold text-vw-blue">Explora por generación</h2>
-          <p className="mb-8 max-w-3xl text-gray-600">Consulta sistemas, modelos, manuales y guías organizados por generación Volkswagen.</p>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mb-12 text-center">
+            <h2 id="generaciones-title" className="mb-4 text-3xl font-bold text-vw-blue">Explora por generación</h2>
+            <p className="mx-auto max-w-2xl text-gray-600">Consulta sistemas, modelos, manuales y guías organizados por generación Volkswagen.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {generations.map((generation) => (
-              <article key={generation.id} className="overflow-hidden border bg-white shadow-sm">
-                <Image src={generation.image} alt={`${generation.name} Volkswagen`} width={640} height={360} className="aspect-video w-full object-cover" />
-                <div className="p-5">
-                  <h3 className="text-xl font-bold text-vw-blue">{generation.name}</h3>
-                  <p className="mt-1 text-sm font-medium text-gray-500">{generation.years}</p>
-                  <p className="mt-3 line-clamp-3 text-sm text-gray-700">{generationDescriptionsEs[generation.slug]}</p>
-                  <Link href={toSpanishPath(`/generation/${generation.slug}`)} className="mt-4 inline-block font-medium text-vw-blue hover:underline">
-                    Ver generación
-                  </Link>
-                </div>
-              </article>
+              <Link key={generation.id} href={toSpanishPath(`/generation/${generation.slug}`)} className="group">
+                <article className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all hover:-translate-y-1 hover:shadow-xl">
+                  <div className="relative h-24 bg-gradient-to-br from-vw-blue to-vw-blue-light">
+                    <Image src={generation.image} alt={`${generation.name} Volkswagen`} fill className="object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-vw-blue/80 to-transparent" />
+                    <div className="absolute bottom-2 left-2">
+                      <h3 className="text-2xl font-bold text-vw-gold">{generation.name}</h3>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <span className="text-xs text-gray-500">{generation.years}</span>
+                      <span className="badge badge-blue">{generation.models.length} modelos</span>
+                    </div>
+                    <p className="line-clamp-2 text-sm text-gray-600">{generationDescriptionsEs[generation.slug]}</p>
+                    <div className="mt-3 text-sm font-medium text-vw-blue transition-colors group-hover:text-vw-gold">
+                      Ver sistemas →
+                    </div>
+                  </div>
+                </article>
+              </Link>
             ))}
           </div>
         </div>
@@ -76,11 +96,14 @@ export default function SpanishHomePage() {
 
       <section className="bg-white py-14" aria-labelledby="sistemas-title">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 id="sistemas-title" className="mb-8 text-3xl font-bold text-vw-blue">Sistemas del vehículo</h2>
+          <h2 id="sistemas-title" className="mb-8 text-center text-3xl font-bold text-vw-blue">Sistemas del vehículo</h2>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
             {systems.map((system) => (
-              <Link key={system} href={toSpanishPath(`/systems/${system}`)} className="border bg-gray-50 p-5 text-center font-semibold text-vw-blue hover:border-vw-gold hover:bg-white">
-                {systemNamesEs[system]}
+              <Link key={system.slug} href={toSpanishPath(`/systems/${system.slug}`)} className="group flex flex-col items-center rounded-lg bg-gray-50 p-6 text-center font-semibold text-vw-blue transition-colors hover:bg-vw-blue hover:text-white">
+                <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-md border border-vw-blue/15 bg-white text-vw-blue group-hover:border-white/30 group-hover:bg-white/10 group-hover:text-white">
+                  <UiIcon name={system.icon} className="h-6 w-6" />
+                </span>
+                {systemNamesEs[system.slug]}
               </Link>
             ))}
           </div>

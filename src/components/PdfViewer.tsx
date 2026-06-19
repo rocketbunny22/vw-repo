@@ -25,12 +25,17 @@ export function PdfCard({ pdf }: PdfCardProps) {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <h3 className="font-bold text-vw-dark">{pdf.title}</h3>
+      <article className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all hover:shadow-xl">
+        <div className="p-6">
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-vw-red text-white">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </span>
             <BookmarkButton itemType="pdf" itemId={pdf.id} />
           </div>
+          <h3 className="mb-2 line-clamp-2 font-bold text-vw-dark">{pdf.title}</h3>
           {pdf.description && (
             <p className="text-sm text-gray-600 mb-3 line-clamp-2">{pdf.description}</p>
           )}
@@ -80,7 +85,7 @@ export function PdfCard({ pdf }: PdfCardProps) {
             </a>
           </div>
         </div>
-      </div>
+      </article>
 
       {viewingPdf && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
