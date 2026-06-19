@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { toSpanishPath } from '@/lib/localization';
 import { translateMexicanSpanish } from '@/lib/translations';
 
@@ -70,11 +70,9 @@ function localizeTree(root: Element) {
   root.querySelectorAll('*').forEach(localizeElement);
 }
 
-export default function SpanishClientLocalization({ children }: { children: React.ReactNode }) {
-  const rootRef = useRef<HTMLDivElement>(null);
-
+export default function SpanishClientLocalization() {
   useEffect(() => {
-    const root = rootRef.current;
+    const root = document.querySelector('main');
     if (!root) return;
 
     localizeTree(root);
@@ -107,5 +105,5 @@ export default function SpanishClientLocalization({ children }: { children: Reac
     return () => observer.disconnect();
   }, []);
 
-  return <div ref={rootRef} className="contents">{children}</div>;
+  return null;
 }
