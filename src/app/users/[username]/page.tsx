@@ -1,26 +1,14 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Redis } from '@upstash/redis';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { getUserGuides } from '@/data/guides';
-import { User } from '@/types';
+import { getUsers } from '@/data/users';
 import { PdfCard } from '@/components/PdfViewer';
+import { createMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
-
-const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : null;
-
-async function getUsers(): Promise<User[]> {
-  if (!redis) return [];
-  const users = await redis.get<User[]>('users');
-  return Array.isArray(users) ? users : [];
-}
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -34,6 +22,38 @@ function getGenerationName(id?: string) {
   if (!id) return '';
   const generation = generations.find((gen) => gen.id === id || gen.slug === id);
   return generation?.name || id;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}): Promise<Metadata> {
+  const { username } = await params;
+  const decodedUsername = decodeURIComponent(username);
+  const users = await getUsers();
+  const user = users.find((item) => item.username.toLowerCase() === decodedUsername.toLowerCase());
+
+  if (!user) {
+    return {
+      title: 'User not found',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const vehicleDescription = user.vehicle
+    ? `${user.username} has a ${[
+        user.vehicle.year,
+        getGenerationName(user.vehicle.generation),
+        user.vehicle.model,
+      ].filter(Boolean).join(' ')} in their VW Repo garage.`
+    : `${user.username} shares approved Volkswagen guides and PDF resources on VW Repo.`;
+
+  return createMetadata({
+    title: `${user.username} VW Repo Profile`,
+    description: vehicleDescription,
+    path: `/users/${encodeURIComponent(user.username)}`,
+  });
 }
 
 export default async function PublicProfilePage({
