@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { SiteLocale, toEnglishPath, toSpanishPath } from '@/lib/localization';
 
 export const siteName = 'VW Repo';
-export const defaultSiteUrl = 'https://vwrepo.com';
+export const defaultSiteUrl = 'https://www.vwrepo.com';
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || defaultSiteUrl).replace(/\/+$/, '');
 export const defaultDescription =
   'Volkswagen repair manuals, DIY guides, technical specifications, maintenance checklists, and searchable PDF resources for air-cooled and water-cooled VW models.';
