@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { PdfDocument, VehicleProfile } from '@/types';
+import { PublicPdfSummary, VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
 import BookmarkButton from '@/components/BookmarkButton';
 import UiIcon from '@/components/UiIcon';
@@ -26,7 +26,7 @@ export default function LibraryClient({
   initialSystem = 'all',
   initialModel = 'all',
 }: {
-  initialPdfs: PdfDocument[];
+  initialPdfs: PublicPdfSummary[];
   initialGeneration?: string;
   initialSystem?: string;
   initialModel?: string;
@@ -36,7 +36,7 @@ export default function LibraryClient({
   const [selectedGeneration, setSelectedGeneration] = useState<string>(initialGeneration);
   const [selectedModel, setSelectedModel] = useState<string>(initialModel);
   const [selectedSystem, setSelectedSystem] = useState<string>(initialSystem);
-  const [viewingPdf, setViewingPdf] = useState<PdfDocument | null>(null);
+  const [viewingPdf, setViewingPdf] = useState<PublicPdfSummary | null>(null);
   const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
   const [bookmarkedPdfIds, setBookmarkedPdfIds] = useState<string[]>([]);
 

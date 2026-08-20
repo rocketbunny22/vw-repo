@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { PdfDocument } from '@/types';
+import { PublicPdfSummary } from '@/types';
 import BookmarkButton from './BookmarkButton';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath, systemNamesEs } from '@/lib/localization';
@@ -15,13 +15,13 @@ const formatFileSize = (bytes: number): string => {
 };
 
 interface PdfCardProps {
-  pdf: PdfDocument;
+  pdf: PublicPdfSummary;
 }
 
 export function PdfCard({ pdf }: PdfCardProps) {
   const { locale } = useLanguage();
   const t = (value: string) => locale === 'es-MX' ? translateMexicanSpanish(value) : value;
-  const [viewingPdf, setViewingPdf] = useState<PdfDocument | null>(null);
+  const [viewingPdf, setViewingPdf] = useState<PublicPdfSummary | null>(null);
 
   return (
     <>

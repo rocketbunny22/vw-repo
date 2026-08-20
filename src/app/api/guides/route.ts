@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getUserGuides, saveUserGuides } from '@/data/guides';
 import { DiyGuide } from '@/types';
+import { toPublicGuideSummary } from '@/lib/publicSummaries';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
@@ -48,13 +49,14 @@ export async function GET(request: NextRequest) {
   const userGuides = await getUserGuides();
   
   const auth = checkAuth(request);
+  const includeUnapproved = showAll === 'true' && auth.role === 'admin';
   
   // Add approved user guides to static guides
   const allGuides = [...staticGuides];
   
   // Add approved user guides (or all if admin)
   const approvedUserGuides = userGuides.filter((g: DiyGuide) => 
-    showAll === 'true' && auth.role === 'admin' ? true : g.approved
+    includeUnapproved ? true : g.approved
   );
   approvedUserGuides.forEach((g: DiyGuide) => {
     allGuides.push(g);
@@ -67,7 +69,9 @@ export async function GET(request: NextRequest) {
     return true;
   });
   
-  return NextResponse.json({ guides: filtered });
+  return NextResponse.json({
+    guides: includeUnapproved ? filtered : filtered.map(toPublicGuideSummary),
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -117,7 +121,7 @@ export async function POST(request: NextRequest) {
       userGuides.push(newGuide);
       await saveUserGuides(userGuides);
 
-      return NextResponse.json({ success: true, guide: newGuide });
+      return NextResponse.json({ success: true, guide: toPublicGuideSummary(newGuide) });
     }
 
     if (action === 'approve' && auth.role === 'admin') {

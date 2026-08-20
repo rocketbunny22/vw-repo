@@ -4,6 +4,7 @@ import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
 import { PdfCard } from '@/components/PdfViewer';
+import { toPublicPdfSummary } from '@/lib/publicSummaries';
 import { absoluteUrl, breadcrumbJsonLd, createMetadata, jsonLd, siteName, truncateDescription } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -43,7 +44,9 @@ export default async function GenerationPage({
   
   if (!generation) notFound();
 
-  const pdfs = (await getAllPdfs()).filter((pdf) => pdf.approved !== false);
+  const pdfs = (await getAllPdfs())
+    .filter((pdf) => pdf.approved !== false)
+    .map(toPublicPdfSummary);
   const relatedPdfs = pdfs.filter(
     (pdf) => pdf.generation === generation.id || pdf.generation === generation.slug
   );

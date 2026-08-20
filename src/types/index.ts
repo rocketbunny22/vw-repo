@@ -54,6 +54,23 @@ export interface PdfDocument {
   reviewedBy?: string;
 }
 
+export type PublicPdfSummary = Pick<
+  PdfDocument,
+  | 'id'
+  | 'originalName'
+  | 'generation'
+  | 'model'
+  | 'models'
+  | 'system'
+  | 'title'
+  | 'description'
+  | 'uploadedAt'
+  | 'uploadedBy'
+  | 'fileSize'
+  | 'url'
+  | 'downloads'
+>;
+
 export interface Comment {
   id: string;
   guideId: string;
@@ -85,6 +102,25 @@ export interface DiyGuide {
   featured: boolean;
   approved?: boolean;
 }
+
+export type PublicGuideSummary = Pick<
+  DiyGuide,
+  | 'id'
+  | 'title'
+  | 'slug'
+  | 'generation'
+  | 'system'
+  | 'author'
+  | 'authorId'
+  | 'difficulty'
+  | 'timeEstimate'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'views'
+  | 'featured'
+> & {
+  excerpt: string;
+};
 
 export interface VehicleProfile {
   generation: string;

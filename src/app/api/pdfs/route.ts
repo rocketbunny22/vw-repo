@@ -3,6 +3,7 @@ import { PdfDocument } from '@/types';
 import crypto from 'crypto';
 import { getAllPdfs, saveAllPdfs, savePdfFile } from '@/data/pdfs';
 import { extractPdfText } from '@/lib/pdfText';
+import { toPublicPdfSummary } from '@/lib/publicSummaries';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
@@ -37,7 +38,11 @@ function checkAuth(request: NextRequest): { authenticated: boolean; user?: { id:
 
 export async function GET() {
   const pdfs = await getAllPdfs();
-  return NextResponse.json({ pdfs: pdfs.filter((pdf) => pdf.approved !== false) });
+  return NextResponse.json({
+    pdfs: pdfs
+      .filter((pdf) => pdf.approved !== false)
+      .map(toPublicPdfSummary),
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -110,7 +115,7 @@ export async function POST(request: NextRequest) {
 
     await saveAllPdfs(pdfs);
 
-    return NextResponse.json({ success: true, pdfs: created });
+    return NextResponse.json({ success: true, pdfs: created.map(toPublicPdfSummary) });
   } catch (error) {
     console.error('PDF upload error:', error);
     return NextResponse.json({ error: 'Failed to upload PDF' }, { status: 500 });

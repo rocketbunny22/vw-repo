@@ -1,5 +1,6 @@
 import { diyGuides } from '@/data/diyGuides';
 import { getUserGuides } from '@/data/guides';
+import { toPublicGuideSummary } from '@/lib/publicSummaries';
 import GuidesClient from './GuidesClient';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ export default async function GuidesPage({
   const guides = [
     ...diyGuides,
     ...userGuides.filter((guide) => guide.approved),
-  ];
+  ].map(toPublicGuideSummary);
 
   return (
     <GuidesClient

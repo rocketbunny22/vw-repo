@@ -6,6 +6,7 @@ import { getAllPdfs } from '@/data/pdfs';
 import { getUserGuides } from '@/data/guides';
 import { getUsers } from '@/data/users';
 import { PdfCard } from '@/components/PdfViewer';
+import { toPublicGuideSummary, toPublicPdfSummary } from '@/lib/publicSummaries';
 import { createMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -73,10 +74,12 @@ export default async function PublicProfilePage({
   const [guides, pdfs] = await Promise.all([getUserGuides(), getAllPdfs()]);
   const submittedGuides = guides
     .filter((guide) => guide.approved && (guide.authorId === user.id || guide.author === user.username))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .map(toPublicGuideSummary);
   const uploadedPdfs = pdfs
     .filter((pdf) => pdf.approved !== false && pdf.uploadedBy === user.username)
-    .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+    .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
+    .map(toPublicPdfSummary);
 
   const vehicle = user.vehicle;
   const profileLinks = user.profileLinks || {};
@@ -178,7 +181,7 @@ export default async function PublicProfilePage({
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <h3 className="font-bold text-vw-dark">{guide.title}</h3>
-                          <p className="mt-2 line-clamp-2 text-sm text-gray-600">{guide.content}</p>
+                          <p className="mt-2 line-clamp-2 text-sm text-gray-600">{guide.excerpt}</p>
                         </div>
                         <span className="shrink-0 rounded-full bg-vw-gold px-3 py-1 text-xs font-medium text-vw-blue">
                           {guide.difficulty}

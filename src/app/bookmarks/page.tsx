@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import BookmarkButton from '@/components/BookmarkButton';
-import { DiyGuide, PdfDocument } from '@/types';
+import { PublicGuideSummary, PublicPdfSummary } from '@/types';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath } from '@/lib/localization';
 
 export default function BookmarksPage() {
   const { locale } = useLanguage();
-  const [pdfs, setPdfs] = useState<PdfDocument[]>([]);
-  const [guides, setGuides] = useState<DiyGuide[]>([]);
+  const [pdfs, setPdfs] = useState<PublicPdfSummary[]>([]);
+  const [guides, setGuides] = useState<PublicGuideSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(true);
 

@@ -1,4 +1,5 @@
 import { getAllPdfs } from '@/data/pdfs';
+import { toPublicPdfSummary } from '@/lib/publicSummaries';
 import LibraryClient from './LibraryClient';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +16,9 @@ export default async function LibraryPage({
   searchParams: Promise<LibrarySearchParams>;
 }) {
   const params = await searchParams;
-  const pdfs = (await getAllPdfs()).filter((pdf) => pdf.approved !== false);
+  const pdfs = (await getAllPdfs())
+    .filter((pdf) => pdf.approved !== false)
+    .map(toPublicPdfSummary);
 
   return (
     <LibraryClient

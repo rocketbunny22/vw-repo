@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { generations } from '@/data/generations';
-import { DiyGuide } from '@/types';
+import { PublicGuideSummary } from '@/types';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath } from '@/lib/localization';
 
@@ -43,7 +43,7 @@ export default function SubmitGuidePage() {
   const [timeEstimate, setTimeEstimate] = useState('');
   const [tools, setTools] = useState('');
   const [parts, setParts] = useState('');
-  const [existingGuides, setExistingGuides] = useState<DiyGuide[]>([]);
+  const [existingGuides, setExistingGuides] = useState<PublicGuideSummary[]>([]);
   const [guideChecklist, setGuideChecklist] = useState<Record<string, boolean>>({});
   
   const [submitting, setSubmitting] = useState(false);

@@ -9,9 +9,9 @@ import { generations } from '@/data/generations';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath, systemNamesEs } from '@/lib/localization';
 import {
-  DiyGuide,
   MaintenanceChecklist,
-  PdfDocument,
+  PublicGuideSummary,
+  PublicPdfSummary,
   UserChecklists,
   VehicleProfile,
 } from '@/types';
@@ -24,8 +24,8 @@ interface User {
 }
 
 interface BookmarkPayload {
-  pdfs?: PdfDocument[];
-  guides?: DiyGuide[];
+  pdfs?: PublicPdfSummary[];
+  guides?: PublicGuideSummary[];
 }
 
 interface OnboardingPayload {
@@ -93,9 +93,9 @@ export default function MyVwPage() {
     : getSystemName(systemId);
   const [user, setUser] = useState<User | null>(null);
   const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
-  const [savedPdfs, setSavedPdfs] = useState<PdfDocument[]>([]);
-  const [savedGuides, setSavedGuides] = useState<DiyGuide[]>([]);
-  const [pdfs, setPdfs] = useState<PdfDocument[]>([]);
+  const [savedPdfs, setSavedPdfs] = useState<PublicPdfSummary[]>([]);
+  const [savedGuides, setSavedGuides] = useState<PublicGuideSummary[]>([]);
+  const [pdfs, setPdfs] = useState<PublicPdfSummary[]>([]);
   const [checklists, setChecklists] = useState<MaintenanceChecklist[]>([]);
   const [progress, setProgress] = useState<UserChecklists>(emptyProgress);
   const [showWelcome, setShowWelcome] = useState(false);

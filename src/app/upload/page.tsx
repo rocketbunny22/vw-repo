@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { generations } from '@/data/generations';
-import { PdfDocument } from '@/types';
+import { PublicPdfSummary } from '@/types';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath } from '@/lib/localization';
 
@@ -32,7 +32,7 @@ export default function UploadPage() {
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [existingPdfs, setExistingPdfs] = useState<PdfDocument[]>([]);
+  const [existingPdfs, setExistingPdfs] = useState<PublicPdfSummary[]>([]);
 
   const availableModels = generationsSelected.length === 1
     ? generations.find((gen) => gen.id === generationsSelected[0])?.models || []

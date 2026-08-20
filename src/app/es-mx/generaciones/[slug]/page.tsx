@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { PdfCard } from '@/components/PdfViewer';
+import { toPublicPdfSummary } from '@/lib/publicSummaries';
 import { breadcrumbJsonLd, createMetadata, jsonLd, truncateDescription } from '@/lib/seo';
 import { englishGenerationSlug, generationDescriptionsEs, generationSlugsEs, systemNamesEs, toSpanishPath } from '@/lib/localization';
 
@@ -32,9 +33,9 @@ export default async function SpanishGenerationPage({ params }: { params: Promis
   const path = toSpanishPath(`/generation/${generation.slug}`);
   if (slug !== generationSlugsEs[generation.slug]) permanentRedirect(path);
 
-  const relatedPdfs = (await getAllPdfs()).filter(
-    (pdf) => pdf.approved !== false && (pdf.generation === generation.id || pdf.generation === generation.slug)
-  );
+  const relatedPdfs = (await getAllPdfs())
+    .filter((pdf) => pdf.approved !== false && (pdf.generation === generation.id || pdf.generation === generation.slug))
+    .map(toPublicPdfSummary);
   const breadcrumbs = breadcrumbJsonLd([
     { name: 'Inicio', path: '/es-mx' },
     { name: generation.name, path },

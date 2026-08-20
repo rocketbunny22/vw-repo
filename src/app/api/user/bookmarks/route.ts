@@ -5,6 +5,7 @@ import { diyGuides } from '@/data/diyGuides';
 import { getAllPdfs } from '@/data/pdfs';
 import { getUserGuides } from '@/data/guides';
 import { DiyGuide, User, UserBookmarks } from '@/types';
+import { toPublicGuideSummary, toPublicPdfSummary } from '@/lib/publicSummaries';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
@@ -81,8 +82,12 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     bookmarks,
-    pdfs: pdfs.filter((pdf) => pdf.approved !== false && bookmarks.pdfIds.includes(pdf.id)),
-    guides: guides.filter((guide) => bookmarks.guideIds.includes(guide.id)),
+    pdfs: pdfs
+      .filter((pdf) => pdf.approved !== false && bookmarks.pdfIds.includes(pdf.id))
+      .map(toPublicPdfSummary),
+    guides: guides
+      .filter((guide) => bookmarks.guideIds.includes(guide.id))
+      .map(toPublicGuideSummary),
   });
 }
 

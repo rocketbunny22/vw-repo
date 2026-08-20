@@ -5,6 +5,7 @@ import UiIcon from '@/components/UiIcon';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { PdfCard } from '@/components/PdfViewer';
+import { toPublicPdfSummary } from '@/lib/publicSummaries';
 import { breadcrumbJsonLd, createMetadata, jsonLd, truncateDescription } from '@/lib/seo';
 import { englishGenerationSlug, englishSystemSlug, generationDescriptionsEs, systemNamesEs, systemSlugsEs, toSpanishPath } from '@/lib/localization';
 
@@ -58,7 +59,10 @@ export default async function SpanishSystemPage({
   const selectedGeneration = gen ? availableGenerations.find((generation) => generation.slug === englishGenerationSlug(gen)) : null;
   const systemInfo = selectedGeneration?.systems.find((system) => system.slug === englishSlug) || availableGenerations[0]?.systems.find((system) => system.slug === englishSlug);
   const relatedPdfs = selectedGeneration
-    ? (await getAllPdfs()).filter((pdf) => pdf.approved !== false && pdf.generation === selectedGeneration.id && pdf.system === englishSlug).slice(0, 6)
+    ? (await getAllPdfs())
+        .filter((pdf) => pdf.approved !== false && pdf.generation === selectedGeneration.id && pdf.system === englishSlug)
+        .slice(0, 6)
+        .map(toPublicPdfSummary)
     : [];
   const path = toSpanishPath(selectedGeneration ? `/systems/${englishSlug}?gen=${selectedGeneration.slug}` : `/systems/${englishSlug}`);
   const breadcrumbs = breadcrumbJsonLd([

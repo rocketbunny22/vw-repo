@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { DiyGuide, VehicleProfile } from '@/types';
+import { PublicGuideSummary, VehicleProfile } from '@/types';
 import { generations } from '@/data/generations';
 import BookmarkButton from '@/components/BookmarkButton';
 import UiIcon from '@/components/UiIcon';
@@ -22,7 +22,7 @@ export default function GuidesClient({
   initialGeneration = 'all',
   initialSystem = 'all',
 }: {
-  initialGuides: DiyGuide[];
+  initialGuides: PublicGuideSummary[];
   initialGeneration?: string;
   initialSystem?: string;
 }) {
