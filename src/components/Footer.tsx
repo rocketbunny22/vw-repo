@@ -78,6 +78,19 @@ export default function Footer() {
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm">
           <p>{spanish ? 'VW Repo - Hecho para entusiastas, por entusiastas.' : 'VW Repo - Built for enthusiasts, by enthusiasts.'}</p>
         </div>
+
+        <section
+          aria-labelledby="footer-legal-notice"
+          className="mt-6 border-t border-gray-700 pt-6 text-xs leading-relaxed text-gray-400"
+        >
+          <h2 id="footer-legal-notice" className="sr-only">Legal notice</h2>
+          <p>
+            The information contained in this site is for entertainment and informational purposes only. The site creator is not responsible for you, your car, your errors, or your economic losses resulting from your use of this information. Additionally, this site and its content are not affiliated with Volkswagen of America nor Volkswagen AG. &quot;VW&quot; and &quot;Volkswagen&quot; are registered trademarks of Volkswagen AG and are used on this site for descriptive purposes only.
+          </p>
+          <p className="mt-3">
+            No text on this site may be copied to or used on other web sites without written permission of the site administrator; the only exception to this is if proper credit is given to this site when quoting copied text.
+          </p>
+        </section>
       </div>
     </footer>
   );
