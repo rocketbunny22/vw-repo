@@ -177,6 +177,7 @@ export interface User {
   role: 'user' | 'admin';
   createdAt: string;
   lastLogin: string;
+  sessionVersion?: number;
   vehicle?: VehicleProfile;
   bookmarks?: UserBookmarks;
   checklists?: UserChecklists;

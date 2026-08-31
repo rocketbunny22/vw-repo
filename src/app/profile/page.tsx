@@ -276,7 +276,7 @@ export default function ProfilePage() {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
-        setMessage({ type: 'success', text: 'Password changed!' });
+        router.push(localizedPath('/login', locale));
       } else {
         setMessage({ type: 'error', text: data.error || 'Change failed' });
       }

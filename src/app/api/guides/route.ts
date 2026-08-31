@@ -3,40 +3,7 @@ import crypto from 'crypto';
 import { getUserGuides, saveUserGuides } from '@/data/guides';
 import { DiyGuide } from '@/types';
 import { toPublicGuideSummary } from '@/lib/publicSummaries';
-
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
-
-function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
-  try {
-    const [payload, signature] = token.split('.');
-    const data = JSON.parse(Buffer.from(payload, 'base64').toString());
-    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(JSON.stringify(data)).digest('hex');
-    if (signature !== expectedSig) return { valid: false };
-    if (data.exp < Date.now()) return { valid: false };
-    return { valid: true, user: { id: data.id, username: data.username, role: data.role } };
-  } catch {
-    return { valid: false };
-  }
-}
-
-function checkAuth(request: NextRequest): { authenticated: boolean; role: string; id?: string; username?: string } {
-  const authCookie = request.cookies.get('vw_auth');
-  if (!authCookie) return { authenticated: false, role: 'user' };
-  try {
-    const sessionVerify = verifySessionToken(authCookie.value);
-    if (!sessionVerify.valid || !sessionVerify.user) {
-      return { authenticated: false, role: 'user' };
-    }
-    return { 
-      authenticated: true, 
-      id: sessionVerify.user.id, 
-      username: sessionVerify.user.username, 
-      role: sessionVerify.user.role || 'user' 
-    };
-  } catch {
-    return { authenticated: false, role: 'user' };
-  }
-}
+import { authenticateRequest } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -48,8 +15,8 @@ export async function GET(request: NextRequest) {
   const staticGuides = diyGuides;
   const userGuides = await getUserGuides();
   
-  const auth = checkAuth(request);
-  const includeUnapproved = showAll === 'true' && auth.role === 'admin';
+  const auth = await authenticateRequest(request);
+  const includeUnapproved = showAll === 'true' && auth?.user.role === 'admin';
   
   // Add approved user guides to static guides
   const allGuides = [...staticGuides];
@@ -75,9 +42,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = checkAuth(request);
+  const auth = await authenticateRequest(request);
   
-  if (!auth.authenticated) {
+  if (!auth) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
@@ -104,8 +71,8 @@ export async function POST(request: NextRequest) {
         slug,
         generation,
         system,
-        author: auth.username || 'anonymous',
-        authorId: auth.id,
+        author: auth.user.username,
+        authorId: auth.user.id,
         content,
         difficulty: difficulty || 'moderate',
         timeEstimate: timeEstimate || '2-4 hours',
@@ -124,7 +91,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, guide: toPublicGuideSummary(newGuide) });
     }
 
-    if (action === 'approve' && auth.role === 'admin') {
+    if (action === 'approve' && auth.user.role === 'admin') {
       const { guideId } = data;
       const userGuides = await getUserGuides();
       const guideIndex = userGuides.findIndex((g: DiyGuide) => g.id === guideId);
@@ -139,7 +106,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    if (action === 'delete' && auth.role === 'admin') {
+    if (action === 'delete' && auth.user.role === 'admin') {
       const { guideId } = data;
       const userGuides = await getUserGuides();
       const guideIndex = userGuides.findIndex((g: DiyGuide) => g.id === guideId);

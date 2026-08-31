@@ -1,41 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
-import { Redis } from '@upstash/redis';
 import { maintenanceChecklists } from '@/data/maintenanceChecklists';
-import { User, UserChecklists } from '@/types';
-
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
-
-const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : null;
-
-function verifySessionToken(token: string): { valid: boolean; userId?: string } {
-  try {
-    const [payload, signature] = token.split('.');
-    const data = JSON.parse(Buffer.from(payload, 'base64').toString());
-    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(JSON.stringify(data)).digest('hex');
-    if (signature !== expectedSig) return { valid: false };
-    if (data.exp < Date.now()) return { valid: false };
-    return { valid: true, userId: data.id };
-  } catch {
-    return { valid: false };
-  }
-}
-
-async function getUsers(): Promise<User[]> {
-  if (!redis) return [];
-  const users = await redis.get<User[]>('users');
-  return Array.isArray(users) ? users : [];
-}
-
-async function saveUsers(users: User[]): Promise<void> {
-  if (!redis) throw new Error('Redis not configured');
-  await redis.set('users', users);
-}
+import { saveUsers } from '@/data/users';
+import { UserChecklists } from '@/types';
+import { authenticateRequest } from '@/lib/auth';
 
 function normalizeChecklists(checklists?: UserChecklists): UserChecklists {
   const completedItemIdsByChecklist: Record<string, string[]> = {};
@@ -54,29 +21,9 @@ function normalizeChecklists(checklists?: UserChecklists): UserChecklists {
   };
 }
 
-async function getAuthenticatedUser(request: NextRequest): Promise<{ users: User[]; userIndex: number } | NextResponse> {
-  const authCookie = request.cookies.get('vw_auth');
-  if (!authCookie) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  }
-
-  const session = verifySessionToken(authCookie.value);
-  if (!session.valid || !session.userId) {
-    return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
-  }
-
-  const users = await getUsers();
-  const userIndex = users.findIndex((user) => user.id === session.userId);
-  if (userIndex === -1) {
-    return NextResponse.json({ error: 'User not found' }, { status: 404 });
-  }
-
-  return { users, userIndex };
-}
-
 export async function GET(request: NextRequest) {
-  const auth = await getAuthenticatedUser(request);
-  if (auth instanceof NextResponse) return auth;
+  const auth = await authenticateRequest(request);
+  if (!auth) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
   const user = auth.users[auth.userIndex];
   const progress = normalizeChecklists(user.checklists);
@@ -88,8 +35,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await getAuthenticatedUser(request);
-  if (auth instanceof NextResponse) return auth;
+  const auth = await authenticateRequest(request);
+  if (!auth) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
   const body = await request.json() as {
     checklistId?: string;

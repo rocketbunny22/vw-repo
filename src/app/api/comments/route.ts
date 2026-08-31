@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
 import { Comment } from '@/types';
-
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+import { authenticateRequest } from '@/lib/auth';
 
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
   ? new Redis({
@@ -23,33 +22,6 @@ async function saveComments(comments: Comment[]): Promise<void> {
   await redis.set('comments', comments);
 }
 
-function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string } } {
-  try {
-    const [payload, signature] = token.split('.');
-    const data = JSON.parse(Buffer.from(payload, 'base64').toString());
-    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(JSON.stringify(data)).digest('hex');
-    if (signature !== expectedSig) return { valid: false };
-    if (data.exp < Date.now()) return { valid: false };
-    return { valid: true, user: { id: data.id, username: data.username } };
-  } catch {
-    return { valid: false };
-  }
-}
-
-function checkAuth(request: NextRequest): { authenticated: boolean; user?: { id: string; username: string } } {
-  const authCookie = request.cookies.get('vw_auth');
-  if (!authCookie) return { authenticated: false };
-  try {
-    const sessionVerify = verifySessionToken(authCookie.value);
-    if (!sessionVerify.valid || !sessionVerify.user) {
-      return { authenticated: false };
-    }
-    return { authenticated: true, user: sessionVerify.user };
-  } catch {
-    return { authenticated: false };
-  }
-}
-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const guideId = searchParams.get('guideId');
@@ -67,9 +39,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = checkAuth(request);
+  const auth = await authenticateRequest(request);
 
-  if (!auth.authenticated || !auth.user) {
+  if (!auth) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 

@@ -14,3 +14,11 @@ export async function getUsers(): Promise<User[]> {
   const users = await redis.get<User[]>('users');
   return Array.isArray(users) ? users : [];
 }
+
+export async function saveUsers(users: User[]): Promise<void> {
+  if (!redis) {
+    throw new Error('Redis not configured');
+  }
+
+  await redis.set('users', users);
+}

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { Redis } from '@upstash/redis';
 import { Resend } from 'resend';
 import { getAllPdfs, saveAllPdfs, deletePdfFile } from '@/data/pdfs';
 import { getUserGuides, saveUserGuides } from '@/data/guides';
+import { getUsers, saveUsers } from '@/data/users';
 import { backfillPdfSearchText } from '@/lib/pdfBackfill';
+import { authenticateAdminRequest, incrementSessionVersion } from '@/lib/auth';
 import { Comment, PdfDocument, User } from '@/types';
 
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
@@ -17,17 +17,6 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
     })
   : null;
-
-async function getUsers(): Promise<User[]> {
-  if (!redis) return [];
-  const users = await redis.get<User[]>('users');
-  return users || [];
-}
-
-async function saveUsers(users: User[]): Promise<void> {
-  if (!redis) return;
-  await redis.set('users', users);
-}
 
 interface Feedback {
   id: string;
@@ -63,42 +52,10 @@ async function saveFeedback(feedback: Feedback[]): Promise<void> {
   await redis.set('feedback', feedback);
 }
 
-function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
-  try {
-    const [payload, signature] = token.split('.');
-    const data = JSON.parse(Buffer.from(payload, 'base64').toString());
-    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(JSON.stringify(data)).digest('hex');
-    if (signature !== expectedSig) return { valid: false };
-    if (data.exp < Date.now()) return { valid: false };
-    return { valid: true, user: { id: data.id, username: data.username, role: data.role } };
-  } catch {
-    return { valid: false };
-  }
-}
-
-function checkAuth(request: NextRequest) {
-  const authCookie = request.cookies.get('vw_auth');
-  if (!authCookie) return { authenticated: false };
-  try {
-    const sessionVerify = verifySessionToken(authCookie.value);
-    if (!sessionVerify.valid || !sessionVerify.user) {
-      return { authenticated: false };
-    }
-    return { 
-      authenticated: true, 
-      id: sessionVerify.user.id, 
-      username: sessionVerify.user.username, 
-      role: sessionVerify.user.role || 'user' 
-    };
-  } catch {
-    return { authenticated: false };
-  }
-}
-
 export async function GET(request: NextRequest) {
-  const auth = checkAuth(request);
+  const auth = await authenticateAdminRequest(request);
   
-  if (!auth.authenticated || auth.role !== 'admin') {
+  if (!auth) {
     return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
   }
 
@@ -130,9 +87,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = checkAuth(request);
+  const auth = await authenticateAdminRequest(request);
   
-  if (!auth.authenticated || auth.role !== 'admin') {
+  if (!auth) {
     return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
   }
 
@@ -179,11 +136,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
 
-      if (!role) {
-        return NextResponse.json({ error: 'Role is required' }, { status: 400 });
+      if (role !== 'user' && role !== 'admin') {
+        return NextResponse.json({ error: 'Valid role is required' }, { status: 400 });
       }
 
       users[userIndex].role = role;
+      incrementSessionVersion(users[userIndex]);
       await saveUsers(users);
       return NextResponse.json({ success: true });
     }
@@ -215,7 +173,7 @@ export async function POST(request: NextRequest) {
 
       pdfs[pdfIndex].approved = true;
       pdfs[pdfIndex].reviewedAt = new Date().toISOString();
-      pdfs[pdfIndex].reviewedBy = auth.username;
+      pdfs[pdfIndex].reviewedBy = auth.user.username;
       await saveAllPdfs(pdfs);
 
       return NextResponse.json({ success: true, pdf: pdfs[pdfIndex] });
@@ -317,7 +275,7 @@ export async function POST(request: NextRequest) {
       } else {
         feedback[feedbackIndex].moderationStatus = 'reviewed';
         feedback[feedbackIndex].reviewedAt = new Date().toISOString();
-        feedback[feedbackIndex].reviewedBy = auth.username;
+        feedback[feedbackIndex].reviewedBy = auth.user.username;
       }
 
       await saveFeedback(feedback);

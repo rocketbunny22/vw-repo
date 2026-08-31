@@ -1,40 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PdfDocument } from '@/types';
-import crypto from 'crypto';
 import { getAllPdfs, saveAllPdfs, savePdfFile } from '@/data/pdfs';
 import { extractPdfText } from '@/lib/pdfText';
 import { toPublicPdfSummary } from '@/lib/publicSummaries';
-
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
-
-
-function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
-  try {
-    const [payload, signature] = token.split('.');
-    const data = JSON.parse(Buffer.from(payload, 'base64').toString());
-    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(JSON.stringify(data)).digest('hex');
-    if (signature !== expectedSig) return { valid: false };
-    if (data.exp < Date.now()) return { valid: false };
-    return { valid: true, user: { id: data.id, username: data.username, role: data.role } };
-  } catch {
-    return { valid: false };
-  }
-}
-
-function checkAuth(request: NextRequest): { authenticated: boolean; user?: { id: string; username: string; role: string } } {
-  const authCookie = request.cookies.get('vw_auth');
-  
-  if (!authCookie) {
-    return { authenticated: false };
-  }
-
-  const session = verifySessionToken(authCookie.value);
-  if (!session.valid || !session.user) {
-    return { authenticated: false };
-  }
-  
-  return { authenticated: true, user: session.user };
-}
+import { authenticateRequest } from '@/lib/auth';
 
 export async function GET() {
   const pdfs = await getAllPdfs();
@@ -46,9 +15,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = checkAuth(request);
+  const auth = await authenticateRequest(request);
   
-  if (!auth.authenticated) {
+  if (!auth) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
@@ -101,11 +70,11 @@ export async function POST(request: NextRequest) {
         uploadedAt: new Date().toISOString(),
         fileSize: buffer.length,
         url: `/api/pdfs/${filename}`,
-        uploadedBy: auth.user?.username,
+        uploadedBy: auth.user.username,
         downloads: 0,
-        approved: auth.user?.role === 'admin',
-        reviewedAt: auth.user?.role === 'admin' ? new Date().toISOString() : undefined,
-        reviewedBy: auth.user?.role === 'admin' ? auth.user.username : undefined,
+        approved: auth.user.role === 'admin',
+        reviewedAt: auth.user.role === 'admin' ? new Date().toISOString() : undefined,
+        reviewedBy: auth.user.role === 'admin' ? auth.user.username : undefined,
       };
 
       await savePdfFile(filename, buffer);

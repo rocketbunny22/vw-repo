@@ -3,9 +3,17 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
 import { Redis } from '@upstash/redis';
+import { getUsers, saveUsers } from '@/data/users';
+import {
+  authenticateRequest,
+  clearSessionCookie,
+  createPasswordResetToken,
+  incrementSessionVersion,
+  setSessionCookie,
+  verifyPasswordResetToken,
+} from '@/lib/auth';
+import type { User } from '@/types';
 
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
-const RESET_TOKEN_SECRET = process.env.RESET_TOKEN_SECRET || crypto.randomBytes(32).toString('hex');
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
@@ -42,24 +50,6 @@ async function sendPasswordResetEmail(email: string, resetToken: string, locale:
   } catch (err) {
     console.error('Resend error:', err);
   }
-}
-
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  passwordHash: string;
-  role: 'user' | 'admin';
-  createdAt: string;
-  lastLogin: string;
-  onboarding?: {
-    hasSeenWelcome: boolean;
-    welcomeSeenAt?: string;
-  };
-  profileLinks?: {
-    instagram?: string;
-    vwVortex?: string;
-  };
 }
 
 interface RateLimitEntry {
@@ -105,37 +95,6 @@ function clearRateLimit(key: string): void {
   inMemoryRateLimit.delete(key);
 }
 
-function createPasswordResetToken(email: string): string {
-  const payload = { email, exp: Date.now() + 15 * 60 * 1000 };
-  const data = Buffer.from(JSON.stringify(payload)).toString('base64');
-  const sig = crypto.createHmac('sha256', RESET_TOKEN_SECRET).update(data).digest('hex');
-  return data + '.' + sig;
-}
-
-function verifyPasswordResetToken(token: string): { valid: boolean; email?: string } {
-  try {
-    const [payload, sig] = token.split('.');
-    const expectedSig = crypto.createHmac('sha256', RESET_TOKEN_SECRET).update(payload).digest('hex');
-    if (sig !== expectedSig) return { valid: false };
-    const data = JSON.parse(Buffer.from(payload, 'base64').toString());
-    if (data.exp < Date.now()) return { valid: false };
-    return { valid: true, email: data.email };
-  } catch {
-    return { valid: false };
-  }
-}
-
-async function getUsers(): Promise<User[]> {
-  if (!redis) return [];
-  const users = await redis.get<User[]>('users');
-  return users || [];
-}
-
-async function saveUsers(users: User[]): Promise<void> {
-  if (!redis) return;
-  await redis.set('users', users);
-}
-
 async function getResetTokens(): Promise<{ email: string; token: string; used: boolean }[]> {
   if (!redis) return [];
   const tokens = await redis.get<{ email: string; token: string; used: boolean }[]>('reset_tokens');
@@ -145,25 +104,6 @@ async function getResetTokens(): Promise<{ email: string; token: string; used: b
 async function saveResetTokens(tokens: { email: string; token: string; used: boolean }[]): Promise<void> {
   if (!redis) return;
   await redis.set('reset_tokens', tokens);
-}
-
-function createSessionToken(user: User): string {
-  const payload = { id: user.id, username: user.username, role: user.role, exp: Date.now() + 7 * 24 * 60 * 60 * 1000 };
-  const encrypted = crypto.createHmac('sha256', SESSION_SECRET).update(JSON.stringify(payload)).digest('hex');
-  return Buffer.from(JSON.stringify(payload)).toString('base64') + '.' + encrypted;
-}
-
-function verifySessionToken(token: string): { valid: boolean; user?: { id: string; username: string; role: string } } {
-  try {
-    const [payload, signature] = token.split('.');
-    const data = JSON.parse(Buffer.from(payload, 'base64').toString());
-    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(JSON.stringify(data)).digest('hex');
-    if (signature !== expectedSig) return { valid: false };
-    if (data.exp < Date.now()) return { valid: false };
-    return { valid: true, user: { id: data.id, username: data.username, role: data.role } };
-  } catch {
-    return { valid: false };
-  }
 }
 
 function sanitizeOptionalUrl(value: unknown): string | undefined {
@@ -228,6 +168,7 @@ export async function POST(request: NextRequest) {
         role: 'user',
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
+        sessionVersion: 0,
         onboarding: {
           hasSeenWelcome: false,
         },
@@ -237,19 +178,12 @@ export async function POST(request: NextRequest) {
       await saveUsers(users);
       clearRateLimit(`signup:${email}`);
 
-      const sessionToken = createSessionToken(newUser);
       const response = NextResponse.json({ 
         success: true, 
         user: userResponse(newUser)
       });
 
-      response.cookies.set('vw_auth', sessionToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7,
-        path: '/',
-      });
+      setSessionCookie(response, newUser);
 
       return response;
     }
@@ -275,84 +209,55 @@ export async function POST(request: NextRequest) {
       await saveUsers(users);
       clearRateLimit(`login:${email}`);
 
-      const sessionToken = createSessionToken(user);
       const response = NextResponse.json({ 
         success: true, 
         user: userResponse(user)
       });
 
-      response.cookies.set('vw_auth', sessionToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7,
-        path: '/',
-      });
+      setSessionCookie(response, user);
 
       return response;
     }
 
     if (action === 'logout') {
       const response = NextResponse.json({ success: true });
-      response.cookies.set('vw_auth', '', { maxAge: 0, path: '/' });
+      clearSessionCookie(response);
       return response;
     }
 
     if (action === 'delete') {
-      const authCookie = request.cookies.get('vw_auth');
-      if (!authCookie) {
-        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-      }
-
-      const sessionVerify = verifySessionToken(authCookie.value);
-      if (!sessionVerify.valid || !sessionVerify.user) {
+      const auth = await authenticateRequest(request);
+      if (!auth) {
         return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
       }
 
-      const users = await getUsers();
-      const userIndex = users.findIndex(u => u.id === sessionVerify.user!.id);
-
-      if (userIndex === -1) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
-      }
-
-      users.splice(userIndex, 1);
-      await saveUsers(users);
+      auth.users.splice(auth.userIndex, 1);
+      await saveUsers(auth.users);
 
       const response = NextResponse.json({ success: true });
-      response.cookies.set('vw_auth', '', { maxAge: 0, path: '/' });
+      clearSessionCookie(response);
       return response;
     }
 
     if (action === 'updateProfile') {
-      const authCookie = request.cookies.get('vw_auth');
-      if (!authCookie) {
-        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-      }
-
-      const sessionVerify = verifySessionToken(authCookie.value);
-      if (!sessionVerify.valid || !sessionVerify.user) {
+      const auth = await authenticateRequest(request);
+      if (!auth) {
         return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
       }
 
-      const users = await getUsers();
-      const userIndex = users.findIndex(u => u.id === sessionVerify.user!.id);
-
-      if (userIndex === -1) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
-      }
+      const { users, userIndex } = auth;
 
       const { newUsername, newEmail } = body;
 
       if (newUsername && newUsername !== users[userIndex].username) {
-        if (users.find(u => u.username === newUsername && u.id !== sessionVerify.user!.id)) {
+        if (users.find(u => u.username === newUsername && u.id !== auth.user.id)) {
           return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
         }
         users[userIndex].username = newUsername;
       }
 
       if (newEmail && newEmail !== users[userIndex].email) {
-        if (users.find(u => u.email === newEmail && u.id !== sessionVerify.user!.id)) {
+        if (users.find(u => u.email === newEmail && u.id !== auth.user.id)) {
           return NextResponse.json({ error: 'Email already in use' }, { status: 400 });
         }
         users[userIndex].email = newEmail;
@@ -368,40 +273,23 @@ export async function POST(request: NextRequest) {
 
       await saveUsers(users);
 
-      const newSessionToken = createSessionToken(users[userIndex]);
       const response = NextResponse.json({ 
         success: true, 
         user: userResponse(users[userIndex])
       });
 
-      response.cookies.set('vw_auth', newSessionToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7,
-        path: '/',
-      });
+      setSessionCookie(response, users[userIndex]);
 
       return response;
     }
 
     if (action === 'changePassword') {
-      const authCookie = request.cookies.get('vw_auth');
-      if (!authCookie) {
-        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-      }
-
-      const sessionVerify = verifySessionToken(authCookie.value);
-      if (!sessionVerify.valid || !sessionVerify.user) {
+      const auth = await authenticateRequest(request);
+      if (!auth) {
         return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
       }
 
-      const users = await getUsers();
-      const userIndex = users.findIndex(u => u.id === sessionVerify.user!.id);
-
-      if (userIndex === -1) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
-      }
+      const { users, userIndex } = auth;
 
       const { currentPassword, newPassword } = body;
 
@@ -414,9 +302,12 @@ export async function POST(request: NextRequest) {
       }
 
       users[userIndex].passwordHash = await bcrypt.hash(newPassword, 12);
+      incrementSessionVersion(users[userIndex]);
       await saveUsers(users);
 
-      return NextResponse.json({ success: true });
+      const response = NextResponse.json({ success: true, sessionInvalidated: true });
+      clearSessionCookie(response);
+      return response;
     }
 
     if (action === 'resetRequest') {
@@ -476,6 +367,7 @@ export async function POST(request: NextRequest) {
       }
 
       users[userIndex].passwordHash = await bcrypt.hash(newPassword, 12);
+      incrementSessionVersion(users[userIndex]);
       await saveUsers(users);
 
       return NextResponse.json({ success: true, message: 'Password reset successful' });
@@ -489,25 +381,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const authCookie = request.cookies.get('vw_auth');
-  
-  if (!authCookie) {
-    return NextResponse.json({ authenticated: false });
-  }
-
   try {
-    const sessionVerify = verifySessionToken(authCookie.value);
-    if (!sessionVerify.valid || !sessionVerify.user) {
-      return NextResponse.json({ authenticated: false });
-    }
+    const auth = await authenticateRequest(request);
+    if (!auth) return NextResponse.json({ authenticated: false });
 
-    const users = await getUsers();
-    const user = users.find(u => u.id === sessionVerify.user!.id);
-    if (!user) {
-      return NextResponse.json({ authenticated: false });
-    }
-
-    return NextResponse.json({ authenticated: true, user: userResponse(user) });
+    return NextResponse.json({ authenticated: true, user: userResponse(auth.user) });
   } catch {
     return NextResponse.json({ authenticated: false });
   }

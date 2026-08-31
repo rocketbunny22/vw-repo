@@ -89,7 +89,9 @@ Authentication is custom. Login and signup are handled by `/api/auth`.
 
 The `vw_auth` cookie stores a base64 JSON session payload plus an HMAC signature. The session payload includes user id, username, role, and expiry. Passwords are hashed with `bcryptjs`.
 
-Several route handlers verify this cookie independently. When changing session format or signature behavior, update every route that verifies sessions.
+`src/lib/auth.ts` owns session signing, constant-time signature verification, cookie settings, current-user lookup, and admin authorization. Protected requests resolve the current user from Redis instead of trusting the role stored in the cookie. Password changes, password resets, and role changes increment the user record's `sessionVersion`, invalidating existing sessions.
+
+`SESSION_SECRET` and `RESET_TOKEN_SECRET` are required to contain at least 32 characters. The server fails during initialization when either secret is missing or too short.
 
 ## PDF Flow
 
@@ -155,8 +157,6 @@ At the time this documentation was created, the production build passed. Lint co
 
 ## Known Technical Debt
 
-- Session verification is duplicated across route handlers.
 - `AuthProvider` exists but is not mounted in the root layout and is not currently used by pages.
-- Missing stable `SESSION_SECRET` or `RESET_TOKEN_SECRET` causes random fallback secrets, which invalidates sessions or reset tokens across process restarts.
 - Admin tables are desktop-oriented and should be reviewed for smaller screens before major admin UI expansion.
 - Some client pages use async `searchParams` props; this builds now, but future Next.js changes could make this pattern worth revisiting.

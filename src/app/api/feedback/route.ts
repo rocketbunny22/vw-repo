@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { Redis } from '@upstash/redis';
-
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+import { authenticateAdminRequest } from '@/lib/auth';
 
 const redis = process.env.UPSTASH_REDIS_REST_URL 
   ? new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
@@ -62,21 +61,13 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const authCookie = request.cookies.get('vw_auth');
-  
-  if (!authCookie || !SESSION_SECRET) {
+  const auth = await authenticateAdminRequest(request);
+
+  if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const [payload, signature] = authCookie.value.split('.');
-    const data = JSON.parse(Buffer.from(payload, 'base64').toString());
-    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(JSON.stringify(data)).digest('hex');
-    
-    if (signature !== expectedSig || data.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const feedback = await getFeedback();
     return NextResponse.json({ feedback: feedback.reverse() });
   } catch {
