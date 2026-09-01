@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { LanguageProvider } from "@/components/LanguageProvider";
+import { AuthProvider } from "@/components/AuthProvider";
 import { Analytics } from '@vercel/analytics/next';
 import {
   absoluteUrl,
@@ -16,11 +16,6 @@ import {
   siteUrl,
   websiteJsonLd,
 } from "@/lib/seo";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -102,7 +97,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className="h-full antialiased">
-      <body className={`${inter.variable} min-h-full flex flex-col font-sans`}>
+      <body className="min-h-full flex flex-col font-sans">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLd(organizationJsonLd) }}
@@ -112,11 +107,13 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: jsonLd(localizedWebsiteJsonLd) }}
         />
         <LanguageProvider initialLocale={locale}>
-          <Navbar />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
+          </AuthProvider>
         </LanguageProvider>
         <Analytics />
       </body>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllPdfs, getPdfFile, saveAllPdfs } from '@/data/pdfs';
+import { getAllPdfs, getPdfFile, getPublicPdfFile, incrementPdfDownloads } from '@/data/pdfs';
+import { isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ filename: string }> }) {
   try {
@@ -12,9 +13,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const pdfs = await getAllPdfs();
-    const pdf = pdfs.find((p) => p.filename === filename);
+    const pdf = pdfs.find((item) => item.filename === filename && item.approved !== false);
 
-    if (pdf?.approved === false) {
+    if (!pdf) {
       return NextResponse.json({ error: 'PDF not found' }, { status: 404 });
     }
 
@@ -26,26 +27,39 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (view !== 'true') {
       try {
-        if (pdf) {
-          pdf.downloads = (pdf.downloads || 0) + 1;
-          await saveAllPdfs(pdfs);
-        }
+        await incrementPdfDownloads(pdf.id);
       } catch (err) {
         console.error('Failed to track download:', err);
       }
     }
 
     const disposition = view === 'true' ? 'inline' : 'attachment';
+    const downloadName = filename.replaceAll('"', '');
 
     const body = Uint8Array.from(fileBuffer).buffer;
 
     return new NextResponse(body, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `${disposition}; filename="${filename}"`,
+        'Content-Disposition': `${disposition}; filename="${downloadName}"`,
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (error) {
+    if (isRedisUnavailableError(error)) {
+      const { filename } = await params;
+      const legacyFile = await getPublicPdfFile(filename);
+      if (!legacyFile) return redisUnavailableResponse();
+
+      const body = Uint8Array.from(legacyFile).buffer;
+      return new NextResponse(body, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `inline; filename="${filename.replaceAll('"', '')}"`,
+          'X-Content-Type-Options': 'nosniff',
+        },
+      });
+    }
     console.error('PDF not found:', error);
     return NextResponse.json({ error: 'PDF not found' }, { status: 404 });
   }

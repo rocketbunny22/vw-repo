@@ -46,6 +46,7 @@ export interface PdfDocument {
   searchTextExtractedAt?: string;
   uploadedAt: string;
   uploadedBy?: string;
+  uploadedById?: string;
   fileSize: number;
   url: string;
   downloads: number;
@@ -81,6 +82,18 @@ export interface Comment {
   reported?: boolean;
   reportedAt?: string;
   moderationStatus?: 'pending' | 'reviewed';
+}
+
+export interface Feedback {
+  id: string;
+  name: string;
+  email: string;
+  category: string;
+  message: string;
+  createdAt: string;
+  moderationStatus?: 'pending' | 'reviewed';
+  reviewedAt?: string;
+  reviewedBy?: string;
 }
 
 export interface DiyGuide {

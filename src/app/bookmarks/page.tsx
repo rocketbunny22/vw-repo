@@ -13,6 +13,7 @@ export default function BookmarksPage() {
   const [guides, setGuides] = useState<PublicGuideSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(true);
+  const [serviceUnavailable, setServiceUnavailable] = useState(false);
 
   useEffect(() => {
     async function loadBookmarks() {
@@ -20,6 +21,11 @@ export default function BookmarksPage() {
         const response = await fetch('/api/user/bookmarks');
         if (response.status === 401) {
           setAuthenticated(false);
+          return;
+        }
+
+        if (response.status === 503) {
+          setServiceUnavailable(true);
           return;
         }
 
@@ -62,6 +68,10 @@ export default function BookmarksPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           {loading ? (
             <p className="text-gray-500">Loading saved items...</p>
+          ) : serviceUnavailable ? (
+            <p className="rounded-lg border border-amber-300 bg-amber-50 p-6 text-amber-900" role="status">
+              Saved items are temporarily unavailable. Please retry shortly.
+            </p>
           ) : !authenticated ? (
             <div className="bg-white rounded-lg shadow-md p-8">
               <p className="text-gray-600 mb-4">Sign in to save PDFs and guides.</p>

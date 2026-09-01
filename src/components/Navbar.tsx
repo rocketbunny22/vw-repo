@@ -7,58 +7,43 @@ import { VehicleProfile } from '@/types';
 import UiIcon from '@/components/UiIcon';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath, navigationLabels } from '@/lib/localization';
-
-interface User {
-  id: string;
-  username: string;
-  role: string;
-}
+import { useAuth } from '@/components/AuthProvider';
 
 export default function Navbar() {
   const { locale } = useLanguage();
   const labels = navigationLabels[locale];
   const href = (path: string) => localizedPath(path, locale);
-  const [user, setUser] = useState<User | null>(null);
+  const { user, serviceUnavailable, logout } = useAuth();
   const [vehicle, setVehicle] = useState<VehicleProfile | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     let isActive = true;
 
-    async function loadAuth() {
-      try {
-        const response = await fetch('/api/auth');
-        const data = await response.json();
+    async function loadVehicle() {
+      if (!user) {
+        setVehicle(null);
+        return;
+      }
 
-        if (isActive && data.authenticated) {
-          setUser(data.user);
-          const vehRes = await fetch('/api/user/vehicle');
-          const vehData = await vehRes.json();
-          if (isActive && vehData.vehicle) {
-            setVehicle(vehData.vehicle);
-          }
-        }
+      try {
+        const vehRes = await fetch('/api/user/vehicle');
+        const vehData = await vehRes.json();
+        if (isActive) setVehicle(vehData.vehicle || null);
       } catch {
-        if (isActive) {
-          setUser(null);
-        }
+        if (isActive) setVehicle(null);
       }
     }
 
-    void loadAuth();
+    void loadVehicle();
 
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [user]);
 
   const handleLogout = async () => {
-    await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'logout' }),
-    });
-    setUser(null);
+    await logout();
     window.location.href = href('/');
   };
 
@@ -84,13 +69,13 @@ export default function Navbar() {
               </a>
 
               <div className="relative group">
-                <button className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                <button className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium flex items-center" aria-haspopup="true">
                   {labels.generations}
                   <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <div className="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50">
                   <div className="py-1">
                     {generations.map((gen) => (
                       <a
@@ -137,9 +122,11 @@ export default function Navbar() {
                 {labels.submitGuide}
               </a>
 
-              {user ? (
+              {serviceUnavailable ? (
+                <span className="px-3 py-2 text-sm text-amber-200" role="status">Account service unavailable</span>
+              ) : user ? (
                 <div className="relative group">
-                  <button className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5">
+                  <button className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5" aria-haspopup="true">
                     {vehicle && (
                       <UiIcon
                         name="vehicle"
@@ -152,7 +139,7 @@ export default function Navbar() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-                  <div className="absolute right-0 mt-0 w-40 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                  <div className="absolute right-0 mt-0 w-40 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50">
                     <div className="py-1">
                       <a href={href('/my-vw')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
                         {labels.myVw}
@@ -186,7 +173,13 @@ export default function Navbar() {
           </div>
 
           <div className="md:hidden">
-            <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 rounded-md hover:bg-vw-blue-light">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 rounded-md hover:bg-vw-blue-light"
+              aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-navigation"
+            >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {menuOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -199,7 +192,7 @@ export default function Navbar() {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t border-vw-blue-light pb-4">
+          <div id="mobile-navigation" className="md:hidden border-t border-vw-blue-light pb-4">
             <a href={href('/')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
               {labels.home}
             </a>
@@ -215,7 +208,9 @@ export default function Navbar() {
             <a href={href('/submit-guide')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
               {labels.submitGuide}
             </a>
-            {user ? (
+            {serviceUnavailable ? (
+              <p className="px-3 py-2 text-sm text-amber-200" role="status">Account service unavailable</p>
+            ) : user ? (
               <>
                 <a href={href('/my-vw')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
                   {labels.myVw}

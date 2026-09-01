@@ -26,8 +26,8 @@ function ResetPasswordForm() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (newPassword.length < 10 || !/[a-zA-Z]/.test(newPassword) || !/\d/.test(newPassword)) {
+      setError('Password must be at least 10 characters and include a letter and number');
       return;
     }
 
@@ -89,7 +89,7 @@ function ResetPasswordForm() {
             onChange={(e) => setNewPassword(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
             required
-            minLength={6}
+            minLength={10}
           />
         </div>
 
@@ -103,7 +103,7 @@ function ResetPasswordForm() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
             required
-            minLength={6}
+            minLength={10}
           />
         </div>
 

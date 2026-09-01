@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath } from '@/lib/localization';
+import { useAuth } from '@/components/AuthProvider';
 
 interface Comment {
   id: string;
@@ -21,28 +22,15 @@ interface Props {
 
 export default function CommentsSection({ guideId }: Props) {
   const { locale } = useLanguage();
+  const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [user, setUser] = useState<{ id: string; username: string } | null>(null);
   const [error, setError] = useState('');
   const [reportingId, setReportingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchComments();
-    checkAuth();
-  }, [guideId]);
-
-  async function checkAuth() {
-    try {
-      const res = await fetch('/api/auth');
-      const data = await res.json();
-      if (data.authenticated) setUser(data.user);
-    } catch {}
-  }
-
-  async function fetchComments() {
+  const fetchComments = useCallback(async () => {
     try {
       const res = await fetch(`/api/comments?guideId=${encodeURIComponent(guideId)}`);
       const data = await res.json();
@@ -52,7 +40,12 @@ export default function CommentsSection({ guideId }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [guideId]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void fetchComments(), 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchComments]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VW Repo
 
-## Getting Started
+VW Repo is a Next.js App Router application for Volkswagen repair manuals, technical PDFs, DIY guides, generation data, maintenance checklists, and user garage profiles.
 
-First, run the development server:
+## Local development
+
+Requirements: Node.js 22 or newer, npm, and an Upstash Redis database.
+
+1. Copy `.env.example` to `.env.local` and set every required value.
+2. Install dependencies with `npm ci`.
+3. Start the app with `npm run dev`.
+4. Open <http://localhost:3000>.
+
+Do not rotate `SESSION_SECRET` or `RESET_TOKEN_SECRET` during a routine deployment. Rotation intentionally invalidates sessions or outstanding reset links. Both values must contain at least 32 characters.
+
+## Verification
+
+Run the same checks used by CI:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm audit --omit=dev
+npm test
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Storage and deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Mutable data is Redis-only and returns a structured `503 REDIS_UNAVAILABLE` response during outages. Static Volkswagen taxonomy and starter guides remain in `src/data`. Legacy checked-in PDFs under `public/pdfs` remain readable during a Redis outage.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Before deploying the concurrency changes, read [docs/redis-migration.md](docs/redis-migration.md). Account deletion behavior is documented in [docs/account-deletion.md](docs/account-deletion.md).
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy migrations and application code in the documented order, run a smoke test against authentication, upload moderation, search, and PDF serving, and retain the previous deployment for rollback. Do not roll back to an older writer while the current deployment is accepting writes; older writers do not advance Redis version keys and can reintroduce lost updates.

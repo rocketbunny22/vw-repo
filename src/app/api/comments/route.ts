@@ -1,96 +1,97 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
 import { Comment } from '@/types';
+import { getComments, mutateComments } from '@/data/moderation';
 import { authenticateRequest } from '@/lib/auth';
-
-const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : null;
-
-async function getComments(): Promise<Comment[]> {
-  if (!redis) return [];
-  const comments = await redis.get<Comment[]>('comments');
-  return comments || [];
-}
-
-async function saveComments(comments: Comment[]): Promise<void> {
-  if (!redis) return;
-  await redis.set('comments', comments);
-}
+import { consumeRateLimit, isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
+import { boundedString, INPUT_LIMITS, readJsonObject, requestClientIdentifier } from '@/lib/validation';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const guideId = searchParams.get('guideId');
+  try {
+    const { searchParams } = new URL(request.url);
+    const guideId = searchParams.get('guideId');
 
-  if (!guideId) {
-    return NextResponse.json({ error: 'guideId is required' }, { status: 400 });
+    if (!guideId) {
+      return NextResponse.json({ error: 'guideId is required' }, { status: 400 });
+    }
+
+    const allComments = await getComments();
+    const guideComments = allComments
+      .filter((c) => c.guideId === guideId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    return NextResponse.json({ comments: guideComments });
+  } catch (error) {
+    if (isRedisUnavailableError(error)) return redisUnavailableResponse();
+    console.error('Comment load error:', error);
+    return NextResponse.json({ error: 'Failed to load comments' }, { status: 500 });
   }
-
-  const allComments = await getComments();
-  const guideComments = allComments
-    .filter((c) => c.guideId === guideId)
-    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
-  return NextResponse.json({ comments: guideComments });
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authenticateRequest(request);
-
-  if (!auth) {
-    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-  }
-
   try {
-    const { action, guideId, commentId, content } = await request.json();
+    const auth = await authenticateRequest(request);
+
+    if (!auth) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const body = await readJsonObject(request);
+    if (!body) return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    const { action, guideId, commentId, content } = body;
+    const rateLimit = await consumeRateLimit(
+      `comments:${auth.user.id}:${requestClientIdentifier(request)}`,
+      30,
+      60 * 60,
+    );
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ error: 'Too many comment actions' }, { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfter) } });
+    }
 
     if (action === 'report') {
       if (!commentId) {
         return NextResponse.json({ error: 'commentId is required' }, { status: 400 });
       }
 
-      const allComments = await getComments();
-      const commentIndex = allComments.findIndex((comment) => comment.id === commentId);
+      let found = false;
+      await mutateComments((comments) => comments.map((comment) => {
+        if (comment.id !== commentId) return comment;
+        found = true;
+        return {
+          ...comment,
+          reported: true,
+          reportedAt: new Date().toISOString(),
+          moderationStatus: 'pending',
+        };
+      }));
 
-      if (commentIndex === -1) {
+      if (!found) {
         return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
       }
-
-      allComments[commentIndex].reported = true;
-      allComments[commentIndex].reportedAt = new Date().toISOString();
-      allComments[commentIndex].moderationStatus = 'pending';
-      await saveComments(allComments);
 
       return NextResponse.json({ success: true });
     }
 
-    if (!guideId || !content || !content.trim()) {
+    const validGuideId = boundedString(guideId, 100);
+    const validContent = boundedString(content, INPUT_LIMITS.comment);
+    if (!validGuideId || !validContent) {
       return NextResponse.json({ error: 'guideId and content are required' }, { status: 400 });
-    }
-
-    if (content.trim().length > 2000) {
-      return NextResponse.json({ error: 'Comment is too long (max 2000 characters)' }, { status: 400 });
     }
 
     const comment: Comment = {
       id: crypto.randomUUID(),
-      guideId,
+      guideId: validGuideId,
       authorId: auth.user.id,
       authorName: auth.user.username,
-      content: content.trim(),
+      content: validContent,
       createdAt: new Date().toISOString(),
     };
 
-    const allComments = await getComments();
-    allComments.push(comment);
-    await saveComments(allComments);
+    await mutateComments((comments) => [...comments, comment]);
 
     return NextResponse.json({ success: true, comment });
   } catch (error) {
+    if (isRedisUnavailableError(error)) return redisUnavailableResponse();
     console.error('Comment error:', error);
     return NextResponse.json({ error: 'Failed to post comment' }, { status: 500 });
   }

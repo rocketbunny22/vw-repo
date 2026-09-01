@@ -77,7 +77,7 @@ export default async function PublicProfilePage({
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .map(toPublicGuideSummary);
   const uploadedPdfs = pdfs
-    .filter((pdf) => pdf.approved !== false && pdf.uploadedBy === user.username)
+    .filter((pdf) => pdf.approved !== false && (pdf.uploadedById === user.id || pdf.uploadedBy === user.username))
     .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
     .map(toPublicPdfSummary);
 

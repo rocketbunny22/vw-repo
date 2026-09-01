@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import type { NextRequest, NextResponse } from 'next/server';
 import { getUsers } from '@/data/users';
 import type { User } from '@/types';
+import { createOpaqueResetToken, digestResetToken } from '@/lib/resetTokens';
 
 export const SESSION_COOKIE_NAME = 'vw_auth';
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
@@ -143,33 +144,12 @@ export function clearSessionCookie(response: NextResponse): void {
   });
 }
 
-export function createPasswordResetToken(email: string): string {
-  const payload = Buffer.from(JSON.stringify({
-    email,
-    exp: Date.now() + 15 * 60 * 1000,
-  })).toString('base64');
-  const signature = crypto.createHmac('sha256', RESET_TOKEN_SECRET).update(payload).digest('hex');
-
-  return `${payload}.${signature}`;
+export function createPasswordResetToken(): string {
+  return createOpaqueResetToken();
 }
 
-export function verifyPasswordResetToken(token: string): { valid: boolean; email?: string } {
-  try {
-    const [payload, signature, extra] = token.split('.');
-    if (!payload || !signature || extra !== undefined) return { valid: false };
-
-    const expectedSignature = crypto.createHmac('sha256', RESET_TOKEN_SECRET).update(payload).digest('hex');
-    if (!signaturesMatch(signature, expectedSignature)) return { valid: false };
-
-    const data = JSON.parse(Buffer.from(payload, 'base64').toString()) as { email?: unknown; exp?: unknown };
-    if (typeof data.email !== 'string' || typeof data.exp !== 'number' || data.exp < Date.now()) {
-      return { valid: false };
-    }
-
-    return { valid: true, email: data.email };
-  } catch {
-    return { valid: false };
-  }
+export function passwordResetTokenDigest(token: string): string {
+  return digestResetToken(token, RESET_TOKEN_SECRET);
 }
 
 export function incrementSessionVersion(user: User): void {

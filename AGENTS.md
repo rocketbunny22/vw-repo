@@ -32,7 +32,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Current App Context
 
-- This is a Next.js 16.2.4 / React 19.2.4 App Router app using Tailwind CSS 4.
+- This is a Next.js 16.3.4 / React 19.2.4 App Router app using Tailwind CSS 4.
 - Treat `src/app` as the route source of truth. Pages and route handlers use the Next 16 async `params` / `searchParams` shape where applicable.
 - Read the relevant local Next.js docs in `node_modules/next/dist/docs/` before changing routing, caching, route handlers, images, server/client component boundaries, or build configuration.
 - Public assets live under `public/`. Local app images are served from `/images/**` and allowed by `next.config.ts`.
@@ -41,9 +41,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 # Data And Storage
 
 - Static Volkswagen taxonomy and starter content live in `src/data`: generations, systems, static DIY guides, and maintenance checklists.
-- Mutable records are stored in Upstash Redis when `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are configured.
-- Redis keys currently include `users`, `pdfs`, `pdf:<filename>`, `user_guides`, `comments`, `feedback`, and `reset_tokens`.
-- `src/data/guides.ts` can fall back to local `user-guides.json` when Redis is not configured.
+- Mutable records require Upstash Redis through `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
+- Redis keys include `users`, `pdfs`, `pdf:<filename>`, `pdf:downloads:<id>`, `user_guides`, `comments`, `feedback`, hashed expiring `reset_token:<digest>` records, rate-limit counters, and adjacent `<collection>:version` keys used for optimistic writes.
+- Redis access and outage handling are centralized in `src/lib/redis.ts`; Redis-dependent API routes return `503` with `code: "REDIS_UNAVAILABLE"` when storage is not configured or cannot be reached.
 - `src/data/pdfs.ts` reads PDF metadata from Redis, but `getPdfFile()` also falls back to `public/pdfs/<filename>` for legacy checked-in PDF files.
 
 # Authentication And Authorization
@@ -66,7 +66,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 # User And Admin Workflows
 
 - User pages include profile, garage vehicle, saved bookmarks, checklists, onboarding, uploads, guide submission, feedback, and public user profiles.
-- `src/components/AuthProvider.tsx` currently exists but is not mounted in `src/app/layout.tsx`; most pages fetch auth state directly from `/api/auth`.
+- `src/components/AuthProvider.tsx` is mounted in `src/app/layout.tsx`; shared navigation consumes it while some workflow pages still perform their own auth checks before loading private data.
 - Admin is a single client dashboard in `src/app/admin/page.tsx` with moderation, users, PDFs, guides, and tools tabs.
 - Moderation covers pending PDFs, pending user guides, unreviewed feedback, and reported comments.
 

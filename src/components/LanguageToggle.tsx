@@ -31,7 +31,7 @@ export default function LanguageToggle({
   const changeLocale = () => {
     const nextLocale = spanishActive ? 'en' : 'es-MX';
     setLocale(nextLocale);
-    router.push(localizedPath(pathname, nextLocale));
+    router.push(`${localizedPath(pathname, nextLocale)}${window.location.search}${window.location.hash}`);
   };
 
   return (

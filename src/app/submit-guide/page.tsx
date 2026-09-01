@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { generations } from '@/data/generations';
 import { PublicGuideSummary } from '@/types';
@@ -49,10 +49,14 @@ export default function SubmitGuidePage() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  async function checkAuth() {
+  const checkAuth = useCallback(async () => {
     try {
       const response = await fetch('/api/auth');
       const data = await response.json();
+      if (response.status === 503 || data.code === 'REDIS_UNAVAILABLE') {
+        setMessage({ type: 'error', text: 'Account data is temporarily unavailable. Please retry shortly.' });
+        return;
+      }
       
       if (!data.authenticated) {
         router.push(localizedPath('/login', locale));
@@ -71,14 +75,14 @@ export default function SubmitGuidePage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [locale, router]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void checkAuth();
     }, 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [checkAuth]);
 
   const toolsList = tools.split('\n').map((item) => item.trim()).filter(Boolean);
   const partsList = parts.split('\n').map((item) => item.trim()).filter(Boolean);

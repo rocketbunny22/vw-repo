@@ -1,6 +1,9 @@
-import { getAllPdfs, getPdfFile, saveAllPdfs } from '@/data/pdfs';
+import { getAllPdfs, getPdfFile, mutatePdfs } from '@/data/pdfs';
 import { PdfDocument } from '@/types';
 import { extractPdfText } from './pdfText';
+import { mergePdfSearchTextPatches, type PdfSearchTextPatch } from './pdfSearchMerge';
+
+export { mergePdfSearchTextPatches } from './pdfSearchMerge';
 
 export interface PdfSearchTextBackfillResult {
   total: number;
@@ -29,7 +32,7 @@ export async function backfillPdfSearchText(options: { force?: boolean } = {}): 
     failures: [],
   };
 
-  let changed = false;
+  const patches = new Map<string, PdfSearchTextPatch>();
 
   for (const pdf of candidates) {
     result.processed += 1;
@@ -59,9 +62,10 @@ export async function backfillPdfSearchText(options: { force?: boolean } = {}): 
         continue;
       }
 
-      pdf.searchText = extraction.text;
-      pdf.searchTextExtractedAt = new Date().toISOString();
-      changed = true;
+      patches.set(pdf.id, {
+        searchText: extraction.text,
+        searchTextExtractedAt: new Date().toISOString(),
+      });
       result.updated += 1;
     } catch (error) {
       result.failed += 1;
@@ -73,9 +77,7 @@ export async function backfillPdfSearchText(options: { force?: boolean } = {}): 
     }
   }
 
-  if (changed) {
-    await saveAllPdfs(pdfs);
-  }
+  if (patches.size > 0) await applyPdfSearchTextPatches(patches);
 
   return result;
 }
@@ -84,7 +86,7 @@ export async function ensurePdfSearchText(pdfs: PdfDocument[]): Promise<PdfDocum
   const missingText = pdfs.filter((pdf) => shouldBackfillPdf(pdf));
   if (missingText.length === 0) return pdfs;
 
-  let changed = false;
+  const patches = new Map<string, PdfSearchTextPatch>();
 
   for (const pdf of missingText) {
     const buffer = await getPdfFile(pdf.filename);
@@ -93,16 +95,21 @@ export async function ensurePdfSearchText(pdfs: PdfDocument[]): Promise<PdfDocum
     const extraction = await extractPdfText(buffer);
     if ('error' in extraction) continue;
 
-    pdf.searchText = extraction.text;
-    pdf.searchTextExtractedAt = new Date().toISOString();
-    changed = true;
+    patches.set(pdf.id, {
+      searchText: extraction.text,
+      searchTextExtractedAt: new Date().toISOString(),
+    });
   }
 
-  if (changed) {
-    await saveAllPdfs(pdfs);
-  }
+  if (patches.size > 0) await applyPdfSearchTextPatches(patches);
 
-  return pdfs;
+  return mergePdfSearchTextPatches(pdfs, patches);
+}
+
+async function applyPdfSearchTextPatches(
+  patches: ReadonlyMap<string, PdfSearchTextPatch>,
+): Promise<void> {
+  await mutatePdfs((currentPdfs) => mergePdfSearchTextPatches(currentPdfs, patches));
 }
 
 function shouldBackfillPdf(pdf: PdfDocument, force = false): boolean {

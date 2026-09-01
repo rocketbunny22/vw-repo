@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generations } from '@/data/generations';
 import { diyGuides } from '@/data/diyGuides';
 import { getAllPdfs } from '@/data/pdfs';
-import { ensurePdfSearchText } from '@/lib/pdfBackfill';
 import { DiyGuide, PdfDocument } from '@/types';
 import { spanishGuideContent } from '@/data/diyGuides.es-MX';
 import { generationDescriptionsEs, systemNamesEs, toSpanishPath } from '@/lib/localization';
 import { getUserGuides } from '@/data/guides';
+import { isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,40 +27,50 @@ interface SearchResult {
 const MAX_RESULTS = 80;
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q')?.trim() || '';
-  const locale = searchParams.get('locale') === 'es-MX' ? 'es-MX' : 'en';
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('q')?.trim() || '';
+    const locale = searchParams.get('locale') === 'es-MX' ? 'es-MX' : 'en';
 
-  if (!query) {
-    return NextResponse.json({ results: [] });
+    if (!query) {
+      return NextResponse.json({ results: [] });
+    }
+
+    if (query.length > 200) {
+      return NextResponse.json({ error: 'Search query is too long' }, { status: 400 });
+    }
+
+    const terms = tokenize(query);
+    if (terms.length === 0) {
+      return NextResponse.json({ results: [] });
+    }
+
+    const pdfs = (await getAllPdfs()).filter((pdf) => pdf.approved !== false);
+
+    const approvedUserGuides = (await getUserGuides()).filter((guide) => guide.approved);
+    const allGuides = [...diyGuides, ...approvedUserGuides];
+    const searchableGuides = locale === 'es-MX'
+      ? allGuides.map((guide) => {
+          const translated = spanishGuideContent[guide.slug];
+          return translated ? { ...guide, title: translated.title, content: translated.content, tools: translated.tools, parts: translated.parts } : guide;
+        })
+      : allGuides;
+
+    const results = [
+      ...searchGenerationSystems(query, terms, locale),
+      ...searchGenerations(query, terms, locale),
+      ...searchPdfs(pdfs, query, terms),
+      ...searchGuides(searchableGuides, query, terms, locale),
+    ]
+      .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+      .slice(0, MAX_RESULTS);
+
+    return NextResponse.json({ results });
+  } catch (error) {
+    if (isRedisUnavailableError(error)) return redisUnavailableResponse();
+    console.error('Search error:', error);
+    return NextResponse.json({ error: 'Search failed' }, { status: 500 });
   }
-
-  const terms = tokenize(query);
-  if (terms.length === 0) {
-    return NextResponse.json({ results: [] });
-  }
-
-  const pdfs = await ensurePdfSearchText((await getAllPdfs()).filter((pdf) => pdf.approved !== false));
-
-  const approvedUserGuides = (await getUserGuides()).filter((guide) => guide.approved);
-  const allGuides = [...diyGuides, ...approvedUserGuides];
-  const searchableGuides = locale === 'es-MX'
-    ? allGuides.map((guide) => {
-        const translated = spanishGuideContent[guide.slug];
-        return translated ? { ...guide, title: translated.title, content: translated.content, tools: translated.tools, parts: translated.parts } : guide;
-      })
-    : allGuides;
-
-  const results = [
-    ...searchGenerationSystems(query, terms, locale),
-    ...searchGenerations(query, terms, locale),
-    ...searchPdfs(pdfs, query, terms),
-    ...searchGuides(searchableGuides, query, terms, locale),
-  ]
-    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
-    .slice(0, MAX_RESULTS);
-
-  return NextResponse.json({ results });
 }
 
 function searchPdfs(pdfs: PdfDocument[], query: string, terms: string[]): SearchResult[] {

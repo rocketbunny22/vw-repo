@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { diyGuides } from '@/data/diyGuides';
 import { getAllPdfs } from '@/data/pdfs';
 import { getUserGuides } from '@/data/guides';
-import { saveUsers } from '@/data/users';
+import { mutateUsers } from '@/data/users';
 import { DiyGuide, UserBookmarks } from '@/types';
 import { toPublicGuideSummary, toPublicPdfSummary } from '@/lib/publicSummaries';
 import { authenticateRequest } from '@/lib/auth';
+import { isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
+import { boundedString, readJsonObject } from '@/lib/validation';
 
 function normalizeBookmarks(bookmarks?: UserBookmarks): UserBookmarks {
   return {
@@ -20,50 +22,62 @@ async function getApprovedGuides(): Promise<DiyGuide[]> {
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest(request);
-  if (!auth) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  try {
+    const auth = await authenticateRequest(request);
+    if (!auth) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
-  const user = auth.users[auth.userIndex];
-  const bookmarks = normalizeBookmarks(user.bookmarks);
-  const [pdfs, guides] = await Promise.all([getAllPdfs(), getApprovedGuides()]);
+    const user = auth.users[auth.userIndex];
+    const bookmarks = normalizeBookmarks(user.bookmarks);
+    const [pdfs, guides] = await Promise.all([getAllPdfs(), getApprovedGuides()]);
 
-  return NextResponse.json({
-    bookmarks,
-    pdfs: pdfs
-      .filter((pdf) => pdf.approved !== false && bookmarks.pdfIds.includes(pdf.id))
-      .map(toPublicPdfSummary),
-    guides: guides
-      .filter((guide) => bookmarks.guideIds.includes(guide.id))
-      .map(toPublicGuideSummary),
-  });
+    return NextResponse.json({
+      bookmarks,
+      pdfs: pdfs
+        .filter((pdf) => pdf.approved !== false && bookmarks.pdfIds.includes(pdf.id))
+        .map(toPublicPdfSummary),
+      guides: guides
+        .filter((guide) => bookmarks.guideIds.includes(guide.id))
+        .map(toPublicGuideSummary),
+    });
+  } catch (error) {
+    if (isRedisUnavailableError(error)) return redisUnavailableResponse();
+    console.error('Bookmark load error:', error);
+    return NextResponse.json({ error: 'Failed to load bookmarks' }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authenticateRequest(request);
-  if (!auth) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  try {
+    const auth = await authenticateRequest(request);
+    if (!auth) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
-  const body = await request.json() as {
-    type?: 'pdf' | 'guide';
-    id?: string;
-    bookmarked?: boolean;
-  };
+    const body = await readJsonObject(request);
+    if (!body) return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    const bookmarkId = boundedString(body.id, 100);
 
-  if ((body.type !== 'pdf' && body.type !== 'guide') || !body.id) {
-    return NextResponse.json({ error: 'Bookmark type and id are required' }, { status: 400 });
+    if ((body.type !== 'pdf' && body.type !== 'guide') || !bookmarkId || (body.bookmarked !== undefined && typeof body.bookmarked !== 'boolean')) {
+      return NextResponse.json({ error: 'Bookmark type and id are required' }, { status: 400 });
+    }
+    const requestedBookmarkState = typeof body.bookmarked === 'boolean' ? body.bookmarked : undefined;
+
+    const key = body.type === 'pdf' ? 'pdfIds' : 'guideIds';
+    let bookmarks: UserBookmarks = normalizeBookmarks();
+    let shouldBookmark = false;
+    await mutateUsers((users) => users.map((user) => {
+      if (user.id !== auth.user.id) return user;
+      bookmarks = normalizeBookmarks(user.bookmarks);
+      const exists = bookmarks[key].includes(bookmarkId);
+      shouldBookmark = requestedBookmarkState ?? !exists;
+      bookmarks[key] = shouldBookmark
+        ? [...new Set([...bookmarks[key], bookmarkId])]
+        : bookmarks[key].filter((id) => id !== bookmarkId);
+      return { ...user, bookmarks };
+    }));
+
+    return NextResponse.json({ success: true, bookmarks, bookmarked: shouldBookmark });
+  } catch (error) {
+    if (isRedisUnavailableError(error)) return redisUnavailableResponse();
+    console.error('Bookmark update error:', error);
+    return NextResponse.json({ error: 'Failed to update bookmark' }, { status: 500 });
   }
-
-  const user = auth.users[auth.userIndex];
-  const bookmarks = normalizeBookmarks(user.bookmarks);
-  const key = body.type === 'pdf' ? 'pdfIds' : 'guideIds';
-  const exists = bookmarks[key].includes(body.id);
-  const shouldBookmark = body.bookmarked ?? !exists;
-
-  bookmarks[key] = shouldBookmark
-    ? [...new Set([...bookmarks[key], body.id])]
-    : bookmarks[key].filter((id) => id !== body.id);
-
-  auth.users[auth.userIndex].bookmarks = bookmarks;
-  await saveUsers(auth.users);
-
-  return NextResponse.json({ success: true, bookmarks, bookmarked: shouldBookmark });
 }

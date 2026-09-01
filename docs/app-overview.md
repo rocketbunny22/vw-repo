@@ -4,7 +4,7 @@ This document captures the current shape of the webapp so future work can start 
 
 ## Stack
 
-- Next.js 16.2.4 with the App Router
+- Next.js 16.3.4 with the App Router
 - React 19.2.4
 - TypeScript
 - Tailwind CSS 4 through `@tailwindcss/postcss`
@@ -69,7 +69,8 @@ Static app data lives under `src/data`.
 - `guides.ts`: user guide storage helper.
 - `pdfs.ts`: PDF metadata and PDF file storage helper.
 
-Mutable runtime data is Redis-backed when environment variables are configured.
+Mutable runtime data requires Redis. Configure both `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` for development and production.
+Copy `.env.example` to an ignored local env file and supply real credentials; never commit secrets.
 
 | Key | Purpose |
 | --- | --- |
@@ -79,9 +80,15 @@ Mutable runtime data is Redis-backed when environment variables are configured.
 | `user_guides` | Submitted user guides |
 | `comments` | Guide comments and report state |
 | `feedback` | Submitted feedback and review state |
-| `reset_tokens` | Password reset token records |
+| `<collection>:version` | Optimistic-write version for mutable collection keys |
+| `pdf:downloads:<id>` | Atomic PDF download counter |
+| `reset_token:<digest>` | Hashed, single-use password reset record with a 15-minute TTL |
+| `reset_tokens_by_email:<digest>` | Expiring reset-token revocation index used by account deletion |
+| `rate_limit:<scope>` | Distributed request counter with a TTL |
 
-`user-guides.json` is used as a local fallback for user guides when Redis is unavailable. Legacy PDF bytes can also be read from `public/pdfs`.
+`src/lib/redis.ts` owns the shared Upstash client and converts missing configuration or failed Redis operations into a typed availability error. Redis-dependent API routes return HTTP `503`, a `REDIS_UNAVAILABLE` error code, and a `Retry-After` header instead of returning empty data or reporting false write success.
+
+Legacy PDF bytes can still be read from `public/pdfs` after the corresponding Redis metadata lookup succeeds, and remain available during a Redis outage. There is no local mutable-data fallback.
 
 ## Authentication
 
@@ -98,8 +105,8 @@ The `vw_auth` cookie stores a base64 JSON session payload plus an HMAC signature
 1. Authenticated users submit PDFs through `/upload`.
 2. `/api/pdfs` validates metadata, file type, and max size.
 3. The server extracts text through `src/lib/pdfText.ts`.
-4. The server creates one PDF metadata record for each selected generation.
-5. The PDF file is saved through `savePdfFile()`.
+4. The server creates one UUID metadata record for each selected generation.
+5. One shared UUID-named PDF blob is saved through `savePdfFile()` and referenced by all metadata records from that upload.
 6. Admin uploads are approved immediately; normal user uploads are held for moderation.
 7. Public listing and serving hide records where `approved === false`.
 
@@ -157,6 +164,6 @@ At the time this documentation was created, the production build passed. Lint co
 
 ## Known Technical Debt
 
-- `AuthProvider` exists but is not mounted in the root layout and is not currently used by pages.
+- `AuthProvider` is mounted in the root layout and supplies shared authentication state to navigation and comments; workflow pages may still perform scoped private-data checks.
 - Admin tables are desktop-oriented and should be reviewed for smaller screens before major admin UI expansion.
 - Some client pages use async `searchParams` props; this builds now, but future Next.js changes could make this pattern worth revisiting.

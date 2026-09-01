@@ -69,6 +69,12 @@ export default function PrivacyPolicy() {
             <li>Request deletion of your personal data</li>
             <li>Opt out of certain data collection</li>
           </ul>
+          <p className="mt-4 text-gray-700">
+            When you delete your account, private account and profile data and pending submissions are removed.
+            Approved community resources and comments may remain to avoid breaking public documentation, but their
+            account attribution is replaced with “Deleted user.” Feedback retained for operational history is
+            stripped of its name and email address.
+          </p>
         </section>
 
         <section className="mb-8">

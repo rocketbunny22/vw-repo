@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { generations } from '@/data/generations';
 import { useLanguage } from '@/components/LanguageProvider';
@@ -104,10 +104,33 @@ export default function AdminPage() {
   const [forceBackfill, setForceBackfill] = useState(false);
   const [backfillResult, setBackfillResult] = useState<BackfillResult | null>(null);
 
-  async function checkAdmin() {
+  const loadData = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin');
+      const data = await response.json();
+
+      if (data.error) {
+        setError(data.error);
+        return;
+      }
+
+      setUsers(data.users || []);
+      setPdfs(data.pdfs || []);
+      setGuides(data.guides || []);
+      setModeration(data.moderation || { pendingPdfs: [], pendingGuides: [], feedback: [], comments: [] });
+    } catch {
+      setError('Failed to load data');
+    }
+  }, []);
+
+  const checkAdmin = useCallback(async () => {
     try {
       const response = await fetch('/api/auth');
       const data = await response.json();
+      if (response.status === 503 || data.code === 'REDIS_UNAVAILABLE') {
+        setError('Account data is temporarily unavailable. Please retry shortly.');
+        return;
+      }
       
       if (!data.authenticated) {
         router.push(localizedPath('/login', locale));
@@ -119,36 +142,18 @@ export default function AdminPage() {
         return;
       }
       
-      loadData();
+      await loadData();
     } catch {
       router.push(localizedPath('/login', locale));
     } finally {
       setLoading(false);
     }
-  }
-
-  async function loadData() {
-    try {
-      const response = await fetch('/api/admin');
-      const data = await response.json();
-      
-      if (data.error) {
-        setError(data.error);
-        return;
-      }
-      
-      setUsers(data.users || []);
-      setPdfs(data.pdfs || []);
-      setGuides(data.guides || []);
-      setModeration(data.moderation || { pendingPdfs: [], pendingGuides: [], feedback: [], comments: [] });
-    } catch {
-      setError('Failed to load data');
-    }
-  }
+  }, [loadData, locale, router]);
 
   useEffect(() => {
-    checkAdmin();
-  }, []);
+    const timer = window.setTimeout(() => void checkAdmin(), 0);
+    return () => window.clearTimeout(timer);
+  }, [checkAdmin]);
 
   const handleAction = async (action: string, id: string, extra?: { role?: string }) => {
     setActionLoading(id);

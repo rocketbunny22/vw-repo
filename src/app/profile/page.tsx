@@ -27,6 +27,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [deleting, setDeleting] = useState(false);
   
   // Edit profile states
@@ -67,6 +68,11 @@ export default function ProfilePage() {
         const response = await fetch('/api/auth');
         const data = await response.json();
 
+        if (response.status === 503 || data.code === 'REDIS_UNAVAILABLE') {
+          if (isActive) setMessage({ type: 'error', text: 'Account data is temporarily unavailable. Please retry shortly.' });
+          return;
+        }
+
         if (!data.authenticated) {
           router.push(localizedPath('/login', locale));
           return;
@@ -82,7 +88,7 @@ export default function ProfilePage() {
         setEditInstagram(data.user.profileLinks?.instagram || '');
         setEditVwVortex(data.user.profileLinks?.vwVortex || '');
       } catch {
-        router.push(localizedPath('/login', locale));
+        if (isActive) setMessage({ type: 'error', text: 'Account data is temporarily unavailable. Please retry shortly.' });
       } finally {
         if (isActive) {
           setLoading(false);
@@ -252,8 +258,8 @@ export default function ProfilePage() {
       return;
     }
     
-    if (newPassword.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+    if (newPassword.length < 10 || !/[a-zA-Z]/.test(newPassword) || !/\d/.test(newPassword)) {
+      setMessage({ type: 'error', text: 'Password must be at least 10 characters and include a letter and number' });
       setChangingPassword(false);
       return;
     }
@@ -293,7 +299,7 @@ export default function ProfilePage() {
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete' }),
+        body: JSON.stringify({ action: 'delete', confirm: deleteConfirmation }),
       });
 
       const data = await response.json();
@@ -308,6 +314,7 @@ export default function ProfilePage() {
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
+      setDeleteConfirmation('');
     }
   };
 
@@ -532,7 +539,7 @@ export default function ProfilePage() {
                           onChange={(e) => setNewPassword(e.target.value)}
                           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
                           required
-                          minLength={6}
+                          minLength={10}
                         />
                       </div>
                       <div>
@@ -722,15 +729,27 @@ export default function ProfilePage() {
                 <div className="bg-white rounded-lg shadow-md p-8 border-2 border-red-600">
                   <h2 className="text-xl font-bold text-red-600 mb-4">Delete Account</h2>
                   <p className="text-gray-600 mb-6">
-                    Are you sure you want to delete your account? This action cannot be undone. 
-                    All your uploads and guides will be removed.
+                    This removes your account and private profile data. Pending submissions are deleted;
+                    approved community resources and comments remain with attribution changed to “Deleted user.”
                   </p>
+                  <label className="mb-6 block text-sm font-medium text-gray-700">
+                    Type DELETE to confirm
+                    <input
+                      value={deleteConfirmation}
+                      onChange={(event) => setDeleteConfirmation(event.target.value)}
+                      className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2"
+                      autoComplete="off"
+                    />
+                  </label>
                   
                   <div className="flex gap-4">
                     <button
-                      onClick={() => setShowDeleteConfirm(false)}
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        setDeleteConfirmation('');
+                      }}
                       className="flex-1 btn-primary"
-                      disabled={deleting}
+                      disabled={deleting || deleteConfirmation !== 'DELETE'}
                     >
                       Cancel
                     </button>

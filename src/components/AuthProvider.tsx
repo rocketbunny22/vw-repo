@@ -13,6 +13,7 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
+  serviceUnavailable: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [serviceUnavailable, setServiceUnavailable] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -33,12 +35,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const response = await fetch('/api/auth');
         const data = await response.json();
 
-        if (isActive && data.authenticated) {
-          setUser(data.user);
+        if (isActive) {
+          setServiceUnavailable(response.status === 503 || data.code === 'REDIS_UNAVAILABLE');
+          setUser(data.authenticated ? data.user : null);
         }
       } catch {
         if (isActive) {
           setUser(null);
+          setServiceUnavailable(true);
         }
       } finally {
         if (isActive) {
@@ -65,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
 
       if (data.success) {
+        setServiceUnavailable(false);
         setUser(data.user);
         return { success: true };
       }
@@ -86,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
 
       if (data.success) {
+        setServiceUnavailable(false);
         setUser(data.user);
         return { success: true };
       }
@@ -111,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, loading, serviceUnavailable, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

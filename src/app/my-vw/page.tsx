@@ -101,6 +101,7 @@ export default function MyVwPage() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [dismissingWelcome, setDismissingWelcome] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [updatingItem, setUpdatingItem] = useState<string | null>(null);
 
   useEffect(() => {
@@ -110,6 +111,11 @@ export default function MyVwPage() {
       try {
         const authResponse = await fetch('/api/auth');
         const authData = await authResponse.json();
+
+        if (authResponse.status === 503 || authData.code === 'REDIS_UNAVAILABLE') {
+          if (isActive) setError('Account data is temporarily unavailable. Please retry shortly.');
+          return;
+        }
 
         if (!authData.authenticated) {
           router.push(localizedPath('/login', locale));
@@ -263,6 +269,15 @@ export default function MyVwPage() {
           </div>
         </section>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="mx-auto max-w-3xl px-4 py-16" role="status">
+        <h1 className="text-3xl font-bold text-vw-blue">My VW is temporarily unavailable</h1>
+        <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-6 text-amber-900">{error}</p>
+      </section>
     );
   }
 

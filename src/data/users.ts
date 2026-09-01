@@ -1,24 +1,11 @@
-import { Redis } from '@upstash/redis';
 import { User } from '@/types';
-
-const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : null;
+import { mutateJsonValue, runRedis } from '@/lib/redis';
 
 export async function getUsers(): Promise<User[]> {
-  if (!redis) return [];
-
-  const users = await redis.get<User[]>('users');
+  const users = await runRedis((redis) => redis.get<User[]>('users'));
   return Array.isArray(users) ? users : [];
 }
 
-export async function saveUsers(users: User[]): Promise<void> {
-  if (!redis) {
-    throw new Error('Redis not configured');
-  }
-
-  await redis.set('users', users);
+export async function mutateUsers(updater: (users: User[]) => User[]): Promise<User[]> {
+  return mutateJsonValue('users', () => [], updater);
 }

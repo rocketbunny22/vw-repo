@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { PublicPdfSummary } from '@/types';
 import BookmarkButton from './BookmarkButton';
@@ -22,6 +22,22 @@ export function PdfCard({ pdf }: PdfCardProps) {
   const { locale } = useLanguage();
   const t = (value: string) => locale === 'es-MX' ? translateMexicanSpanish(value) : value;
   const [viewingPdf, setViewingPdf] = useState<PublicPdfSummary | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previewButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!viewingPdf) return;
+    const previewButton = previewButtonRef.current;
+    closeButtonRef.current?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setViewingPdf(null);
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('keydown', closeOnEscape);
+      previewButton?.focus();
+    };
+  }, [viewingPdf]);
 
   return (
     <>
@@ -47,7 +63,7 @@ export function PdfCard({ pdf }: PdfCardProps) {
           <div className="flex items-center justify-between text-sm text-gray-500">
             <span>{formatFileSize(pdf.fileSize)}</span>
             <span className="flex items-center gap-1">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               {pdf.downloads || 0}
@@ -63,6 +79,7 @@ export function PdfCard({ pdf }: PdfCardProps) {
           )}
           <div className="grid grid-cols-1 gap-2 mt-4 sm:grid-cols-3">
             <button
+              ref={previewButtonRef}
               onClick={() => setViewingPdf(pdf)}
               className="text-center btn-secondary py-2"
             >
@@ -88,13 +105,20 @@ export function PdfCard({ pdf }: PdfCardProps) {
       </article>
 
       {viewingPdf && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" role="presentation">
+          <div
+            className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`pdf-preview-${viewingPdf.id}`}
+          >
             <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="font-bold">{viewingPdf.title}</h3>
+              <h3 id={`pdf-preview-${viewingPdf.id}`} className="font-bold">{viewingPdf.title}</h3>
               <button
+                ref={closeButtonRef}
                 onClick={() => setViewingPdf(null)}
                 className="text-gray-500 hover:text-gray-700 text-2xl"
+                aria-label={t('Close PDF preview')}
               >
                 &times;
               </button>
