@@ -167,5 +167,6 @@ At the time this documentation was created, the production build passed. Lint co
 - `AuthProvider` is mounted in the root layout and supplies shared authentication state to navigation and comments; workflow pages may still perform scoped private-data checks.
 - All state-changing API routes require a same-origin browser request. Identity changes and self-service account deletion additionally require the current password.
 - Saved garage details are private by default; users must explicitly opt in before vehicle details appear on public profiles.
+- Bookmarks are restricted to approved/static resources, normalized against the current catalog, and capped at 100 PDFs plus 100 guides per user. Bookmark mutations have distributed user and client limits.
 - Admin tables are desktop-oriented and should be reviewed for smaller screens before major admin UI expansion.
 - Some client pages use async `searchParams` props; this builds now, but future Next.js changes could make this pattern worth revisiting.

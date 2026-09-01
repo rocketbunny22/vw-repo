@@ -16,6 +16,7 @@ Implemented September 1, 2026 against `SOL_HANDOFF_PLAN.md`.
 - Added structured Redis outage responses and user-facing service-unavailable states to representative authenticated workflows.
 - Added global error boundaries, CSP/HSTS and defense-in-depth headers, a canonical legacy-route redirect, preserved query/hash state in language switching, mounted shared auth state, and improved keyboard/modal navigation.
 - Added strict same-origin enforcement for every mutation route, recent-password confirmation for identity changes and account deletion, minimal public comment DTOs, and opt-in public garage visibility.
+- Hardened bookmarks with approved-resource validation, bounded legacy normalization, 100-item per-type caps, independent user/client mutation limits, and concurrent cap regressions.
 - Upgraded Next.js and related runtime packages, removed unused `@vercel/kv`, removed the tracked feedback export, eliminated the Google Fonts build-time request, and added CI plus migration/deployment documentation.
 
 ## Release verification
