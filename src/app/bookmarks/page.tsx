@@ -6,6 +6,7 @@ import BookmarkButton from '@/components/BookmarkButton';
 import { PublicGuideSummary, PublicPdfSummary } from '@/types';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath } from '@/lib/localization';
+import { pdfViewUrl } from '@/lib/pdfUrls';
 
 export default function BookmarksPage() {
   const { locale } = useLanguage();
@@ -96,7 +97,7 @@ export default function BookmarksPage() {
                             {pdf.description && <p className="text-sm text-gray-600 mt-1">{pdf.description}</p>}
                             <div className="flex gap-2 mt-3">
                               <a
-                                href={`${pdf.url}?view=true`}
+                                href={pdfViewUrl(pdf)}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="btn-secondary px-4 py-2"

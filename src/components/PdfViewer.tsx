@@ -7,6 +7,7 @@ import BookmarkButton from './BookmarkButton';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath, systemNamesEs } from '@/lib/localization';
 import { translateMexicanSpanish } from '@/lib/translations';
+import { pdfViewUrl } from '@/lib/pdfUrls';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
@@ -93,7 +94,7 @@ export function PdfCard({ pdf }: PdfCardProps) {
               {t('Download')}
             </a>
             <a
-              href={`${pdf.url}?view=true`}
+              href={pdfViewUrl(pdf)}
               target="_blank"
               rel="noreferrer"
               className="text-center btn-secondary py-2"
@@ -125,7 +126,7 @@ export function PdfCard({ pdf }: PdfCardProps) {
             </div>
             <div className="flex-1 overflow-auto p-4 bg-gray-100">
               <iframe
-                src={`${viewingPdf.url}?view=true`}
+                src={pdfViewUrl(viewingPdf)}
                 className="w-full h-[70vh] border-0"
                 title={viewingPdf.title}
               />
@@ -141,7 +142,7 @@ export function PdfCard({ pdf }: PdfCardProps) {
                   {t('Download')}
                 </a>
                 <a
-                  href={`${viewingPdf.url}?view=true`}
+                  href={pdfViewUrl(viewingPdf)}
                   target="_blank"
                   rel="noreferrer"
                   className="btn-secondary px-4 py-2"

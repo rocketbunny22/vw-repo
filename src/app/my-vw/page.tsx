@@ -8,6 +8,7 @@ import { diyGuides } from '@/data/diyGuides';
 import { generations } from '@/data/generations';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath, systemNamesEs } from '@/lib/localization';
+import { pdfViewUrl } from '@/lib/pdfUrls';
 import {
   MaintenanceChecklist,
   PublicGuideSummary,
@@ -502,7 +503,7 @@ export default function MyVwPage() {
                       </Link>
                     ))}
                     {savedPdfs.slice(0, 2).map((pdf) => (
-                      <a key={pdf.id} href={`${pdf.url}?view=true`} target="_blank" rel="noreferrer" className="block border-b border-gray-100 pb-3 last:border-b-0">
+                      <a key={pdf.id} href={pdfViewUrl(pdf)} target="_blank" rel="noreferrer" className="block border-b border-gray-100 pb-3 last:border-b-0">
                         <p className="font-medium text-vw-dark hover:text-vw-blue">{pdf.title}</p>
                         <p className="text-xs text-gray-500 mt-1">{localizedSystemName(pdf.system)}</p>
                       </a>
@@ -552,7 +553,7 @@ export default function MyVwPage() {
                 </div>
                 <div className="space-y-3">
                   {recommendedPdfs.map((pdf) => (
-                    <a key={pdf.id} href={`${pdf.url}?view=true`} target="_blank" rel="noreferrer" className="block border-b border-gray-100 pb-3 last:border-b-0">
+                    <a key={pdf.id} href={pdfViewUrl(pdf)} target="_blank" rel="noreferrer" className="block border-b border-gray-100 pb-3 last:border-b-0">
                       <p className="font-medium text-vw-dark hover:text-vw-blue">{pdf.title}</p>
                       <p className="text-xs text-gray-500 mt-1">{localizedSystemName(pdf.system)}</p>
                     </a>

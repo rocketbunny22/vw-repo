@@ -56,6 +56,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `${disposition}; filename="${downloadName}"`,
+        ...(view === 'true' ? { 'Cache-Control': 'private, no-store' } : {}),
         'X-Content-Type-Options': 'nosniff',
       },
     });
@@ -70,6 +71,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `inline; filename="${filename.replaceAll('"', '')}"`,
+          'Cache-Control': 'private, no-store',
           'X-Content-Type-Options': 'nosniff',
         },
       });
