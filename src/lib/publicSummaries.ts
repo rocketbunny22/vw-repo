@@ -1,7 +1,9 @@
 import type {
+  Comment,
   DiyGuide,
   PdfDocument,
   PublicGuideSummary,
+  PublicComment,
   PublicPdfSummary,
 } from '@/types';
 
@@ -22,6 +24,16 @@ export function toPublicPdfSummary(pdf: PdfDocument): PublicPdfSummary {
     fileSize: pdf.fileSize,
     url: pdf.url,
     downloads: pdf.downloads,
+  };
+}
+
+export function toPublicComment(comment: Comment): PublicComment {
+  return {
+    id: comment.id,
+    guideId: comment.guideId,
+    authorName: comment.authorName,
+    content: comment.content,
+    createdAt: comment.createdAt,
   };
 }
 

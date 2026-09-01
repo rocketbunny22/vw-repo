@@ -51,6 +51,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Auth is custom and cookie-based. The `vw_auth` cookie contains an HMAC-signed session payload.
 - Password hashes use `bcryptjs`.
 - Session creation, verification, cookie handling, current-user lookup, and admin authorization are centralized in `src/lib/auth.ts`.
+- State-changing API routes use `src/lib/requestSecurity.ts` to reject missing or untrusted origins.
 - `SESSION_SECRET` and `RESET_TOKEN_SECRET` are required stable environment variables with a minimum length of 32 characters.
 - User records carry an optional `sessionVersion`; password resets, password changes, and role changes increment it to invalidate existing sessions.
 - Admin checks are enforced server-side in `/api/admin`, but UI gates also exist in `/admin`.

@@ -11,9 +11,11 @@ Implemented September 1, 2026 against `SOL_HANDOFF_PLAN.md`.
 - Made account deletion explicit and auditable: private state and pending submissions are removed, retained public content is anonymized, reset tokens are revoked, unreferenced blobs are cleaned, and audit history is bounded.
 - Rebuilt password reset around URL-safe opaque tokens, HMAC digests, Redis TTLs, and atomic get/delete consumption. Reset credentials and API-key fragments are no longer logged.
 - Added distributed Redis rate limits to authentication, reset, feedback, comments, guide submission, and PDF upload flows.
+- Added independent account/user and privacy-safe client rate-limit dimensions, plus bounded public search and PDF-download limits.
 - Added bounded JSON parsing, field schemas, taxonomy checks, enum checks, PDF MIME/signature/size checks, selection caps, UUID IDs, and shared validation helpers.
 - Added structured Redis outage responses and user-facing service-unavailable states to representative authenticated workflows.
 - Added global error boundaries, CSP/HSTS and defense-in-depth headers, a canonical legacy-route redirect, preserved query/hash state in language switching, mounted shared auth state, and improved keyboard/modal navigation.
+- Added strict same-origin enforcement for every mutation route, recent-password confirmation for identity changes and account deletion, minimal public comment DTOs, and opt-in public garage visibility.
 - Upgraded Next.js and related runtime packages, removed unused `@vercel/kv`, removed the tracked feedback export, eliminated the Google Fonts build-time request, and added CI plus migration/deployment documentation.
 
 ## Release verification

@@ -10,6 +10,7 @@ import { isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
 import { PdfDocument, User } from '@/types';
 import { deleteUserAccount } from '@/lib/accountDeletion';
 import { boundedString, INPUT_LIMITS, isValidGeneration, isValidSystem, readJsonObject } from '@/lib/validation';
+import { rejectUntrustedMutation } from '@/lib/requestSecurity';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
@@ -58,6 +59,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = rejectUntrustedMutation(request);
+    if (originError) return originError;
+
     const auth = await authenticateAdminRequest(request);
 
     if (!auth) {

@@ -15,6 +15,7 @@
 
 # local data exports
 /feedback.json
+/SECURITY_AUDIT_REPORT.md
 
 # next.js
 /.next/

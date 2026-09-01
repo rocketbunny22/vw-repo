@@ -28,6 +28,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
   
   // Edit profile states
@@ -36,6 +37,7 @@ export default function ProfilePage() {
   const [editEmail, setEditEmail] = useState('');
   const [editInstagram, setEditInstagram] = useState('');
   const [editVwVortex, setEditVwVortex] = useState('');
+  const [profileCurrentPassword, setProfileCurrentPassword] = useState('');
   const [saving, setSaving] = useState(false);
   
   // Password change states
@@ -55,6 +57,8 @@ export default function ProfilePage() {
   const [vEngineCode, setVEngineCode] = useState('');
   const [vColor, setVColor] = useState('');
   const [vNickname, setVNickname] = useState('');
+  const [vehiclePublic, setVehiclePublic] = useState(false);
+  const [savedVehiclePublic, setSavedVehiclePublic] = useState(false);
   const [savingVehicle, setSavingVehicle] = useState(false);
 
   // Messages
@@ -113,6 +117,8 @@ export default function ProfilePage() {
         if (data.vehicle) {
           setVehicle(data.vehicle);
         }
+        setVehiclePublic(data.vehiclePublic === true);
+        setSavedVehiclePublic(data.vehiclePublic === true);
       } catch {
         // vehicle data is optional
       } finally {
@@ -124,6 +130,7 @@ export default function ProfilePage() {
   }, [user]);
 
   const openGarage = () => {
+    setVehiclePublic(savedVehiclePublic);
     if (!vehicle) {
       setVGeneration('');
       setVModel('');
@@ -158,12 +165,15 @@ export default function ProfilePage() {
           engineCode: vEngineCode || undefined,
           color: vColor || undefined,
           nickname: vNickname || undefined,
+          vehiclePublic,
         }),
       });
 
       const data = await response.json();
       if (data.success) {
         setVehicle(data.vehicle);
+        setVehiclePublic(data.vehiclePublic === true);
+        setSavedVehiclePublic(data.vehiclePublic === true);
         setGarageMode(false);
         setMessage({ type: 'success', text: 'Garage updated!' });
       } else {
@@ -182,6 +192,8 @@ export default function ProfilePage() {
       const data = await response.json();
       if (data.success) {
         setVehicle(null);
+        setVehiclePublic(false);
+        setSavedVehiclePublic(false);
         setMessage({ type: 'success', text: 'Vehicle removed from garage' });
       }
     } catch {
@@ -226,6 +238,7 @@ export default function ProfilePage() {
           newEmail: editEmail,
           instagram: editInstagram,
           vwVortex: editVwVortex,
+          currentPassword: profileCurrentPassword,
         }),
       });
       
@@ -235,6 +248,7 @@ export default function ProfilePage() {
         setUser(data.user);
         setEditInstagram(data.user.profileLinks?.instagram || '');
         setEditVwVortex(data.user.profileLinks?.vwVortex || '');
+        setProfileCurrentPassword('');
         setEditMode(false);
         setMessage({ type: 'success', text: 'Profile updated!' });
       } else {
@@ -299,7 +313,11 @@ export default function ProfilePage() {
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', confirm: deleteConfirmation }),
+        body: JSON.stringify({
+          action: 'delete',
+          confirm: deleteConfirmation,
+          currentPassword: deletePassword,
+        }),
       });
 
       const data = await response.json();
@@ -315,6 +333,7 @@ export default function ProfilePage() {
       setDeleting(false);
       setShowDeleteConfirm(false);
       setDeleteConfirmation('');
+      setDeletePassword('');
     }
   };
 
@@ -423,6 +442,17 @@ export default function ProfilePage() {
                           placeholder="vwvortex.com/members/yourname"
                         />
                       </div>
+                      <div>
+                        <label className="block text-sm text-gray-500">Current password</label>
+                        <input
+                          type="password"
+                          value={profileCurrentPassword}
+                          onChange={(event) => setProfileCurrentPassword(event.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          autoComplete="current-password"
+                          placeholder="Required when changing username or email"
+                        />
+                      </div>
                       <div className="flex gap-2">
                         <button
                           type="submit"
@@ -439,6 +469,7 @@ export default function ProfilePage() {
                             setEditEmail(user.email);
                             setEditInstagram(user.profileLinks?.instagram || '');
                             setEditVwVortex(user.profileLinks?.vwVortex || '');
+                            setProfileCurrentPassword('');
                           }}
                           className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
                         >
@@ -669,11 +700,26 @@ export default function ProfilePage() {
                           />
                         </div>
                       </div>
+                      <label className="flex items-start gap-3 rounded-md border border-gray-200 bg-gray-50 p-4">
+                        <input
+                          type="checkbox"
+                          checked={vehiclePublic}
+                          onChange={(event) => setVehiclePublic(event.target.checked)}
+                          className="mt-1 h-4 w-4"
+                        />
+                        <span>
+                          <span className="block text-sm font-medium text-gray-800">Show this vehicle on my public profile</span>
+                          <span className="block text-sm text-gray-500">Off by default. Your garage still powers private recommendations.</span>
+                        </span>
+                      </label>
                       <div className="flex gap-2">
                         <button type="submit" disabled={savingVehicle} className="btn-primary">
                           {savingVehicle ? 'Saving...' : 'Save'}
                         </button>
-                        <button type="button" onClick={() => setGarageMode(false)}
+                        <button type="button" onClick={() => {
+                          setVehiclePublic(savedVehiclePublic);
+                          setGarageMode(false);
+                        }}
                           className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
                           Cancel
                         </button>
@@ -692,6 +738,9 @@ export default function ProfilePage() {
                         </p>
                         <p className="text-sm text-gray-500">
                           {[vehicle.year, vehicle.engineCode, vehicle.color].filter(Boolean).join(' • ')}
+                        </p>
+                        <p className="mt-1 text-xs font-medium text-gray-500">
+                          {savedVehiclePublic ? 'Visible on your public profile' : 'Private to your account'}
                         </p>
                       </div>
                     </div>
@@ -741,22 +790,33 @@ export default function ProfilePage() {
                       autoComplete="off"
                     />
                   </label>
+                  <label className="mb-6 block text-sm font-medium text-gray-700">
+                    Current password
+                    <input
+                      type="password"
+                      value={deletePassword}
+                      onChange={(event) => setDeletePassword(event.target.value)}
+                      className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2"
+                      autoComplete="current-password"
+                    />
+                  </label>
                   
                   <div className="flex gap-4">
                     <button
                       onClick={() => {
                         setShowDeleteConfirm(false);
                         setDeleteConfirmation('');
+                        setDeletePassword('');
                       }}
                       className="flex-1 btn-primary"
-                      disabled={deleting || deleteConfirmation !== 'DELETE'}
+                      disabled={deleting}
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleDeleteAccount}
                       className="flex-1 bg-red-600 text-white px-4 py-3 rounded-md font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
-                      disabled={deleting}
+                      disabled={deleting || deleteConfirmation !== 'DELETE' || !deletePassword}
                     >
                       {deleting ? 'Deleting...' : 'Yes, Delete My Account'}
                     </button>

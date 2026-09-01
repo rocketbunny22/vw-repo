@@ -5,9 +5,10 @@ import { deletePdfFile, getAllPdfs, mutatePdfs, savePdfFile } from '@/data/pdfs'
 import { extractPdfText } from '@/lib/pdfText';
 import { toPublicPdfSummary } from '@/lib/publicSummaries';
 import { authenticateRequest } from '@/lib/auth';
-import { consumeRateLimit, isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
+import { consumeRateLimits, isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
 import { boundedString, hasPdfMagicBytes, INPUT_LIMITS, isValidGeneration, isValidSystem, requestClientIdentifier } from '@/lib/validation';
 import { generations as generationsData } from '@/data/generations';
+import { rejectUntrustedMutation } from '@/lib/requestSecurity';
 
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
 
@@ -28,17 +29,19 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = rejectUntrustedMutation(request);
+    if (originError) return originError;
+
     const auth = await authenticateRequest(request);
 
     if (!auth) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const rateLimit = await consumeRateLimit(
-      `pdf-upload:${auth.user.id}:${requestClientIdentifier(request)}`,
-      8,
-      60 * 60,
-    );
+    const rateLimit = await consumeRateLimits([
+      { key: `pdf-upload:user:${auth.user.id}`, limit: 8, windowSeconds: 60 * 60 },
+      { key: `pdf-upload:client:${requestClientIdentifier(request)}`, limit: 24, windowSeconds: 60 * 60 },
+    ]);
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: 'Too many uploads. Try again later.' },

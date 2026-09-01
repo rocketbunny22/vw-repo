@@ -4,6 +4,7 @@ import { UserOnboarding } from '@/types';
 import { authenticateRequest } from '@/lib/auth';
 import { isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
 import { readJsonObject } from '@/lib/validation';
+import { rejectUntrustedMutation } from '@/lib/requestSecurity';
 
 function normalizeOnboarding(onboarding?: UserOnboarding): UserOnboarding {
   return {
@@ -28,6 +29,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = rejectUntrustedMutation(request);
+    if (originError) return originError;
+
     const auth = await authenticateRequest(request);
     if (!auth) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

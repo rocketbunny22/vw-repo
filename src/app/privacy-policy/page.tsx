@@ -22,6 +22,7 @@ export default function PrivacyPolicy() {
           </p>
           <ul className="list-disc pl-6 text-gray-700 space-y-2">
             <li>Account information (username, email) when you register</li>
+            <li>Vehicle and garage details you choose to save</li>
             <li>Content you submit (guides, feedback, comments)</li>
             <li>Usage data and analytics</li>
           </ul>
@@ -50,6 +51,10 @@ export default function PrivacyPolicy() {
             <li>When required by law or to protect rights</li>
             <li>With your explicit consent</li>
           </ul>
+          <p className="mt-4 text-gray-700">
+            Garage details are private by default. They appear on your public profile only when you explicitly
+            enable vehicle visibility in your profile settings.
+          </p>
         </section>
 
         <section className="mb-8">

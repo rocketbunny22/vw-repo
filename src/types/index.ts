@@ -84,6 +84,13 @@ export interface Comment {
   moderationStatus?: 'pending' | 'reviewed';
 }
 
+export type PublicComment = Pick<
+  Comment,
+  'id' | 'guideId' | 'authorName' | 'content' | 'createdAt'
+> & {
+  canReport?: boolean;
+};
+
 export interface Feedback {
   id: string;
   name: string;
@@ -192,6 +199,7 @@ export interface User {
   lastLogin: string;
   sessionVersion?: number;
   vehicle?: VehicleProfile;
+  vehiclePublic?: boolean;
   bookmarks?: UserBookmarks;
   checklists?: UserChecklists;
   onboarding?: UserOnboarding;

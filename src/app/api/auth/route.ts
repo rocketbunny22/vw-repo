@@ -13,7 +13,7 @@ import {
 } from '@/lib/auth';
 import {
   clearRateLimit,
-  consumeRateLimit,
+  consumeRateLimits,
   isRedisUnavailableError,
   redisUnavailableResponse,
   runRedis,
@@ -24,9 +24,11 @@ import {
   normalizedEmail,
   normalizedUsername,
   passwordError,
+  rateLimitIdentifier,
   readJsonObject,
   requestClientIdentifier,
 } from '@/lib/validation';
+import { rejectUntrustedMutation } from '@/lib/requestSecurity';
 import type { User } from '@/types';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -126,6 +128,9 @@ function rateLimitResponse(message: string, retryAfter: number) {
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = rejectUntrustedMutation(request);
+    if (originError) return originError;
+
     const body = await readJsonObject(request);
     if (!body) return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     const action = boundedString(body.action, 40);
@@ -138,8 +143,12 @@ export async function POST(request: NextRequest) {
       if (!email || !username || validationError) {
         return NextResponse.json({ error: validationError || 'A valid email and username are required' }, { status: 400 });
       }
-      const rateKey = `signup:${requestClientIdentifier(request)}:${email}`;
-      const rateLimit = await consumeRateLimit(rateKey, 5, 15 * 60);
+      const clientId = requestClientIdentifier(request);
+      const emailId = rateLimitIdentifier(email);
+      const rateLimit = await consumeRateLimits([
+        { key: `signup:client:${clientId}`, limit: 10, windowSeconds: 60 * 60 },
+        { key: `signup:email:${emailId}`, limit: 3, windowSeconds: 60 * 60 },
+      ]);
       if (!rateLimit.allowed) return rateLimitResponse('Too many signup attempts. Try again later.', rateLimit.retryAfter);
       const passwordHash = await bcrypt.hash(body.password as string, 12);
       const newUser: User = {
@@ -163,8 +172,11 @@ export async function POST(request: NextRequest) {
       const email = normalizedEmail(body.email);
       const password = typeof body.password === 'string' ? body.password : '';
       if (!email || !password) return NextResponse.json({ error: 'Missing email or password' }, { status: 400 });
-      const rateKey = `login:${requestClientIdentifier(request)}:${email}`;
-      const rateLimit = await consumeRateLimit(rateKey, 5, 15 * 60);
+      const accountRateKey = `login:account:${rateLimitIdentifier(email)}`;
+      const rateLimit = await consumeRateLimits([
+        { key: accountRateKey, limit: 5, windowSeconds: 15 * 60 },
+        { key: `login:client:${requestClientIdentifier(request)}`, limit: 30, windowSeconds: 15 * 60 },
+      ]);
       if (!rateLimit.allowed) return rateLimitResponse('Too many login attempts. Try again later.', rateLimit.retryAfter);
       const user = (await getUsers()).find((item) => item.email.toLowerCase() === email);
       if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
@@ -172,7 +184,7 @@ export async function POST(request: NextRequest) {
       }
       const lastLogin = new Date().toISOString();
       await mutateUsers((users) => users.map((item) => item.id === user.id ? { ...item, lastLogin } : item));
-      await clearRateLimit(rateKey);
+      await clearRateLimit(accountRateKey);
       const currentUser = { ...user, lastLogin };
       const response = NextResponse.json({ success: true, user: userResponse(currentUser) });
       setSessionCookie(response, currentUser);
@@ -193,6 +205,15 @@ export async function POST(request: NextRequest) {
         clearSessionCookie(response);
         return response;
       }
+      const deletionLimit = await consumeRateLimits([
+        { key: `account-delete:user:${auth.user.id}`, limit: 5, windowSeconds: 60 * 60 },
+        { key: `account-delete:client:${requestClientIdentifier(request)}`, limit: 10, windowSeconds: 60 * 60 },
+      ]);
+      if (!deletionLimit.allowed) return rateLimitResponse('Too many deletion attempts. Try again later.', deletionLimit.retryAfter);
+      const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : '';
+      if (!currentPassword || !(await bcrypt.compare(currentPassword, auth.user.passwordHash))) {
+        return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
+      }
       const result = await deleteUserAccount(auth.user, auth.user.id);
       const response = NextResponse.json({ success: true, deletion: result });
       clearSessionCookie(response);
@@ -205,6 +226,18 @@ export async function POST(request: NextRequest) {
       const newUsername = normalizedUsername(body.newUsername);
       const newEmail = normalizedEmail(body.newEmail);
       if (!newUsername || !newEmail) return NextResponse.json({ error: 'Valid username and email are required' }, { status: 400 });
+      const identityChanged = newUsername !== auth.user.username || newEmail !== auth.user.email;
+      if (identityChanged) {
+        const identityLimit = await consumeRateLimits([
+          { key: `identity-change:user:${auth.user.id}`, limit: 5, windowSeconds: 60 * 60 },
+          { key: `identity-change:client:${requestClientIdentifier(request)}`, limit: 10, windowSeconds: 60 * 60 },
+        ]);
+        if (!identityLimit.allowed) return rateLimitResponse('Too many identity update attempts. Try again later.', identityLimit.retryAfter);
+        const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : '';
+        if (!currentPassword || !(await bcrypt.compare(currentPassword, auth.user.passwordHash))) {
+          return NextResponse.json({ error: 'Current password is required to change username or email' }, { status: 400 });
+        }
+      }
       const instagram = sanitizeOptionalUrl(body.instagram);
       const vwVortex = sanitizeOptionalUrl(body.vwVortex);
       let conflict: 'email' | 'username' | null = null;
@@ -252,7 +285,10 @@ export async function POST(request: NextRequest) {
     if (action === 'resetRequest') {
       const email = normalizedEmail(body.email);
       if (!email) return NextResponse.json({ error: 'A valid email is required' }, { status: 400 });
-      const rateLimit = await consumeRateLimit(`reset:${requestClientIdentifier(request)}:${email}`, 3, 60 * 60);
+      const rateLimit = await consumeRateLimits([
+        { key: `reset:account:${rateLimitIdentifier(email)}`, limit: 3, windowSeconds: 60 * 60 },
+        { key: `reset:client:${requestClientIdentifier(request)}`, limit: 10, windowSeconds: 60 * 60 },
+      ]);
       if (!rateLimit.allowed) return rateLimitResponse('Too many reset requests. Try again later.', rateLimit.retryAfter);
       const user = (await getUsers()).find((item) => item.email.toLowerCase() === email);
       if (user) {

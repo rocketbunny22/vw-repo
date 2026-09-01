@@ -107,6 +107,12 @@ export interface RateLimitResult {
   retryAfter: number;
 }
 
+export interface RateLimitRule {
+  key: string;
+  limit: number;
+  windowSeconds: number;
+}
+
 export async function consumeRateLimit(
   key: string,
   limit: number,
@@ -122,6 +128,21 @@ export async function consumeRateLimit(
     allowed: Number(count) <= limit,
     remaining: Math.max(0, limit - Number(count)),
     retryAfter: Math.max(1, Number(ttl)),
+  };
+}
+
+export async function consumeRateLimits(rules: RateLimitRule[]): Promise<RateLimitResult> {
+  const results = await Promise.all(rules.map((rule) => (
+    consumeRateLimit(rule.key, rule.limit, rule.windowSeconds)
+  )));
+  const denied = results.filter((result) => !result.allowed);
+
+  return {
+    allowed: denied.length === 0,
+    remaining: Math.min(...results.map((result) => result.remaining)),
+    retryAfter: denied.length > 0
+      ? Math.max(...denied.map((result) => result.retryAfter))
+      : Math.max(...results.map((result) => result.retryAfter)),
   };
 }
 

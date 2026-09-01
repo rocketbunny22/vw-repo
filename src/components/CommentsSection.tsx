@@ -9,10 +9,10 @@ import { useAuth } from '@/components/AuthProvider';
 interface Comment {
   id: string;
   guideId: string;
-  authorId: string;
   authorName: string;
   content: string;
   createdAt: string;
+  canReport?: boolean;
   reported?: boolean;
 }
 
@@ -184,7 +184,7 @@ export default function CommentsSection({ guideId }: Props) {
                       {comment.authorName}
                     </Link>
                     <div className="flex items-center gap-3">
-                      {user && user.id !== comment.authorId && (
+                      {user && comment.canReport && (
                         <button
                           type="button"
                           onClick={() => reportComment(comment.id)}

@@ -42,11 +42,12 @@ export async function generateMetadata({
     };
   }
 
-  const vehicleDescription = user.vehicle
+  const publicVehicle = user.vehiclePublic === true ? user.vehicle : undefined;
+  const vehicleDescription = publicVehicle
     ? `${user.username} has a ${[
-        user.vehicle.year,
-        getGenerationName(user.vehicle.generation),
-        user.vehicle.model,
+        publicVehicle.year,
+        getGenerationName(publicVehicle.generation),
+        publicVehicle.model,
       ].filter(Boolean).join(' ')} in their VW Repo garage.`
     : `${user.username} shares approved Volkswagen guides and PDF resources on VW Repo.`;
 
@@ -81,7 +82,7 @@ export default async function PublicProfilePage({
     .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
     .map(toPublicPdfSummary);
 
-  const vehicle = user.vehicle;
+  const vehicle = user.vehiclePublic === true ? user.vehicle : undefined;
   const profileLinks = user.profileLinks || {};
 
   return (

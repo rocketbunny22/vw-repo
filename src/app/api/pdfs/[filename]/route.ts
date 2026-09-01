@@ -1,19 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllPdfs, getPdfFile, getPublicPdfFile, incrementPdfDownloads } from '@/data/pdfs';
-import { isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
+import { consumeRateLimit, isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
+import { requestClientIdentifier } from '@/lib/validation';
+import { findApprovedPdfMetadata, isSafePdfFilename } from '@/lib/pdfAccess';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ filename: string }> }) {
   try {
+    const rateLimit = await consumeRateLimit(
+      `pdf-download:client:${requestClientIdentifier(request)}`,
+      120,
+      60 * 60,
+    );
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many PDF requests' },
+        { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfter) } },
+      );
+    }
+
     const { filename } = await params;
     const { searchParams } = new URL(request.url);
     const view = searchParams.get('view');
     
-    if (!filename || !filename.endsWith('.pdf')) {
+    if (!filename || !isSafePdfFilename(filename)) {
       return NextResponse.json({ error: 'Invalid file' }, { status: 400 });
     }
 
     const pdfs = await getAllPdfs();
-    const pdf = pdfs.find((item) => item.filename === filename && item.approved !== false);
+    const pdf = findApprovedPdfMetadata(pdfs, filename);
 
     if (!pdf) {
       return NextResponse.json({ error: 'PDF not found' }, { status: 404 });

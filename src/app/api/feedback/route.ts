@@ -5,11 +5,15 @@ import { authenticateAdminRequest } from '@/lib/auth';
 import { consumeRateLimit, isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
 import { boundedString, INPUT_LIMITS, normalizedEmail, readJsonObject, requestClientIdentifier } from '@/lib/validation';
 import type { Feedback } from '@/types';
+import { rejectUntrustedMutation } from '@/lib/requestSecurity';
 
 const FEEDBACK_CATEGORIES = new Set(['general', 'bug', 'suggestion', 'content', 'other']);
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = rejectUntrustedMutation(request);
+    if (originError) return originError;
+
     const body = await readJsonObject(request);
     if (!body) return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     const { name, email, category, message } = body;

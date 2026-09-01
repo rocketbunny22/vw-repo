@@ -4,8 +4,9 @@ import { getUserGuides, mutateUserGuides } from '@/data/guides';
 import { DiyGuide } from '@/types';
 import { toPublicGuideSummary } from '@/lib/publicSummaries';
 import { authenticateRequest } from '@/lib/auth';
-import { consumeRateLimit, isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
+import { consumeRateLimits, isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
 import { boundedString, boundedStringArray, INPUT_LIMITS, isValidGeneration, isValidSystem, readJsonObject, requestClientIdentifier } from '@/lib/validation';
+import { rejectUntrustedMutation } from '@/lib/requestSecurity';
 
 const GUIDE_DIFFICULTIES = new Set(['easy', 'moderate', 'hard']);
 
@@ -42,6 +43,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = rejectUntrustedMutation(request);
+    if (originError) return originError;
+
     const auth = await authenticateRequest(request);
 
     if (!auth) {
@@ -73,11 +77,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
       }
 
-      const rateLimit = await consumeRateLimit(
-        `guide-submit:${auth.user.id}:${requestClientIdentifier(request)}`,
-        5,
-        24 * 60 * 60,
-      );
+      const rateLimit = await consumeRateLimits([
+        { key: `guide-submit:user:${auth.user.id}`, limit: 5, windowSeconds: 24 * 60 * 60 },
+        { key: `guide-submit:client:${requestClientIdentifier(request)}`, limit: 20, windowSeconds: 24 * 60 * 60 },
+      ]);
       if (!rateLimit.allowed) {
         return NextResponse.json({ error: 'Too many guide submissions' }, { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfter) } });
       }

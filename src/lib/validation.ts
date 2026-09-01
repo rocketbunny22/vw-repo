@@ -1,4 +1,5 @@
 import { generations } from '@/data/generations';
+import crypto from 'node:crypto';
 
 export const INPUT_LIMITS = {
   title: 160,
@@ -63,7 +64,11 @@ export function isValidSystem(value: string): boolean {
 
 export function requestClientIdentifier(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-  return forwarded || request.headers.get('x-real-ip') || 'unknown';
+  return rateLimitIdentifier(forwarded || request.headers.get('x-real-ip') || 'unknown');
+}
+
+export function rateLimitIdentifier(value: string): string {
+  return crypto.createHash('sha256').update(value.trim().toLowerCase()).digest('hex').slice(0, 32);
 }
 
 export function hasPdfMagicBytes(value: Uint8Array): boolean {

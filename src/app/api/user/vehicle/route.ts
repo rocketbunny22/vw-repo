@@ -5,13 +5,17 @@ import { authenticateRequest } from '@/lib/auth';
 import { isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
 import { boundedString, INPUT_LIMITS, isValidGeneration, readJsonObject } from '@/lib/validation';
 import { generations } from '@/data/generations';
+import { rejectUntrustedMutation } from '@/lib/requestSecurity';
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await authenticateRequest(request);
     if (!auth) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
-    return NextResponse.json({ vehicle: auth.user.vehicle || null });
+    return NextResponse.json({
+      vehicle: auth.user.vehicle || null,
+      vehiclePublic: auth.user.vehiclePublic === true,
+    });
   } catch (error) {
     if (isRedisUnavailableError(error)) return redisUnavailableResponse();
     console.error('Vehicle load error:', error);
@@ -21,12 +25,15 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const originError = rejectUntrustedMutation(request);
+    if (originError) return originError;
+
     const auth = await authenticateRequest(request);
     if (!auth) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
     const body = await readJsonObject(request);
     if (!body) return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-    const { generation, model, year, engineCode, color, nickname } = body;
+    const { generation, model, year, engineCode, color, nickname, vehiclePublic } = body;
     const validGeneration = boundedString(generation, INPUT_LIMITS.name);
     const validModel = boundedString(model, INPUT_LIMITS.name);
 
@@ -46,6 +53,9 @@ export async function PUT(request: NextRequest) {
     if (validEngineCode === null || validColor === null || validNickname === null) {
       return NextResponse.json({ error: 'Vehicle details are too long' }, { status: 400 });
     }
+    if (vehiclePublic !== undefined && typeof vehiclePublic !== 'boolean') {
+      return NextResponse.json({ error: 'Vehicle visibility must be a boolean' }, { status: 400 });
+    }
 
     const vehicle: VehicleProfile = {
       generation: validGeneration,
@@ -56,11 +66,12 @@ export async function PUT(request: NextRequest) {
       nickname: validNickname || undefined,
     };
 
+    const isVehiclePublic = vehiclePublic === true;
     await mutateUsers((users) => users.map((user) => (
-      user.id === auth.user.id ? { ...user, vehicle } : user
+      user.id === auth.user.id ? { ...user, vehicle, vehiclePublic: isVehiclePublic } : user
     )));
 
-    return NextResponse.json({ success: true, vehicle });
+    return NextResponse.json({ success: true, vehicle, vehiclePublic: isVehiclePublic });
   } catch (error) {
     if (isRedisUnavailableError(error)) return redisUnavailableResponse();
     console.error('Vehicle update error:', error);
@@ -70,6 +81,9 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const originError = rejectUntrustedMutation(request);
+    if (originError) return originError;
+
     const auth = await authenticateRequest(request);
     if (!auth) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
@@ -77,6 +91,7 @@ export async function DELETE(request: NextRequest) {
       if (user.id !== auth.user.id) return user;
       const updatedUser = { ...user };
       delete updatedUser.vehicle;
+      delete updatedUser.vehiclePublic;
       return updatedUser;
     }));
 

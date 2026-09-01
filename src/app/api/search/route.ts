@@ -6,7 +6,8 @@ import { DiyGuide, PdfDocument } from '@/types';
 import { spanishGuideContent } from '@/data/diyGuides.es-MX';
 import { generationDescriptionsEs, systemNamesEs, toSpanishPath } from '@/lib/localization';
 import { getUserGuides } from '@/data/guides';
-import { isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
+import { consumeRateLimit, isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
+import { requestClientIdentifier } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,18 @@ const MAX_RESULTS = 80;
 
 export async function GET(request: NextRequest) {
   try {
+    const rateLimit = await consumeRateLimit(
+      `search:client:${requestClientIdentifier(request)}`,
+      60,
+      60,
+    );
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many searches' },
+        { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfter) } },
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q')?.trim() || '';
     const locale = searchParams.get('locale') === 'es-MX' ? 'es-MX' : 'en';
