@@ -17,7 +17,7 @@ export default function LanguageToggle({
   const spanishActive = locale === 'es-MX';
   const isSettings = variant === 'settings';
   const baseClassName = isSettings
-    ? 'border-gray-300 bg-gray-50 text-vw-blue hover:border-vw-blue hover:bg-white'
+    ? 'border-vw-line bg-vw-surface text-vw-blue hover:border-vw-blue hover:bg-white'
     : 'border-white/30';
   const activeClassName = isSettings
     ? 'text-vw-blue'

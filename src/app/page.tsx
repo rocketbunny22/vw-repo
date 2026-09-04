@@ -57,7 +57,7 @@ export default function Home() {
     <div className="flex flex-col">
       {/* Personalized Greeting */}
       {!loading && user && vehicle && !dismissedGarage && (
-        <section className="bg-gradient-to-r from-vw-gold to-amber-500 py-6">
+        <section className="border-b border-vw-line bg-vw-steel py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
@@ -90,7 +90,7 @@ export default function Home() {
       )}
 
       {!loading && !vehicle && user && !dismissedGarage && (
-        <section className="bg-gradient-to-r from-vw-gold to-amber-500 py-6">
+        <section className="border-b border-vw-line bg-vw-steel py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
@@ -116,7 +116,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative bg-[url('/images/all_gens.webp')] bg-cover bg-center overflow-hidden">
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-vw-dark/80" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-vw-gold rounded-full mb-6">
@@ -132,7 +132,7 @@ export default function Home() {
             <form
               action="/search"
               method="get"
-              className="mx-auto mb-5 flex max-w-3xl flex-col gap-3 rounded-xl bg-white p-2 text-left shadow-2xl ring-4 ring-vw-gold/50 sm:flex-row"
+              className="mx-auto mb-5 flex max-w-3xl flex-col gap-3 rounded-xl bg-white p-2 text-left shadow-2xl ring-1 ring-white/30 sm:flex-row"
             >
               <div className="relative flex-1">
                 <svg
@@ -168,7 +168,7 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="bg-vw-gold py-12">
+      <section className="border-y border-vw-line bg-vw-steel py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
@@ -200,7 +200,7 @@ export default function Home() {
                 <h2 className="text-2xl font-bold text-vw-blue">Recommended for Your {getGenerationName(vehicle.generation)}</h2>
                 <p className="text-gray-600 text-sm mt-1">Common systems and known issues for your generation.</p>
               </div>
-              <Link href={`/generation/${vehicle.generation}`} className="text-vw-blue hover:text-vw-gold font-medium text-sm transition-colors">
+              <Link href={`/generation/${vehicle.generation}`} className="text-vw-blue hover:text-vw-link-blue font-medium text-sm transition-colors">
                 View all systems →
               </Link>
             </div>
@@ -231,7 +231,7 @@ export default function Home() {
       )}
 
       {/* Generations Grid */}
-      <section id="generations" className="py-16 bg-gray-50">
+      <section id="generations" className="bg-vw-surface py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-vw-blue mb-4">Explore by Generation</h2>
@@ -247,7 +247,7 @@ export default function Home() {
                 href={`/generation/${gen.slug}`}
                 className="group"
               >
-                <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1">
+                <div className="overflow-hidden rounded-xl border border-vw-line bg-white shadow-sm transition-all hover:-translate-y-1 hover:border-vw-blue/30 hover:shadow-md">
                   {gen.image ? (
                     <div className="h-24 relative bg-gradient-to-br from-vw-blue to-vw-blue-light">
                       <Image 
@@ -258,12 +258,12 @@ export default function Home() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-vw-blue/80 to-transparent" />
                       <div className="absolute bottom-2 left-2">
-                        <span className="text-2xl font-bold text-vw-gold">{gen.name}</span>
+                        <span className="border-l-4 border-vw-gold pl-2 text-2xl font-bold text-white">{gen.name}</span>
                       </div>
                     </div>
                   ) : (
                     <div className="h-24 bg-gradient-to-br from-vw-blue to-vw-blue-light flex items-center justify-center">
-                      <span className="text-3xl font-bold text-vw-gold">{gen.name}</span>
+                      <span className="border-l-4 border-vw-gold pl-2 text-3xl font-bold text-white">{gen.name}</span>
                     </div>
                   )}
                   <div className="p-4">
@@ -272,7 +272,7 @@ export default function Home() {
                       <span className="badge badge-blue">{gen.models.length} models</span>
                     </div>
                     <p className="text-sm text-gray-600 line-clamp-2">{gen.description}</p>
-                    <div className="mt-3 text-vw-blue text-sm font-medium group-hover:text-vw-gold transition-colors">
+                    <div className="mt-3 text-sm font-medium text-vw-blue transition-colors group-hover:text-vw-link-blue">
                       View Systems →
                     </div>
                   </div>

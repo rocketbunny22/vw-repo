@@ -50,14 +50,14 @@ export default function Navbar() {
   return (
     <nav className="bg-vw-blue text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex h-[4.75rem] items-center justify-between">
           <a href={href('/')} className="flex items-center">
             <Image
               src="/images/vwrepo_log_nobg.png"
               alt="VW Repo"
               width={200}
               height={133}
-              className="h-[6.5rem] w-auto object-contain"
+              className="h-16 w-auto object-contain"
               priority
             />
           </a>
@@ -81,7 +81,7 @@ export default function Navbar() {
                       <a
                         key={gen.id}
                         href={href(`/generation/${gen.slug}`)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue"
                       >
                         {gen.name}
                       </a>
@@ -141,19 +141,19 @@ export default function Navbar() {
                   </button>
                   <div className="absolute right-0 mt-0 w-40 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50">
                     <div className="py-1">
-                      <a href={href('/my-vw')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
+                      <a href={href('/my-vw')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue">
                         {labels.myVw}
                       </a>
-                      <a href={href('/profile')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
+                      <a href={href('/profile')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue">
                         {labels.profile}
                       </a>
-                      <a href={href('/upload')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
+                      <a href={href('/upload')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue">
                         {labels.upload}
                       </a>
-                      <a href={href('/bookmarks')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
+                      <a href={href('/bookmarks')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue">
                         {labels.saved}
                       </a>
-                      <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-vw-gold hover:text-vw-blue">
+                      <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue">
                         {labels.signOut}
                       </button>
                     </div>

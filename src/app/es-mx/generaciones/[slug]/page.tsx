@@ -56,7 +56,7 @@ export default async function SpanishGenerationPage({ params }: { params: Promis
         </div>
       </section>
 
-      <section className="bg-vw-gold py-8">
+      <section className="border-y border-vw-line bg-vw-steel py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
             <div><div className="text-2xl font-bold text-vw-blue">{generation.systems.length}</div><div className="text-sm text-vw-dark">Sistemas</div></div>
@@ -71,7 +71,7 @@ export default async function SpanishGenerationPage({ params }: { params: Promis
           <h2 className="text-2xl font-bold text-vw-blue mb-6">Sistemas</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {generation.systems.map((system, index) => (
-              <Link key={system.id} href={toSpanishPath(`/systems/${system.slug}?gen=${generation.slug}`)} className="block p-6 bg-white rounded-lg shadow hover:shadow-xl border hover:border-vw-gold text-center">
+              <Link key={system.id} href={toSpanishPath(`/systems/${system.slug}?gen=${generation.slug}`)} className="block rounded-xl border border-vw-line bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-vw-blue/30 hover:shadow-md">
                 <div className="w-12 h-12 bg-vw-blue rounded-full flex items-center justify-center mx-auto mb-3"><span className="text-white font-bold">{index + 1}</span></div>
                 <h3 className="font-bold text-vw-dark">{systemNamesEs[system.slug] || system.name}</h3>
               </Link>

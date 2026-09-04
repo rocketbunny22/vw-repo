@@ -343,13 +343,13 @@ export default function AdminPage() {
         </div>
       </section>
 
-      <section className="bg-vw-gold py-4">
+      <section className="border-y border-vw-line bg-vw-steel py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-4">
             <button
               onClick={() => setActiveTab('moderation')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'moderation' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-vw-dark hover:text-white'
+                activeTab === 'moderation' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-white hover:text-vw-blue'
               }`}
             >
               Moderation ({pendingCount})
@@ -357,7 +357,7 @@ export default function AdminPage() {
             <button
               onClick={() => setActiveTab('users')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'users' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-vw-dark hover:text-white'
+                activeTab === 'users' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-white hover:text-vw-blue'
               }`}
             >
               Users ({users.length})
@@ -365,7 +365,7 @@ export default function AdminPage() {
             <button
               onClick={() => setActiveTab('pdfs')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'pdfs' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-vw-dark hover:text-white'
+                activeTab === 'pdfs' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-white hover:text-vw-blue'
               }`}
             >
               PDFs ({pdfs.length})
@@ -373,7 +373,7 @@ export default function AdminPage() {
             <button
               onClick={() => setActiveTab('guides')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'guides' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-vw-dark hover:text-white'
+                activeTab === 'guides' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-white hover:text-vw-blue'
               }`}
             >
               Guides ({guides.length})
@@ -381,7 +381,7 @@ export default function AdminPage() {
             <button
               onClick={() => setActiveTab('tools')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'tools' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-vw-dark hover:text-white'
+                activeTab === 'tools' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-white hover:text-vw-blue'
               }`}
             >
               Tools

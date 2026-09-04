@@ -27,7 +27,7 @@ export default function SpanishHomePage() {
   return (
     <div className="flex flex-col">
       <section className="relative overflow-hidden bg-[url('/images/all_gens.webp')] bg-cover bg-center">
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-vw-dark/80" />
         <div className="relative mx-auto max-w-7xl px-4 py-24 text-center sm:px-6 lg:px-8">
           <Image src="/images/vw_repo_logo_squared.png" alt="VW Repo" width={80} height={80} className="mx-auto mb-6" priority />
           <h1 className="mb-4 text-4xl font-bold text-white md:text-6xl">VW Repo</h1>
@@ -37,7 +37,7 @@ export default function SpanishHomePage() {
           <form
             action="/es-mx/buscar"
             method="get"
-            className="mx-auto mb-5 flex max-w-3xl flex-col gap-3 rounded-xl bg-white p-2 text-left shadow-2xl ring-4 ring-vw-gold/50 sm:flex-row"
+            className="mx-auto mb-5 flex max-w-3xl flex-col gap-3 rounded-xl bg-white p-2 text-left shadow-2xl ring-1 ring-white/30 sm:flex-row"
           >
             <div className="relative flex-1">
               <svg
@@ -63,7 +63,7 @@ export default function SpanishHomePage() {
         </div>
       </section>
 
-      <section className="bg-vw-gold py-10" aria-labelledby="resumen-title">
+      <section className="border-y border-vw-line bg-vw-steel py-10" aria-labelledby="resumen-title">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 id="resumen-title" className="sr-only">Resumen del contenido</h2>
           <dl className="grid grid-cols-2 gap-6 text-center md:grid-cols-4">
@@ -75,7 +75,7 @@ export default function SpanishHomePage() {
         </div>
       </section>
 
-      <section className="bg-gray-50 py-14" aria-labelledby="generaciones-title">
+      <section className="bg-vw-surface py-14" aria-labelledby="generaciones-title">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 id="generaciones-title" className="mb-4 text-3xl font-bold text-vw-blue">Explora por generación</h2>
@@ -84,12 +84,12 @@ export default function SpanishHomePage() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {generations.map((generation) => (
               <Link key={generation.id} href={toSpanishPath(`/generation/${generation.slug}`)} className="group">
-                <article className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all hover:-translate-y-1 hover:shadow-xl">
+                <article className="overflow-hidden rounded-xl border border-vw-line bg-white shadow-sm transition-all hover:-translate-y-1 hover:border-vw-blue/30 hover:shadow-md">
                   <div className="relative h-24 bg-gradient-to-br from-vw-blue to-vw-blue-light">
                     <Image src={generation.image} alt={`${generation.name} Volkswagen`} fill className="object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-vw-blue/80 to-transparent" />
                     <div className="absolute bottom-2 left-2">
-                      <h3 className="text-2xl font-bold text-vw-gold">{generation.name}</h3>
+                      <h3 className="border-l-4 border-vw-gold pl-2 text-2xl font-bold text-white">{generation.name}</h3>
                     </div>
                   </div>
                   <div className="p-4">
@@ -98,7 +98,7 @@ export default function SpanishHomePage() {
                       <span className="badge badge-blue">{generation.models.length} modelos</span>
                     </div>
                     <p className="line-clamp-2 text-sm text-gray-600">{generationDescriptionsEs[generation.slug]}</p>
-                    <div className="mt-3 text-sm font-medium text-vw-blue transition-colors group-hover:text-vw-gold">
+                    <div className="mt-3 text-sm font-medium text-vw-blue transition-colors group-hover:text-vw-link-blue">
                       Ver sistemas →
                     </div>
                   </div>

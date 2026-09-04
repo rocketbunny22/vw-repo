@@ -132,10 +132,10 @@ export default async function PublicProfilePage({
         </div>
       </section>
 
-      <section className="bg-vw-gold py-8">
+      <section className="border-y border-vw-line bg-vw-steel py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="rounded-lg bg-white/90 p-4">
+            <div className="rounded-xl border border-white bg-white/90 p-4 shadow-sm">
               <div className="text-sm font-medium text-gray-600">Garage</div>
               {vehicle ? (
                 <div className="mt-1 text-lg font-bold text-vw-blue">
@@ -146,11 +146,11 @@ export default async function PublicProfilePage({
                 <div className="mt-1 text-lg font-bold text-vw-blue">No vehicle listed</div>
               )}
             </div>
-            <div className="rounded-lg bg-white/90 p-4">
+            <div className="rounded-xl border border-white bg-white/90 p-4 shadow-sm">
               <div className="text-sm font-medium text-gray-600">Submitted Guides</div>
               <div className="mt-1 text-3xl font-bold text-vw-blue">{submittedGuides.length}</div>
             </div>
-            <div className="rounded-lg bg-white/90 p-4">
+            <div className="rounded-xl border border-white bg-white/90 p-4 shadow-sm">
               <div className="text-sm font-medium text-gray-600">Uploaded PDFs</div>
               <div className="mt-1 text-3xl font-bold text-vw-blue">{uploadedPdfs.length}</div>
             </div>

@@ -320,7 +320,7 @@ export default function MyVwPage() {
       <section className="py-10 bg-gray-50 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {showWelcome && (
-            <div className="mb-8 overflow-hidden rounded-lg border border-vw-gold bg-white shadow-md">
+            <div className="mb-8 overflow-hidden rounded-xl border border-vw-line bg-white shadow-sm">
               <div className="bg-vw-blue px-6 py-5 text-white">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
