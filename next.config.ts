@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Proxy now covers API routes as an additional framework-level ceiling.
+    // Individual routes retain stricter limits where appropriate.
+    proxyClientMaxBodySize: '12mb',
+  },
   async headers() {
     const contentSecurityPolicy = [
       "default-src 'self'",

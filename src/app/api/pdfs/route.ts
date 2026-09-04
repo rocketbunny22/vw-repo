@@ -49,8 +49,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const declaredLength = Number(request.headers.get('content-length') || 0);
-    if (declaredLength > MAX_PDF_BYTES + 1024 * 1024) {
+    const declaredLength = request.headers.get('content-length');
+    const maxRequestBytes = MAX_PDF_BYTES + 1024 * 1024;
+    if (
+      declaredLength === null
+      || !/^\d+$/.test(declaredLength)
+      || Number(declaredLength) > maxRequestBytes
+    ) {
       return NextResponse.json({ error: 'Request body is too large' }, { status: 413 });
     }
 

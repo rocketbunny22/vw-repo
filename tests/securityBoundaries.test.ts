@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { findApprovedPdfMetadata, isSafePdfFilename } from '@/lib/pdfAccess';
 import { toPublicComment } from '@/lib/publicSummaries';
 import { isTrustedMutationRequest } from '@/lib/requestSecurity';
@@ -18,6 +18,24 @@ describe('request security boundaries', () => {
     expect(isTrustedMutationRequest(mutationRequest())).toBe(false);
     expect(isTrustedMutationRequest(mutationRequest('https://attacker.example', 'cross-site'))).toBe(false);
     expect(isTrustedMutationRequest(mutationRequest('https://attacker.example', 'same-site'))).toBe(false);
+  });
+
+  it('uses only the configured canonical origin in production', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://www.vwrepo.com');
+
+    try {
+      expect(isTrustedMutationRequest(new Request('https://attacker.example/api/auth', {
+        method: 'POST',
+        headers: { origin: 'https://attacker.example', 'sec-fetch-site': 'same-origin' },
+      }))).toBe(false);
+      expect(isTrustedMutationRequest(new Request('https://attacker.example/api/auth', {
+        method: 'POST',
+        headers: { origin: 'https://www.vwrepo.com', 'sec-fetch-site': 'same-origin' },
+      }))).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it('hashes case-normalized rate-limit identifiers instead of retaining raw values', () => {

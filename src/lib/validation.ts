@@ -81,11 +81,48 @@ export function hasPdfMagicBytes(value: Uint8Array): boolean {
 }
 
 export async function readJsonObject(request: Request, maxBytes = 64 * 1024): Promise<Record<string, unknown> | null> {
-  const declaredLength = Number(request.headers.get('content-length') || 0);
-  if (declaredLength > maxBytes) return null;
+  const declaredLength = request.headers.get('content-length');
+  if (declaredLength !== null) {
+    if (!/^\d+$/.test(declaredLength) || Number(declaredLength) > maxBytes) return null;
+  }
 
-  const text = await request.text();
-  if (Buffer.byteLength(text, 'utf8') > maxBytes) return null;
+  if (!request.body) return null;
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let byteLength = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      byteLength += value.byteLength;
+      if (byteLength > maxBytes) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return null;
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(byteLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  let text: string;
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    return null;
+  }
 
   try {
     const value = JSON.parse(text) as unknown;

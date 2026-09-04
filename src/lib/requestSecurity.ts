@@ -15,11 +15,19 @@ export function isTrustedMutationRequest(request: Request): boolean {
   const origin = request.headers.get('origin');
   if (!origin) return false;
 
-  const allowedOrigins = new Set<string>();
-  const requestOrigin = normalizedOrigin(request.url);
   const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL
     ? normalizedOrigin(process.env.NEXT_PUBLIC_SITE_URL)
     : null;
+
+  // In production, the canonical configured origin is the only authority. Do
+  // not derive an allowed origin from request.url: upstream Host handling can
+  // otherwise make an attacker-controlled host appear trustworthy.
+  if (process.env.NODE_ENV === 'production') {
+    return configuredOrigin !== null && normalizedOrigin(origin) === configuredOrigin;
+  }
+
+  const allowedOrigins = new Set<string>();
+  const requestOrigin = normalizedOrigin(request.url);
 
   if (requestOrigin) allowedOrigins.add(requestOrigin);
   if (configuredOrigin) allowedOrigins.add(configuredOrigin);
