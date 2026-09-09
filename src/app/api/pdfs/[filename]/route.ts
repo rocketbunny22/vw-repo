@@ -3,6 +3,8 @@ import { getAllPdfs, getPdfFile, getPublicPdfFile, incrementPdfDownloads } from 
 import { consumeRateLimit, isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
 import { requestClientIdentifier } from '@/lib/validation';
 import { findApprovedPdfMetadata, isSafePdfFilename } from '@/lib/pdfAccess';
+import { pdfManualPath } from '@/lib/pdfUrls';
+import { absoluteUrl } from '@/lib/seo';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ filename: string }> }) {
   try {
@@ -57,6 +59,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         'Content-Type': 'application/pdf',
         'Content-Disposition': `${disposition}; filename="${downloadName}"`,
         ...(view === 'true' ? { 'Cache-Control': 'private, no-store' } : {}),
+        'Link': `<${absoluteUrl(pdfManualPath(pdf))}>; rel="canonical"`,
         'X-Content-Type-Options': 'nosniff',
       },
     });

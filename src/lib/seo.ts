@@ -7,27 +7,6 @@ export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || defaultSiteUrl).repl
 export const defaultDescription =
   'Volkswagen repair manuals, DIY guides, technical specifications, maintenance checklists, and searchable PDF resources for air-cooled and water-cooled VW models.';
 
-export const defaultKeywords = [
-  'Volkswagen repair manuals',
-  'VW repair manuals',
-  'Volkswagen DIY guides',
-  'VW technical specs',
-  'Volkswagen maintenance',
-  'VW PDF manuals',
-  'air-cooled VW',
-  'water-cooled VW',
-];
-
-export const spanishKeywords = [
-  'manuales de reparación Volkswagen',
-  'manuales VW',
-  'guías de reparación Volkswagen',
-  'especificaciones técnicas VW',
-  'mantenimiento Volkswagen',
-  'manuales PDF Volkswagen',
-  'Volkswagen enfriado por aire',
-];
-
 export function absoluteUrl(path = '/') {
   return new URL(path, `${siteUrl}/`).toString();
 }
@@ -50,6 +29,7 @@ export function createMetadata({
   robots,
   type = 'website',
   locale = 'en',
+  includeLanguageAlternates = true,
 }: {
   title?: string;
   description?: string;
@@ -58,6 +38,7 @@ export function createMetadata({
   robots?: Metadata['robots'];
   type?: 'website' | 'article';
   locale?: SiteLocale;
+  includeLanguageAlternates?: boolean;
 }): Metadata {
   const url = absoluteUrl(path);
   const imageUrl = absoluteUrl(image);
@@ -67,14 +48,13 @@ export function createMetadata({
   return {
     title: title ? { absolute: `${title} | ${siteName}` } : undefined,
     description,
-    keywords: locale === 'es-MX' ? spanishKeywords : defaultKeywords,
     alternates: {
       canonical: url,
-      languages: {
+      languages: includeLanguageAlternates ? {
         'en-US': absoluteUrl(englishPath),
         'es-MX': absoluteUrl(spanishPath),
         'x-default': absoluteUrl(englishPath),
-      },
+      } : undefined,
     },
     openGraph: {
       title: title ? `${title} | ${siteName}` : siteName,

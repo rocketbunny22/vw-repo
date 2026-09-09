@@ -6,7 +6,7 @@ import BookmarkButton from '@/components/BookmarkButton';
 import { PublicGuideSummary, PublicPdfSummary } from '@/types';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath } from '@/lib/localization';
-import { pdfViewUrl } from '@/lib/pdfUrls';
+import { pdfManualPath, pdfViewUrl } from '@/lib/pdfUrls';
 
 export default function BookmarksPage() {
   const { locale } = useLanguage();
@@ -93,7 +93,11 @@ export default function BookmarksPage() {
                       <div key={pdf.id} className="bg-white rounded-lg shadow-md border border-gray-200 p-5">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <h3 className="font-bold text-vw-dark">{pdf.title}</h3>
+                            <h3 className="font-bold text-vw-dark">
+                              <Link href={pdfManualPath(pdf)} className="hover:text-vw-link-blue hover:underline">
+                                {pdf.title}
+                              </Link>
+                            </h3>
                             {pdf.description && <p className="text-sm text-gray-600 mt-1">{pdf.description}</p>}
                             <div className="flex gap-2 mt-3">
                               <a

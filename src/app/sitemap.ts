@@ -6,84 +6,30 @@ import { getAllPdfs } from '@/data/pdfs';
 import { getUsers } from '@/data/users';
 import { absoluteUrl } from '@/lib/seo';
 import { toSpanishPath } from '@/lib/localization';
+import { pdfManualPath } from '@/lib/pdfUrls';
+
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
   const staticRoutes: MetadataRoute.Sitemap = [
-    {
-      url: absoluteUrl('/'),
-      lastModified: now,
-      changeFrequency: 'weekly',
-      priority: 1,
-    },
-    {
-      url: absoluteUrl('/library'),
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: absoluteUrl('/guides'),
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: absoluteUrl('/privacy-policy'),
-      lastModified: now,
-      changeFrequency: 'yearly',
-      priority: 0.2,
-    },
-    {
-      url: absoluteUrl('/terms-of-use'),
-      lastModified: now,
-      changeFrequency: 'yearly',
-      priority: 0.2,
-    },
-    {
-      url: absoluteUrl('/es-mx'),
-      lastModified: now,
-      changeFrequency: 'weekly',
-      priority: 0.95,
-    },
-    {
-      url: absoluteUrl('/es-mx/biblioteca'),
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.85,
-    },
-    {
-      url: absoluteUrl('/es-mx/guias'),
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.85,
-    },
-    {
-      url: absoluteUrl('/es-mx/politica-de-privacidad'),
-      lastModified: now,
-      changeFrequency: 'yearly',
-      priority: 0.2,
-    },
-    {
-      url: absoluteUrl('/es-mx/terminos-de-uso'),
-      lastModified: now,
-      changeFrequency: 'yearly',
-      priority: 0.2,
-    },
-  ];
+    '/',
+    '/library',
+    '/guides',
+    '/privacy-policy',
+    '/terms-of-use',
+    '/es-mx',
+    '/es-mx/biblioteca',
+    '/es-mx/guias',
+    '/es-mx/politica-de-privacidad',
+    '/es-mx/terminos-de-uso',
+  ].map((path) => ({ url: absoluteUrl(path) }));
 
   const generationRoutes: MetadataRoute.Sitemap = generations.map((generation) => ({
     url: absoluteUrl(`/generation/${generation.slug}`),
-    lastModified: now,
-    changeFrequency: 'weekly',
-    priority: 0.8,
     images: [absoluteUrl(generation.image)],
   }));
   const spanishGenerationRoutes: MetadataRoute.Sitemap = generations.map((generation) => ({
     url: absoluteUrl(toSpanishPath(`/generation/${generation.slug}`)),
-    lastModified: now,
-    changeFrequency: 'weekly',
-    priority: 0.75,
     images: [absoluteUrl(generation.image)],
   }));
 
@@ -94,36 +40,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const systemRoutes: MetadataRoute.Sitemap = Array.from(systemSlugs).map((slug) => ({
     url: absoluteUrl(`/systems/${slug}`),
-    lastModified: now,
-    changeFrequency: 'weekly',
-    priority: 0.75,
   }));
   const spanishSystemRoutes: MetadataRoute.Sitemap = Array.from(systemSlugs).map((slug) => ({
     url: absoluteUrl(toSpanishPath(`/systems/${slug}`)),
-    lastModified: now,
-    changeFrequency: 'weekly',
-    priority: 0.7,
   }));
   const generationSystemRoutes: MetadataRoute.Sitemap = generations.flatMap((generation) => (
     generation.systems.map((system) => ({
-      url: absoluteUrl(`/gen/${generation.slug}/system/${system.slug}`),
-      lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
+      url: absoluteUrl(`/systems/${system.slug}?gen=${generation.slug}`),
+    }))
+  ));
+  const spanishGenerationSystemRoutes: MetadataRoute.Sitemap = generations.flatMap((generation) => (
+    generation.systems.map((system) => ({
+      url: absoluteUrl(toSpanishPath(`/systems/${system.slug}?gen=${generation.slug}`)),
     }))
   ));
 
   const staticGuideRoutes: MetadataRoute.Sitemap = diyGuides.map((guide) => ({
     url: absoluteUrl(`/guides/${guide.slug}`),
-    lastModified: guide.updatedAt ? new Date(guide.updatedAt) : now,
-    changeFrequency: 'monthly',
-    priority: guide.featured ? 0.85 : 0.7,
+    lastModified: validDate(guide.updatedAt),
   }));
   const spanishGuideRoutes: MetadataRoute.Sitemap = diyGuides.map((guide) => ({
     url: absoluteUrl(toSpanishPath(`/guides/${guide.slug}`)),
-    lastModified: guide.updatedAt ? new Date(guide.updatedAt) : now,
-    changeFrequency: 'monthly',
-    priority: guide.featured ? 0.8 : 0.65,
+    lastModified: validDate(guide.updatedAt),
   }));
 
   let userGuideRoutes: MetadataRoute.Sitemap = [];
@@ -141,29 +79,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     userGuideRoutes = approvedUserGuides.map((guide) => ({
         url: absoluteUrl(`/guides/${guide.slug}`),
-        lastModified: guide.updatedAt ? new Date(guide.updatedAt) : now,
-        changeFrequency: 'monthly',
-        priority: guide.featured ? 0.8 : 0.65,
+        lastModified: validDate(guide.updatedAt || guide.createdAt),
     }));
 
     pdfRoutes = approvedPdfs.map((pdf) => ({
-      url: absoluteUrl(pdf.url),
-      lastModified: pdf.uploadedAt ? new Date(pdf.uploadedAt) : now,
-      changeFrequency: 'monthly',
-      priority: 0.5,
+      url: absoluteUrl(pdfManualPath(pdf)),
+      lastModified: validDate(pdf.uploadedAt),
     }));
 
     userProfileRoutes = users
       .filter((user) => (
-        Boolean(user.vehicle)
+        (user.vehiclePublic === true && Boolean(user.vehicle))
         || approvedUserGuides.some((guide) => guide.authorId === user.id || guide.author === user.username)
-        || approvedPdfs.some((pdf) => pdf.uploadedBy === user.username)
+        || approvedPdfs.some((pdf) => pdf.uploadedById === user.id || pdf.uploadedBy === user.username)
       ))
       .map((user) => ({
         url: absoluteUrl(`/users/${encodeURIComponent(user.username)}`),
-        lastModified: user.lastLogin ? new Date(user.lastLogin) : now,
-        changeFrequency: 'monthly' as const,
-        priority: 0.4,
       }));
   } catch {
     userGuideRoutes = [];
@@ -171,17 +102,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     userProfileRoutes = [];
   }
 
-  return [
+  const routes = [
     ...staticRoutes,
     ...generationRoutes,
     ...spanishGenerationRoutes,
     ...systemRoutes,
     ...spanishSystemRoutes,
     ...generationSystemRoutes,
+    ...spanishGenerationSystemRoutes,
     ...staticGuideRoutes,
     ...spanishGuideRoutes,
     ...userGuideRoutes,
     ...pdfRoutes,
     ...userProfileRoutes,
   ];
+
+  return Array.from(new Map(routes.map((route) => [route.url, route])).values());
+}
+
+function validDate(value?: string): Date | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
 }

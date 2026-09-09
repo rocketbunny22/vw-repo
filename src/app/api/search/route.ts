@@ -8,6 +8,7 @@ import { generationDescriptionsEs, systemNamesEs, toSpanishPath } from '@/lib/lo
 import { getUserGuides } from '@/data/guides';
 import { consumeRateLimit, isRedisUnavailableError, redisUnavailableResponse } from '@/lib/redis';
 import { requestClientIdentifier } from '@/lib/validation';
+import { pdfManualPath } from '@/lib/pdfUrls';
 
 export const dynamic = 'force-dynamic';
 
@@ -117,7 +118,7 @@ function searchPdfs(pdfs: PdfDocument[], query: string, terms: string[]): Search
         generation: pdf.generation,
         system: pdf.system,
         model: pdf.model || pdf.models?.[0],
-        url: pdf.url,
+        url: pdfManualPath(pdf),
         matchContext: context,
         matchSource: bodyScore > 0 ? 'pdf-text' as const : 'metadata' as const,
         score,

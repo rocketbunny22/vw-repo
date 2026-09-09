@@ -9,7 +9,7 @@ import UiIcon from '@/components/UiIcon';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath, systemNamesEs } from '@/lib/localization';
 import { translateMexicanSpanish } from '@/lib/translations';
-import { pdfViewUrl } from '@/lib/pdfUrls';
+import { pdfManualPath, pdfViewUrl } from '@/lib/pdfUrls';
 
 const systemsList = [
   { id: 'engine', name: 'Engine' },
@@ -217,7 +217,11 @@ export default function LibraryClient({
                         onChange={(bookmarked) => updatePdfBookmark(pdf.id, bookmarked)}
                       />
                     </div>
-                    <h3 className="font-bold text-vw-dark mb-2 line-clamp-2">{pdf.title}</h3>
+                    <h3 className="mb-2 line-clamp-2 font-bold text-vw-dark">
+                      <Link href={pdfManualPath(pdf)} className="hover:text-vw-link-blue hover:underline">
+                        {pdf.title}
+                      </Link>
+                    </h3>
                     {pdf.description && (
                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">{pdf.description}</p>
                     )}

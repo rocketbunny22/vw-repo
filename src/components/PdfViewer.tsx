@@ -7,7 +7,7 @@ import BookmarkButton from './BookmarkButton';
 import { useLanguage } from '@/components/LanguageProvider';
 import { localizedPath, systemNamesEs } from '@/lib/localization';
 import { translateMexicanSpanish } from '@/lib/translations';
-import { pdfViewUrl } from '@/lib/pdfUrls';
+import { pdfManualPath, pdfViewUrl } from '@/lib/pdfUrls';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
@@ -52,7 +52,11 @@ export function PdfCard({ pdf }: PdfCardProps) {
             </span>
             <BookmarkButton itemType="pdf" itemId={pdf.id} />
           </div>
-          <h3 className="mb-2 line-clamp-2 font-bold text-vw-dark">{pdf.title}</h3>
+          <h3 className="mb-2 line-clamp-2 font-bold text-vw-dark">
+            <Link href={pdfManualPath(pdf)} className="hover:text-vw-link-blue hover:underline">
+              {pdf.title}
+            </Link>
+          </h3>
           {pdf.description && (
             <p className="text-sm text-gray-600 mb-3 line-clamp-2">{pdf.description}</p>
           )}

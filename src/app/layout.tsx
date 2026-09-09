@@ -9,7 +9,6 @@ import { Analytics } from '@vercel/analytics/next';
 import {
   absoluteUrl,
   defaultDescription,
-  defaultKeywords,
   jsonLd,
   organizationJsonLd,
   siteName,
@@ -25,7 +24,6 @@ export const metadata: Metadata = {
     template: `%s | ${siteName}`,
   },
   description: defaultDescription,
-  keywords: defaultKeywords,
   authors: [{ name: siteName, url: siteUrl }],
   creator: siteName,
   publisher: siteName,
