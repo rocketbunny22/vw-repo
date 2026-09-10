@@ -48,40 +48,40 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-vw-blue text-white">
+    <nav className="sticky top-0 z-50 border-b border-vw-gold/30 bg-vw-dark text-vw-cream shadow-[0_5px_24px_rgba(20,39,48,0.18)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-[4.75rem] items-center justify-between">
-          <a href={href('/')} className="flex items-center">
+        <div className="flex h-[4.5rem] items-center justify-between">
+          <a href={href('/')} className="flex h-12 w-36 items-center justify-center overflow-hidden rounded-md transition-opacity hover:opacity-90">
             <Image
               src="/images/vwrepo_log_nobg.png"
               alt="VW Repo"
               width={200}
               height={133}
-              className="h-16 w-auto object-contain"
+              className="h-14 w-auto scale-[2] object-contain"
               priority
             />
           </a>
 
-          <div className="hidden md:block">
+          <div className="hidden xl:block">
             <div className="flex items-baseline space-x-2">
-              <a href={href('/')} className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
+              <a href={href('/')} className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white">
                 {labels.home}
               </a>
 
               <div className="relative group">
-                <button className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium flex items-center" aria-haspopup="true">
+                <button className="flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white" aria-haspopup="true">
                   {labels.generations}
                   <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50">
+                <div className="invisible absolute left-0 z-50 mt-0 w-48 rounded-lg border border-vw-line bg-vw-paper opacity-0 shadow-[0_18px_45px_rgba(20,39,48,0.2)] transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                   <div className="py-1">
                     {generations.map((gen) => (
                       <a
                         key={gen.id}
                         href={href(`/generation/${gen.slug}`)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue"
+                        className="block px-4 py-2 text-sm text-vw-dark transition-colors hover:bg-vw-steel hover:text-vw-blue"
                       >
                         {gen.name}
                       </a>
@@ -90,35 +90,35 @@ export default function Navbar() {
                 </div>
               </div>
 
-              <a href={href('/search')} className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
+              <a href={href('/search')} className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white">
                 {labels.search}
               </a>
 
-              <a href={href('/library')} className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
+              <a href={href('/library')} className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white">
                 {labels.pdfs}
               </a>
 
-              <a href={href('/guides')} className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
+              <a href={href('/guides')} className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white">
                 {labels.guides}
               </a>
 
               {user && (
-                <a href={href('/my-vw')} className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
+                <a href={href('/my-vw')} className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white">
                   {labels.myVw}
                 </a>
               )}
 
-              <a href={href('/feedback')} className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
+              <a href={href('/feedback')} className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white">
                 {labels.feedback}
               </a>
 
               {user?.role === 'admin' && (
-                <a href={href('/admin')} className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
+                <a href={href('/admin')} className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white">
                   {labels.admin}
                 </a>
               )}
 
-              <a href={href('/submit-guide')} className="bg-vw-gold text-vw-blue px-3 py-2 rounded-md text-sm font-medium hover:bg-vw-gold-light">
+              <a href={href('/submit-guide')} className="rounded-md border border-vw-gold/60 bg-vw-gold px-3 py-2 text-sm font-semibold text-vw-dark transition-colors hover:bg-vw-gold-light">
                 {labels.submitGuide}
               </a>
 
@@ -126,7 +126,7 @@ export default function Navbar() {
                 <span className="px-3 py-2 text-sm text-amber-200" role="status">Account service unavailable</span>
               ) : user ? (
                 <div className="relative group">
-                  <button className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5" aria-haspopup="true">
+                  <button className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white" aria-haspopup="true">
                     {vehicle && (
                       <UiIcon
                         name="vehicle"
@@ -139,21 +139,21 @@ export default function Navbar() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-                  <div className="absolute right-0 mt-0 w-40 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50">
+                  <div className="invisible absolute right-0 z-50 mt-0 w-40 rounded-lg border border-vw-line bg-vw-paper opacity-0 shadow-[0_18px_45px_rgba(20,39,48,0.2)] transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                     <div className="py-1">
-                      <a href={href('/my-vw')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue">
+                      <a href={href('/my-vw')} className="block px-4 py-2 text-sm text-vw-dark hover:bg-vw-steel hover:text-vw-blue">
                         {labels.myVw}
                       </a>
-                      <a href={href('/profile')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue">
+                      <a href={href('/profile')} className="block px-4 py-2 text-sm text-vw-dark hover:bg-vw-steel hover:text-vw-blue">
                         {labels.profile}
                       </a>
-                      <a href={href('/upload')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue">
+                      <a href={href('/upload')} className="block px-4 py-2 text-sm text-vw-dark hover:bg-vw-steel hover:text-vw-blue">
                         {labels.upload}
                       </a>
-                      <a href={href('/bookmarks')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue">
+                      <a href={href('/bookmarks')} className="block px-4 py-2 text-sm text-vw-dark hover:bg-vw-steel hover:text-vw-blue">
                         {labels.saved}
                       </a>
-                      <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-vw-steel hover:text-vw-blue">
+                      <button onClick={handleLogout} className="block w-full px-4 py-2 text-left text-sm text-vw-dark hover:bg-vw-steel hover:text-vw-blue">
                         {labels.signOut}
                       </button>
                     </div>
@@ -161,10 +161,10 @@ export default function Navbar() {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <a href={href('/login')} className="hover:bg-vw-blue-light px-3 py-2 rounded-md text-sm font-medium">
+                  <a href={href('/login')} className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white">
                     {labels.signIn}
                   </a>
-                  <a href={href('/signup')} className="bg-vw-gold text-vw-blue px-3 py-2 rounded-md text-sm font-medium hover:bg-vw-gold-light">
+                  <a href={href('/signup')} className="rounded-md border border-vw-gold/60 bg-vw-gold px-3 py-2 text-sm font-semibold text-vw-dark transition-colors hover:bg-vw-gold-light">
                     {labels.signUp}
                   </a>
                 </div>
@@ -172,10 +172,10 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="md:hidden">
+          <div className="xl:hidden">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 rounded-md hover:bg-vw-blue-light"
+              className="rounded-md p-2 transition-colors hover:bg-white/10"
               aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={menuOpen}
               aria-controls="mobile-navigation"
@@ -192,56 +192,67 @@ export default function Navbar() {
         </div>
 
         {menuOpen && (
-          <div id="mobile-navigation" className="md:hidden border-t border-vw-blue-light pb-4">
-            <a href={href('/')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+          <div id="mobile-navigation" className="border-t border-vw-gold/20 pb-4 xl:hidden">
+            <a href={href('/')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
               {labels.home}
             </a>
-            <a href={href('/search')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+            <a href={href('/search')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
               {labels.search}
             </a>
-            <a href={href('/library')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+            <a href={href('/library')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
               {labels.pdfs}
             </a>
-            <a href={href('/guides')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+            <a href={href('/guides')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
               {labels.guides}
             </a>
-            <a href={href('/submit-guide')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+            <a href={href('/feedback')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
+              {labels.feedback}
+            </a>
+            <a href={href('/submit-guide')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
               {labels.submitGuide}
             </a>
+            {user?.role === 'admin' && (
+              <a href={href('/admin')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
+                {labels.admin}
+              </a>
+            )}
             {serviceUnavailable ? (
               <p className="px-3 py-2 text-sm text-amber-200" role="status">Account service unavailable</p>
             ) : user ? (
               <>
-                <a href={href('/my-vw')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+                <a href={href('/my-vw')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
                   {labels.myVw}
                 </a>
-                <a href={href('/profile')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+                <a href={href('/profile')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
                   {labels.profile}
                 </a>
-                <a href={href('/bookmarks')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+                <a href={href('/upload')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
+                  {labels.upload}
+                </a>
+                <a href={href('/bookmarks')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
                   {labels.saved}
                 </a>
-                <button onClick={handleLogout} className="block w-full text-left px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+                <button onClick={handleLogout} className="block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-white/10">
                   {labels.signOut}
                 </button>
               </>
             ) : (
               <>
-                <a href={href('/login')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+                <a href={href('/login')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
                   {labels.signIn}
                 </a>
-                <a href={href('/signup')} className="block px-3 py-2 rounded-md text-sm hover:bg-vw-blue-light">
+                <a href={href('/signup')} className="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
                   {labels.signUp}
                 </a>
               </>
             )}
-            <div className="pt-2 border-t border-vw-blue-light mt-2">
-              <div className="text-xs text-gray-400 mb-1">{labels.generations}</div>
+            <div className="mt-2 border-t border-vw-gold/20 pt-2">
+              <div className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-vw-gold-light">{labels.generations}</div>
               {generations.map((gen) => (
                 <a
                   key={gen.id}
                   href={href(`/generation/${gen.slug}`)}
-                  className="block px-3 py-1 text-sm hover:bg-vw-blue-light"
+                  className="block rounded-md px-3 py-1 text-sm hover:bg-white/10"
                 >
                   {gen.name}
                 </a>

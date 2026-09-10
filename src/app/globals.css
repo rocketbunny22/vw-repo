@@ -1,18 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --vw-blue: #002b5c;
-  --vw-blue-light: #165a92;
-  --vw-link-blue: #075e9f;
-  --vw-gold: #c58b2a;
-  --vw-gold-light: #e7c778;
-  --vw-dark: #081826;
-  --vw-steel: #e8eef3;
-  --vw-surface: #f5f7f9;
-  --vw-line: #cbd8e2;
-  --vw-red: #c41e3a;
-  --background: #f5f7f9;
-  --foreground: #17212b;
+  --vw-blue: #102f43;
+  --vw-blue-light: #315b70;
+  --vw-link-blue: #17617a;
+  --vw-gold: #c58a3a;
+  --vw-gold-light: #e4bb76;
+  --vw-dark: #142730;
+  --vw-steel: #eee6da;
+  --vw-surface: #f7f2e9;
+  --vw-paper: #fffdf8;
+  --vw-cream: #fbf8f2;
+  --vw-line: #d8ccbd;
+  --vw-red: #a94e3b;
+  --vw-muted: #71685f;
+  --background: #f7f2e9;
+  --foreground: #2d2a26;
+  --font-body: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
 }
 
 @theme inline {
@@ -26,14 +31,32 @@
   --color-vw-dark: var(--vw-dark);
   --color-vw-steel: var(--vw-steel);
   --color-vw-surface: var(--vw-surface);
+  --color-vw-paper: var(--vw-paper);
+  --color-vw-cream: var(--vw-cream);
   --color-vw-line: var(--vw-line);
   --color-vw-red: var(--vw-red);
+  --color-vw-muted: var(--vw-muted);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
+  background-image:
+    radial-gradient(circle at 12% 0%, rgb(197 138 58 / 7%), transparent 28rem),
+    linear-gradient(180deg, var(--vw-cream) 0, var(--background) 34rem);
+  background-attachment: fixed;
+}
+
+main h1,
+main h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
+::selection {
+  background: var(--vw-gold-light);
+  color: var(--vw-dark);
 }
 
 :focus-visible {
@@ -74,15 +97,15 @@ body {
 }
 
 .card {
-  @apply rounded-xl border border-vw-line bg-white shadow-sm transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-vw-blue/30 hover:shadow-md;
+  @apply rounded-xl border border-vw-line bg-vw-paper shadow-[0_12px_32px_rgba(55,42,28,0.06)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-vw-gold/50 hover:shadow-[0_16px_38px_rgba(55,42,28,0.1)];
 }
 
 .btn-primary {
-  @apply rounded-md bg-vw-blue px-4 py-2 font-medium text-white shadow-sm transition-colors hover:bg-vw-blue-light;
+  @apply rounded-md border border-vw-blue bg-vw-blue px-4 py-2 font-semibold text-white shadow-[0_4px_12px_rgba(20,39,48,0.14)] transition-[background-color,border-color,transform] hover:-translate-y-px hover:border-vw-blue-light hover:bg-vw-blue-light;
 }
 
 .btn-secondary {
-  @apply rounded-md border border-vw-line bg-vw-steel px-4 py-2 font-medium text-vw-blue transition-colors hover:border-vw-blue/30 hover:bg-white;
+  @apply rounded-md border border-vw-line bg-vw-paper px-4 py-2 font-semibold text-vw-blue transition-[background-color,border-color,transform] hover:-translate-y-px hover:border-vw-gold/60 hover:bg-vw-cream;
 }
 
 .badge {
@@ -90,13 +113,13 @@ body {
 }
 
 .badge-blue {
-  @apply bg-vw-blue text-white;
+  @apply bg-vw-blue text-white shadow-sm;
 }
 
 .badge-gold {
-  @apply border border-vw-line bg-vw-steel text-vw-blue;
+  @apply border border-vw-gold/35 bg-vw-gold/10 text-vw-blue;
 }
 
 .badge-green {
-  @apply bg-green-600 text-white;
+  @apply bg-[#55745d] text-white;
 }
