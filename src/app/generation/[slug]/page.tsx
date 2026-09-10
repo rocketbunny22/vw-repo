@@ -83,7 +83,7 @@ export default async function GenerationPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) }}
       />
-      <section className="bg-vw-blue py-16">
+      <section className="border-b border-vw-gold/35 bg-[linear-gradient(135deg,var(--vw-dark),var(--vw-blue))] py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-2 text-sm text-gray-300 mb-2">
             <Link href="/" className="hover:text-vw-gold">Home</Link>
@@ -91,27 +91,27 @@ export default async function GenerationPage({
             <span className="text-vw-gold">{generation.name}</span>
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">{generation.name}</h1>
-          <p className="text-xl text-gray-300">{generation.years}</p>
+          <p className="text-xl text-vw-steel">{generation.years}</p>
         </div>
       </section>
 
-      <section className="border-y border-vw-line bg-vw-steel py-8">
+      <section className="border-b border-vw-line bg-vw-paper py-8">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
-            <div><div className="text-2xl font-bold text-vw-blue">{generation.systems.length}</div><div className="text-sm text-vw-dark">Systems</div></div>
-            <div><div className="text-2xl font-bold text-vw-blue">{generation.models.length}</div><div className="text-sm text-vw-dark">Models</div></div>
-            <div><div className="text-2xl font-bold text-vw-blue">{relatedPdfs.length}</div><div className="text-sm text-vw-dark">PDFs</div></div>
+          <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-3 md:divide-x md:divide-vw-line">
+            <div><div className="text-2xl font-bold text-vw-blue">{generation.systems.length}</div><div className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-vw-muted">Systems</div></div>
+            <div><div className="text-2xl font-bold text-vw-blue">{generation.models.length}</div><div className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-vw-muted">Models</div></div>
+            <div><div className="text-2xl font-bold text-vw-blue">{relatedPdfs.length}</div><div className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-vw-muted">PDFs</div></div>
           </div>
         </div>
       </section>
 
-      <section className="py-12 px-4 bg-gray-50">
+      <section className="bg-vw-surface px-4 py-12">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-vw-blue mb-6">Systems</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {generation.systems.map((sys, i) => (
-              <Link key={sys.id} href={`/systems/${sys.slug}?gen=${generation.slug}`} className="block rounded-xl border border-vw-line bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-vw-blue/30 hover:shadow-md">
-                <div className="w-12 h-12 bg-vw-blue rounded-full flex items-center justify-center mx-auto mb-3"><span className="text-white font-bold">{i+1}</span></div>
+              <Link key={sys.id} href={`/systems/${sys.slug}?gen=${generation.slug}`} className="group block rounded-xl border border-vw-line bg-vw-paper p-6 text-center shadow-[0_8px_22px_rgba(55,42,28,0.05)] transition-all hover:-translate-y-0.5 hover:border-vw-gold/60 hover:shadow-[0_14px_32px_rgba(55,42,28,0.09)]">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-vw-gold/35 bg-vw-gold/10 text-vw-blue transition-colors group-hover:bg-vw-gold/20"><span className="font-bold">{i+1}</span></div>
                 <h3 className="font-bold text-vw-dark">{sys.name}</h3>
               </Link>
             ))}
@@ -119,12 +119,12 @@ export default async function GenerationPage({
         </div>
       </section>
 
-      <section className="py-12 px-4 bg-white border-t">
+      <section className="border-t border-vw-line bg-vw-cream px-4 py-12">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6 gap-4">
             <div>
               <h2 className="text-2xl font-bold text-vw-blue">Related PDFs</h2>
-              <p className="text-gray-600 mt-1">Documents uploaded for {generation.name}.</p>
+              <p className="mt-1 text-vw-muted">Documents uploaded for {generation.name}.</p>
             </div>
             <Link href={`/library?generation=${generation.id}`} className="text-vw-blue hover:underline">
               View all PDFs →
@@ -132,7 +132,7 @@ export default async function GenerationPage({
           </div>
 
           {relatedPdfs.length === 0 ? (
-            <div className="bg-gray-50 rounded-lg border p-6 text-gray-600">
+            <div className="rounded-xl border border-dashed border-vw-line bg-vw-paper p-6 text-vw-muted">
               No PDFs have been uploaded for this generation yet.
             </div>
           ) : (
@@ -145,12 +145,12 @@ export default async function GenerationPage({
         </div>
       </section>
 
-      <section className="py-12 px-4">
+      <section className="border-t border-vw-line bg-vw-paper px-4 py-12">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-vw-blue mb-6">Models</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {generation.models.map((model) => (
-              <div key={model} className="flex items-center p-4 bg-gray-50 rounded-lg">
+              <div key={model} className="flex items-center rounded-lg border border-vw-line bg-vw-cream p-4 text-vw-dark">
                 <span className="font-medium">{model}</span>
               </div>
             ))}

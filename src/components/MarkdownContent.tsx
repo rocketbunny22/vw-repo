@@ -18,7 +18,7 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
   const blocks = parseMarkdownBlocks(content);
 
   return (
-    <div className="prose max-w-none text-gray-800">
+    <div className="prose max-w-none text-vw-dark prose-headings:text-vw-blue prose-p:text-vw-muted prose-li:text-vw-muted prose-strong:text-vw-dark prose-a:text-vw-link-blue prose-a:decoration-vw-gold/60 prose-code:rounded prose-code:bg-vw-cream prose-code:px-1.5 prose-code:py-0.5 prose-code:text-vw-dark prose-pre:border prose-pre:border-vw-line prose-pre:bg-vw-dark">
       {blocks.map((block, index) => renderBlock(block, index))}
     </div>
   );

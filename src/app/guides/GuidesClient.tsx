@@ -102,22 +102,22 @@ export default function GuidesClient({
 
   return (
     <div className="flex flex-col">
-      <section className="bg-vw-blue py-16">
+      <section className="border-b border-vw-gold/35 bg-[linear-gradient(135deg,var(--vw-dark),var(--vw-blue))] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold text-white mb-4">DIY Guides</h1>
-          <p className="text-xl text-gray-300">
+          <p className="max-w-3xl text-xl leading-relaxed text-vw-steel">
             Step-by-step tutorials for maintaining and modifying your VW.
           </p>
         </div>
       </section>
 
-      <section className="border-y border-vw-line bg-vw-steel py-6">
+      <section className="border-b border-vw-line bg-vw-paper py-6 shadow-[0_8px_24px_rgba(55,42,28,0.04)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row gap-4 flex-wrap">
             <select
               value={selectedGeneration}
               onChange={(e) => setSelectedGeneration(e.target.value)}
-              className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
+              className="rounded-md border border-vw-line bg-vw-cream px-4 py-2 text-vw-dark focus:border-vw-gold focus:outline-none focus:ring-2 focus:ring-vw-gold/20"
             >
               <option value="all">All Generations</option>
               {generations.map((gen) => (
@@ -129,7 +129,7 @@ export default function GuidesClient({
             <select
               value={selectedSystem}
               onChange={(e) => setSelectedSystem(e.target.value)}
-              className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
+              className="rounded-md border border-vw-line bg-vw-cream px-4 py-2 text-vw-dark focus:border-vw-gold focus:outline-none focus:ring-2 focus:ring-vw-gold/20"
             >
               <option value="all">All Systems</option>
               {systemsList.map((sys) => (
@@ -141,7 +141,7 @@ export default function GuidesClient({
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
+              className="rounded-md border border-vw-line bg-vw-cream px-4 py-2 text-vw-dark focus:border-vw-gold focus:outline-none focus:ring-2 focus:ring-vw-gold/20"
             >
               <option value="all">All Difficulties</option>
               <option value="easy">Easy</option>
@@ -154,7 +154,7 @@ export default function GuidesClient({
                 className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedGeneration === vehicle.generation
                     ? 'bg-vw-blue text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                    : 'border border-vw-line bg-vw-cream text-vw-blue hover:border-vw-gold/60 hover:bg-vw-surface'
                 }`}
               >
                 <UiIcon name="vehicle" className="mr-1.5 h-4 w-4" />
@@ -165,28 +165,28 @@ export default function GuidesClient({
         </div>
       </section>
 
-      <section className="py-12 bg-gray-50 flex-1">
+      <section className="flex-1 bg-vw-surface py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {filteredGuides.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="rounded-xl border border-dashed border-vw-line bg-vw-paper py-16 text-center">
               <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
-              <p className="text-gray-500">No guides found</p>
-              <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
+              <p className="text-vw-muted">No guides found</p>
+              <p className="mt-2 text-sm text-vw-muted/75">Try adjusting your filters</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredGuides.map((guide) => (
                 <div
                   key={guide.id}
-                  className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all"
+                  className="group overflow-hidden rounded-xl border border-vw-line bg-vw-paper shadow-[0_10px_28px_rgba(55,42,28,0.06)] transition-all hover:-translate-y-0.5 hover:border-vw-gold/55 hover:shadow-[0_16px_38px_rgba(55,42,28,0.1)]"
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex items-center gap-2">
                         {guide.featured && (
-                          <span className="badge bg-vw-gold text-vw-blue">Featured</span>
+                          <span className="badge border border-vw-gold/40 bg-vw-gold/15 text-vw-blue">Featured</span>
                         )}
                         <span className={`badge ${getDifficultyColor(guide.difficulty)}`}>
                           {guide.difficulty.charAt(0).toUpperCase() + guide.difficulty.slice(1)}
@@ -206,7 +206,7 @@ export default function GuidesClient({
                       <span className="badge badge-blue">{getGenerationName(guide.generation)}</span>
                       <span className="badge badge-gold">{getSystemName(guide.system)}</span>
                     </div>
-                    <p className="text-sm text-gray-500 mb-3">
+                    <p className="mb-3 text-sm text-vw-muted">
                       By{' '}
                       {guide.authorId ? (
                         <Link href={`/users/${encodeURIComponent(guide.author)}`} className="text-vw-blue hover:underline">
@@ -217,7 +217,7 @@ export default function GuidesClient({
                       )}{' '}
                       • {guide.timeEstimate}
                     </p>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center justify-between border-t border-vw-line/70 pt-3 text-sm text-vw-muted">
                       <span>{guide.views.toLocaleString()} views</span>
                       <span>{formatDate(guide.createdAt)}</span>
                     </div>

@@ -135,9 +135,9 @@ export default async function ManualPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(documentJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) }} />
 
-      <section className="bg-vw-blue py-14">
+      <section className="border-b border-white/10 bg-vw-dark py-14">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <nav aria-label="Breadcrumb" className="mb-4 flex flex-wrap items-center gap-2 text-sm text-gray-300">
+          <nav aria-label="Breadcrumb" className="mb-5 flex flex-wrap items-center gap-2 text-sm text-white/65">
             <Link href="/" className="hover:text-vw-gold">Home</Link>
             <span aria-hidden="true">/</span>
             <Link href="/library" className="hover:text-vw-gold">PDF Library</Link>
@@ -149,31 +149,32 @@ export default async function ManualPage({
             {models.map((model) => <span key={model} className="badge badge-green">{model}</span>)}
             <span className="badge badge-gold">{system?.name || pdf.system}</span>
           </div>
-          <h1 className="text-3xl font-bold text-white md:text-4xl">{manualTitle(pdf.title)}</h1>
-          <p className="mt-4 max-w-3xl text-lg text-gray-200">{description}</p>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-vw-gold-light">Workshop document</p>
+          <h1 className="text-3xl font-bold text-white md:text-5xl">{manualTitle(pdf.title)}</h1>
+          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-white/75">{description}</p>
         </div>
       </section>
 
-      <section className="bg-gray-50 py-12">
+      <section className="bg-vw-surface py-12">
         <div className="mx-auto grid max-w-5xl gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
-          <article className="rounded-xl border border-vw-line bg-white p-6 shadow-sm sm:p-8">
+          <article className="rounded-2xl border border-vw-line bg-vw-paper p-6 shadow-[0_16px_45px_rgba(70,52,35,0.08)] sm:p-8">
             <h2 className="text-2xl font-bold text-vw-blue">About this document</h2>
-            <p className="mt-4 leading-relaxed text-gray-700">
+            <p className="mt-4 leading-relaxed text-vw-muted">
               {pdf.description || `This technical document was added to the VW Repo library for ${generation?.name || pdf.generation} Volkswagen vehicles and ${system?.name?.toLowerCase() || pdf.system} reference.`}
             </p>
 
             <h2 className="mt-8 text-2xl font-bold text-vw-blue">Vehicle applicability</h2>
             <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-lg bg-vw-surface p-4">
-                <dt className="text-sm font-medium text-gray-600">Volkswagen generation</dt>
+              <div className="rounded-lg border border-vw-line/70 bg-vw-cream p-4">
+                <dt className="text-sm font-medium text-vw-muted">Volkswagen generation</dt>
                 <dd className="mt-1 font-semibold text-vw-dark">{generation?.name || pdf.generation}</dd>
               </div>
-              <div className="rounded-lg bg-vw-surface p-4">
-                <dt className="text-sm font-medium text-gray-600">System</dt>
+              <div className="rounded-lg border border-vw-line/70 bg-vw-cream p-4">
+                <dt className="text-sm font-medium text-vw-muted">System</dt>
                 <dd className="mt-1 font-semibold text-vw-dark">{system?.name || pdf.system}</dd>
               </div>
-              <div className="rounded-lg bg-vw-surface p-4 sm:col-span-2">
-                <dt className="text-sm font-medium text-gray-600">Models</dt>
+              <div className="rounded-lg border border-vw-line/70 bg-vw-cream p-4 sm:col-span-2">
+                <dt className="text-sm font-medium text-vw-muted">Models</dt>
                 <dd className="mt-1 font-semibold text-vw-dark">{models.length > 0 ? models.join(', ') : 'Multiple or unspecified models'}</dd>
               </div>
             </dl>
@@ -194,16 +195,16 @@ export default async function ManualPage({
             </ul>
           </article>
 
-          <aside className="h-fit rounded-xl border border-vw-line bg-white p-6 shadow-sm lg:sticky lg:top-6">
+          <aside className="h-fit rounded-2xl border border-vw-line bg-vw-paper p-6 shadow-[0_16px_45px_rgba(70,52,35,0.08)] lg:sticky lg:top-6">
             <h2 className="text-xl font-bold text-vw-blue">Document details</h2>
             <dl className="mt-5 space-y-4 text-sm">
-              <div><dt className="text-gray-500">Format</dt><dd className="font-medium text-vw-dark">PDF</dd></div>
-              <div><dt className="text-gray-500">File size</dt><dd className="font-medium text-vw-dark">{formatFileSize(pdf.fileSize)}</dd></div>
-              <div><dt className="text-gray-500">Added</dt><dd className="font-medium text-vw-dark">{formatDate(pdf.uploadedAt)}</dd></div>
-              <div><dt className="text-gray-500">Original filename</dt><dd className="break-words font-medium text-vw-dark">{pdf.originalName}</dd></div>
+              <div><dt className="text-vw-muted">Format</dt><dd className="font-medium text-vw-dark">PDF</dd></div>
+              <div><dt className="text-vw-muted">File size</dt><dd className="font-medium text-vw-dark">{formatFileSize(pdf.fileSize)}</dd></div>
+              <div><dt className="text-vw-muted">Added</dt><dd className="font-medium text-vw-dark">{formatDate(pdf.uploadedAt)}</dd></div>
+              <div><dt className="text-vw-muted">Original filename</dt><dd className="break-words font-medium text-vw-dark">{pdf.originalName}</dd></div>
               {pdf.uploadedBy && (
                 <div>
-                  <dt className="text-gray-500">Uploaded by</dt>
+                  <dt className="text-vw-muted">Uploaded by</dt>
                   <dd><Link href={`/users/${encodeURIComponent(pdf.uploadedBy)}`} className="font-medium text-vw-link-blue hover:underline">{pdf.uploadedBy}</Link></dd>
                 </div>
               )}

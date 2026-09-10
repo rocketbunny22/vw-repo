@@ -81,7 +81,7 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
     <div className="flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(article) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) }} />
-      <section className="bg-vw-blue py-16">
+      <section className="border-b border-vw-gold/35 bg-[linear-gradient(135deg,var(--vw-dark),var(--vw-blue))] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
             <Link href="/es-mx" className="hover:text-vw-gold">Inicio</Link>
@@ -101,7 +101,7 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{translated.title}</h1>
             <BookmarkButton itemType="guide" itemId={guide.id} className="mt-1 shrink-0" />
           </div>
-          <p className="text-gray-300">
+          <p className="text-vw-steel">
             Por{' '}
             {guide.authorId ? (
               <Link href={`/users/${encodeURIComponent(guide.author)}`} className="hover:text-vw-gold hover:underline">
@@ -115,32 +115,32 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
         </div>
       </section>
 
-      <section className="py-12 bg-white flex-1">
+      <section className="flex-1 bg-vw-surface py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
+            <article className="rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_10px_30px_rgba(55,42,28,0.05)] sm:p-8 lg:col-span-2">
               <MarkdownContent content={translated.content} />
-            </div>
+            </article>
 
             <div className="lg:col-span-1">
-              <div className="bg-gray-50 rounded-lg p-6 sticky top-4">
-                <h3 className="font-bold text-vw-blue mb-4">Información de la guía</h3>
+              <aside className="sticky top-4 rounded-xl border border-vw-line bg-vw-cream p-6 shadow-[0_8px_24px_rgba(55,42,28,0.05)]">
+                <h2 className="mb-4 text-xl font-bold text-vw-blue">Información de la guía</h2>
 
                 <div className="space-y-4">
                   <div>
-                    <span className="text-sm text-gray-500">Dificultad</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.1em] text-vw-muted">Dificultad</span>
                     <p className={`inline-flex ml-2 badge ${getDifficultyColor(guide.difficulty)}`}>
                       {difficultyNamesEs[guide.difficulty]}
                     </p>
                   </div>
 
                   <div>
-                    <span className="text-sm text-gray-500">Tiempo estimado</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.1em] text-vw-muted">Tiempo estimado</span>
                     <p className="font-medium">{formatTimeEstimateEs(guide.timeEstimate)}</p>
                   </div>
 
                   <div>
-                    <span className="text-sm text-gray-500">Autor</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.1em] text-vw-muted">Autor</span>
                     <p className="font-medium">
                       {guide.authorId ? (
                         <Link href={`/users/${encodeURIComponent(guide.author)}`} className="text-vw-blue hover:underline">
@@ -154,8 +154,8 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
 
                   {translated.tools.length > 0 && (
                     <div>
-                      <span className="text-sm text-gray-500">Herramientas necesarias</span>
-                      <ul className="mt-1 space-y-1">
+                      <span className="text-xs font-semibold uppercase tracking-[0.1em] text-vw-muted">Herramientas necesarias</span>
+                      <ul className="mt-2 space-y-1 border-l-2 border-vw-gold/40 pl-3">
                         {translated.tools.map((tool) => (
                           <li key={tool} className="text-sm">• {tool}</li>
                         ))}
@@ -165,8 +165,8 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
 
                   {translated.parts.length > 0 && (
                     <div>
-                      <span className="text-sm text-gray-500">Refacciones</span>
-                      <ul className="mt-1 space-y-1">
+                      <span className="text-xs font-semibold uppercase tracking-[0.1em] text-vw-muted">Refacciones</span>
+                      <ul className="mt-2 space-y-1 border-l-2 border-vw-gold/40 pl-3">
                         {translated.parts.map((part) => (
                           <li key={part} className="text-sm">• {part}</li>
                         ))}
@@ -174,7 +174,7 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
                     </div>
                   )}
                 </div>
-              </div>
+              </aside>
             </div>
           </div>
 

@@ -340,14 +340,15 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex flex-col">
-        <section className="bg-vw-blue py-16">
+        <section className="border-b border-vw-blue-light/40 bg-vw-blue py-14">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-vw-gold-light">Your workshop</p>
             <h1 className="text-4xl font-bold text-white">Profile</h1>
           </div>
         </section>
-        <section className="py-12 bg-gray-50 flex-1">
+        <section className="flex-1 bg-vw-surface/70 py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p>Loading...</p>
+            <p className="text-vw-muted">Loading your account…</p>
           </div>
         </section>
       </div>
@@ -356,20 +357,23 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col">
-      <section className="bg-vw-blue py-16">
+      <header className="border-b border-vw-blue-light/40 bg-vw-blue py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Profile</h1>
-          <p className="text-xl text-gray-300">
-            Manage your account settings.
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-vw-gold-light">Your workshop</p>
+          <h1 className="text-4xl font-bold text-white sm:text-5xl">Profile</h1>
+          <p className="mt-3 text-lg text-white/75">
+            Keep your account, garage, and preferences in order.
           </p>
         </div>
-      </section>
+      </header>
 
-      <section className="py-12 bg-gray-50 flex-1">
+      <section className="flex-1 bg-vw-surface/70 py-10 sm:py-12">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           {message && (
-            <div className={`mb-6 p-4 rounded-md ${
-              message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            <div role="status" className={`mb-6 rounded-lg border p-4 text-sm font-medium ${
+              message.type === 'success'
+                ? 'border-[#55745d]/30 bg-[#55745d]/10 text-[#35513c]'
+                : 'border-vw-red/30 bg-vw-red/10 text-vw-red'
             }`}>
               {message.text}
             </div>
@@ -378,20 +382,20 @@ export default function ProfilePage() {
           {user && (
             <div className="space-y-6">
               {/* Profile Info Card */}
-              <div className="bg-white rounded-lg shadow-md p-8">
+              <article className="rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_12px_32px_rgba(55,42,28,0.06)] sm:p-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-vw-blue">Account Information</h2>
                   {!editMode && (
                     <div className="flex items-center gap-3">
                       <Link
                         href={`/users/${encodeURIComponent(user.username)}`}
-                        className="text-vw-blue hover:underline text-sm"
+                        className="text-sm font-semibold text-vw-link-blue hover:underline"
                       >
                         View Public Profile
                       </Link>
                       <button
                         onClick={() => setEditMode(true)}
-                        className="text-vw-blue hover:underline text-sm"
+                        className="text-sm font-semibold text-vw-link-blue hover:underline"
                       >
                         Edit
                       </button>
@@ -408,7 +412,7 @@ export default function ProfilePage() {
                           type="text"
                           value={editUsername}
                           onChange={(e) => setEditUsername(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                           required
                         />
                       </div>
@@ -418,7 +422,7 @@ export default function ProfilePage() {
                           type="email"
                           value={editEmail}
                           onChange={(e) => setEditEmail(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                           required
                         />
                       </div>
@@ -428,7 +432,7 @@ export default function ProfilePage() {
                           type="text"
                           value={editInstagram}
                           onChange={(e) => setEditInstagram(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                           placeholder="instagram.com/yourname"
                         />
                       </div>
@@ -438,7 +442,7 @@ export default function ProfilePage() {
                           type="text"
                           value={editVwVortex}
                           onChange={(e) => setEditVwVortex(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                           placeholder="vwvortex.com/members/yourname"
                         />
                       </div>
@@ -448,7 +452,7 @@ export default function ProfilePage() {
                           type="password"
                           value={profileCurrentPassword}
                           onChange={(event) => setProfileCurrentPassword(event.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                           autoComplete="current-password"
                           placeholder="Required when changing username or email"
                         />
@@ -471,7 +475,7 @@ export default function ProfilePage() {
                             setEditVwVortex(user.profileLinks?.vwVortex || '');
                             setProfileCurrentPassword('');
                           }}
-                          className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                          className="btn-secondary"
                         >
                           Cancel
                         </button>
@@ -481,19 +485,19 @@ export default function ProfilePage() {
                 ) : (
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm text-gray-500">Username</label>
+                      <p className="text-sm text-vw-muted">Username</p>
                       <p className="text-lg font-medium">{user.username}</p>
                     </div>
                     <div>
-                      <label className="text-sm text-gray-500">Email</label>
+                      <p className="text-sm text-vw-muted">Email</p>
                       <p className="text-lg font-medium">{user.email}</p>
                     </div>
                     <div>
-                      <label className="text-sm text-gray-500">Role</label>
+                      <p className="text-sm text-vw-muted">Role</p>
                       <p className="text-lg font-medium capitalize">{user.role}</p>
                     </div>
                     <div>
-                      <label className="text-sm text-gray-500">Social Links</label>
+                      <p className="text-sm text-vw-muted">Social Links</p>
                       {user.profileLinks?.instagram || user.profileLinks?.vwVortex ? (
                         <div className="mt-1 flex flex-wrap gap-3">
                           {user.profileLinks?.instagram && (
@@ -523,26 +527,26 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 )}
-              </div>
+              </article>
 
-              <div className="bg-white rounded-lg shadow-md p-8">
+              <article className="rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_12px_32px_rgba(55,42,28,0.06)] sm:p-8">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-xl font-bold text-vw-blue">Language</h2>
-                    <p className="mt-1 text-sm text-gray-500">Display language</p>
+                    <p className="mt-1 text-sm text-vw-muted">Display language</p>
                   </div>
                   <LanguageToggle variant="settings" />
                 </div>
-              </div>
+              </article>
 
               {/* Password Change Card */}
-              <div className="bg-white rounded-lg shadow-md p-8">
+              <article className="rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_12px_32px_rgba(55,42,28,0.06)] sm:p-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-vw-blue">Change Password</h2>
                   {!passwordMode && (
                     <button
                       onClick={() => setPasswordMode(true)}
-                      className="text-vw-blue hover:underline text-sm"
+                      className="text-sm font-semibold text-vw-link-blue hover:underline"
                     >
                       Change
                     </button>
@@ -558,7 +562,7 @@ export default function ProfilePage() {
                           type="password"
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                           required
                         />
                       </div>
@@ -568,7 +572,7 @@ export default function ProfilePage() {
                           type="password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                           required
                           minLength={10}
                         />
@@ -579,7 +583,7 @@ export default function ProfilePage() {
                           type="password"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                           required
                         />
                       </div>
@@ -599,7 +603,7 @@ export default function ProfilePage() {
                             setNewPassword('');
                             setConfirmPassword('');
                           }}
-                          className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                          className="btn-secondary"
                         >
                           Cancel
                         </button>
@@ -607,16 +611,16 @@ export default function ProfilePage() {
                     </div>
                   </form>
                 ) : (
-                  <p className="text-gray-500">Click &quot;Change&quot; to update your password</p>
+                  <p className="text-vw-muted">Click &quot;Change&quot; to update your password.</p>
                 )}
-              </div>
+              </article>
 
               {/* My Garage Card */}
-              <div className="bg-white rounded-lg shadow-md p-8">
+              <article className="rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_12px_32px_rgba(55,42,28,0.06)] sm:p-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-vw-blue">My Garage</h2>
                   {!garageMode && !vehicleLoading && (
-                    <button onClick={openGarage} className="text-vw-blue hover:underline text-sm">
+                    <button onClick={openGarage} className="text-sm font-semibold text-vw-link-blue hover:underline">
                       {vehicle ? 'Edit' : 'Add Your Car'}
                     </button>
                   )}
@@ -632,7 +636,7 @@ export default function ProfilePage() {
                         <select
                           value={vGeneration}
                           onChange={(e) => { setVGeneration(e.target.value); setVModel(''); }}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                           required
                         >
                           <option value="">Select generation</option>
@@ -646,7 +650,7 @@ export default function ProfilePage() {
                         <select
                           value={vModel}
                           onChange={(e) => setVModel(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                           required
                           disabled={!currentModels.length}
                         >
@@ -663,7 +667,7 @@ export default function ProfilePage() {
                             type="number"
                             value={vYear}
                             onChange={(e) => setVYear(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                             placeholder="e.g. 2003"
                           />
                         </div>
@@ -673,7 +677,7 @@ export default function ProfilePage() {
                             type="text"
                             value={vEngineCode}
                             onChange={(e) => setVEngineCode(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                             placeholder="e.g. AWU"
                           />
                         </div>
@@ -685,7 +689,7 @@ export default function ProfilePage() {
                             type="text"
                             value={vColor}
                             onChange={(e) => setVColor(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                          className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                             placeholder="e.g. Reflex Silver"
                           />
                         </div>
@@ -695,12 +699,12 @@ export default function ProfilePage() {
                             type="text"
                             value={vNickname}
                             onChange={(e) => setVNickname(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                            className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-2.5 text-vw-dark shadow-inner outline-none transition-colors focus:border-vw-gold"
                             placeholder="e.g. Betty"
                           />
                         </div>
                       </div>
-                      <label className="flex items-start gap-3 rounded-md border border-gray-200 bg-gray-50 p-4">
+                      <label className="flex items-start gap-3 rounded-lg border border-vw-line bg-vw-cream p-4">
                         <input
                           type="checkbox"
                           checked={vehiclePublic}
@@ -720,7 +724,7 @@ export default function ProfilePage() {
                           setVehiclePublic(savedVehiclePublic);
                           setGarageMode(false);
                         }}
-                          className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                          className="btn-secondary">
                           Cancel
                         </button>
                       </div>
@@ -751,10 +755,10 @@ export default function ProfilePage() {
                 ) : (
                   <p className="text-gray-500">No vehicle set. Add your VW to get personalized content.</p>
                 )}
-              </div>
+              </article>
 
               {/* Actions Card */}
-              <div className="bg-white rounded-lg shadow-md p-8">
+              <article className="rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_12px_32px_rgba(55,42,28,0.06)] sm:p-8">
                 <h2 className="text-xl font-bold text-vw-blue mb-6">Actions</h2>
                 
                 <div className="space-y-4">
@@ -767,17 +771,17 @@ export default function ProfilePage() {
                   
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="w-full bg-red-600 text-white px-4 py-3 rounded-md font-medium hover:bg-red-700 transition-colors"
+                    className="w-full rounded-md border border-vw-red bg-vw-red px-4 py-3 font-semibold text-white transition-colors hover:bg-[#8f3f31]"
                   >
                     Delete Account
                   </button>
                 </div>
-              </div>
+              </article>
 
               {showDeleteConfirm && (
-                <div className="bg-white rounded-lg shadow-md p-8 border-2 border-red-600">
-                  <h2 className="text-xl font-bold text-red-600 mb-4">Delete Account</h2>
-                  <p className="text-gray-600 mb-6">
+                <aside className="rounded-xl border-2 border-vw-red/70 bg-vw-paper p-6 shadow-[0_12px_32px_rgba(55,42,28,0.08)] sm:p-8">
+                  <h2 className="mb-4 text-xl font-bold text-vw-red">Delete Account</h2>
+                  <p className="mb-6 text-vw-muted">
                     This removes your account and private profile data. Pending submissions are deleted;
                     approved community resources and comments remain with attribution changed to “Deleted user.”
                   </p>
@@ -786,7 +790,7 @@ export default function ProfilePage() {
                     <input
                       value={deleteConfirmation}
                       onChange={(event) => setDeleteConfirmation(event.target.value)}
-                      className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2"
+                      className="mt-2 w-full rounded-md border border-vw-red/40 bg-vw-cream px-3 py-2.5 outline-none focus:border-vw-red"
                       autoComplete="off"
                     />
                   </label>
@@ -796,7 +800,7 @@ export default function ProfilePage() {
                       type="password"
                       value={deletePassword}
                       onChange={(event) => setDeletePassword(event.target.value)}
-                      className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2"
+                      className="mt-2 w-full rounded-md border border-vw-red/40 bg-vw-cream px-3 py-2.5 outline-none focus:border-vw-red"
                       autoComplete="current-password"
                     />
                   </label>
@@ -815,13 +819,13 @@ export default function ProfilePage() {
                     </button>
                     <button
                       onClick={handleDeleteAccount}
-                      className="flex-1 bg-red-600 text-white px-4 py-3 rounded-md font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+                      className="flex-1 rounded-md border border-vw-red bg-vw-red px-4 py-3 font-semibold text-white transition-colors hover:bg-[#8f3f31] disabled:opacity-50"
                       disabled={deleting || deleteConfirmation !== 'DELETE' || !deletePassword}
                     >
                       {deleting ? 'Deleting...' : 'Yes, Delete My Account'}
                     </button>
                   </div>
-                </div>
+                </aside>
               )}
             </div>
           )}

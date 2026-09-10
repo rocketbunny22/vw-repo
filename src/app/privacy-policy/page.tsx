@@ -9,14 +9,21 @@ export const metadata: Metadata = createMetadata({
 
 export default function PrivacyPolicy() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-vw-dark mb-8">Privacy Policy</h1>
-      
-      <div className="prose prose-lg max-w-none">
-        <p className="text-gray-600 mb-6">Last updated: {new Date().toLocaleDateString()}</p>
+    <div className="bg-vw-surface/70 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+      <article className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-vw-line bg-vw-paper shadow-[0_18px_50px_rgba(55,42,28,0.08)]">
+        <header className="border-b border-vw-line bg-vw-cream px-6 py-10 sm:px-10">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-vw-red">The fine print</p>
+          <h1 className="text-4xl font-bold text-vw-blue sm:text-5xl">Privacy Policy</h1>
+          <p className="mt-4 max-w-2xl text-vw-muted">How VW Repo collects, uses, and protects account and community information.</p>
+          <p className="mt-6 border-l-2 border-vw-gold pl-3 text-sm font-medium text-vw-muted">
+            Last updated: {new Date().toLocaleDateString()}
+          </p>
+        </header>
+
+        <div className="prose prose-lg max-w-none px-6 py-8 text-foreground sm:px-10 sm:py-10">
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-vw-dark mb-4">1. Information We Collect</h2>
+          <h2>1. Information We Collect</h2>
           <p className="text-gray-700 mb-4">
             We collect information you provide directly to us, including:
           </p>
@@ -29,7 +36,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-vw-dark mb-4">2. How We Use Your Information</h2>
+          <h2>2. How We Use Your Information</h2>
           <p className="text-gray-700 mb-4">
             We use the information we collect to:
           </p>
@@ -42,7 +49,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-vw-dark mb-4">3. Information Sharing</h2>
+          <h2>3. Information Sharing</h2>
           <p className="text-gray-700 mb-4">
             We do not sell or share your personal information with third parties except:
           </p>
@@ -58,14 +65,14 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-vw-dark mb-4">4. Data Security</h2>
+          <h2>4. Data Security</h2>
           <p className="text-gray-700">
             We implement appropriate security measures to protect your personal information. However, no method of transmission over the Internet is 100% secure, and we cannot guarantee absolute security.
           </p>
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-vw-dark mb-4">5. Your Rights</h2>
+          <h2>5. Your Rights</h2>
           <p className="text-gray-700 mb-4">
             You have the right to:
           </p>
@@ -83,12 +90,13 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-vw-dark mb-4">6. Contact Us</h2>
+          <h2>6. Contact Us</h2>
           <p className="text-gray-700">
             If you have any questions about this Privacy Policy, please contact us through our feedback form.
           </p>
         </section>
-      </div>
+        </div>
+      </article>
     </div>
   );
 }

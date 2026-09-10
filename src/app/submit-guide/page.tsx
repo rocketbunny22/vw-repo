@@ -158,67 +158,69 @@ export default function SubmitGuidePage() {
   if (loading) {
     return (
       <div className="flex flex-col">
-        <section className="bg-vw-blue py-16">
+        <header className="border-b border-vw-gold/25 bg-[linear-gradient(135deg,var(--vw-blue),var(--vw-dark))] py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-4xl font-bold text-white">Submit DIY Guide</h1>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-vw-gold-light">Community knowledge</p>
+            <h1 className="text-4xl font-bold text-white sm:text-5xl">Submit DIY Guide</h1>
           </div>
-        </section>
-        <section className="py-12 bg-gray-50 flex-1">
+        </header>
+        <main className="flex-1 py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p>Checking authentication...</p>
+            <p className="rounded-xl border border-vw-line bg-vw-paper p-6 text-vw-muted shadow-sm" role="status">Checking authentication...</p>
           </div>
-        </section>
+        </main>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col">
-      <section className="bg-vw-blue py-16">
+      <header className="border-b border-vw-gold/25 bg-[linear-gradient(135deg,var(--vw-blue),var(--vw-dark))] py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Submit DIY Guide</h1>
-          <p className="text-xl text-gray-300">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-vw-gold-light">Community knowledge</p>
+          <h1 className="mb-3 text-4xl font-bold text-white sm:text-5xl">Submit DIY Guide</h1>
+          <p className="max-w-2xl text-lg leading-relaxed text-vw-steel">
             Share your knowledge with the VW community.
           </p>
         </div>
-      </section>
+      </header>
 
-      <section className="py-12 bg-gray-50 flex-1">
+      <main className="flex-1 py-12 sm:py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
-            <div className="mb-6 rounded-lg border border-vw-gold/50 bg-vw-gold/10 p-4">
+          <form onSubmit={handleSubmit} className="rounded-xl border border-vw-line bg-vw-paper p-5 shadow-[0_18px_45px_rgba(55,42,28,0.08)] sm:p-8">
+            <aside className="mb-8 rounded-lg border border-vw-gold/35 bg-vw-gold/10 p-5">
               <h2 className="font-bold text-vw-blue">Before submitting</h2>
-              <div className="mt-3 grid gap-3 text-sm text-gray-700 md:grid-cols-2">
+              <div className="mt-4 grid gap-4 text-sm leading-relaxed text-vw-muted md:grid-cols-2">
                 <div>
-                  <div className="font-medium text-gray-900">Required metadata</div>
+                  <div className="font-semibold text-vw-dark">Required metadata</div>
                   <p>Title, generation, system, difficulty, and guide content are required.</p>
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">Minimum detail</div>
+                  <div className="font-semibold text-vw-dark">Minimum detail</div>
                   <p>Write enough context for another owner to follow the repair safely.</p>
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">Duplicate check</div>
+                  <div className="font-semibold text-vw-dark">Duplicate check</div>
                   <p>The form warns when a guide with the same title and category already exists.</p>
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">After submission</div>
+                  <div className="font-semibold text-vw-dark">After submission</div>
                   <p>Guides enter the admin moderation queue before appearing publicly.</p>
                 </div>
               </div>
-            </div>
+            </aside>
 
             {message && (
-              <div className={`mb-6 p-4 rounded-md ${
-                message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
+              <div className={`mb-6 rounded-md border p-4 ${
+                message.type === 'success' ? 'border-[#55745d]/30 bg-[#55745d]/10 text-[#3f6549]' : 'border-vw-red/25 bg-vw-red/10 text-vw-red'
+              }`} role={message.type === 'error' ? 'alert' : 'status'}>
                 {message.text}
               </div>
             )}
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-vw-dark">
                   Title *
                 </label>
                 <input
@@ -226,21 +228,21 @@ export default function SubmitGuidePage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g., Mk1 GTI Carburetor Rebuild Guide"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                  className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark placeholder:text-vw-muted/70 focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                   required
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-vw-muted">
                   Use a specific title with generation, model, system, and task when possible.
                 </p>
               </div>
 
               {duplicateWarnings.length > 0 && (
-                <div className="rounded-md border border-yellow-300 bg-yellow-50 p-4">
-                  <h3 className="font-semibold text-yellow-900">Possible duplicate</h3>
-                  <p className="mt-1 text-sm text-yellow-800">
+                <div className="rounded-md border border-vw-gold/45 bg-vw-gold/10 p-4">
+                  <h3 className="font-semibold text-vw-dark">Possible duplicate</h3>
+                  <p className="mt-1 text-sm text-vw-muted">
                     A similar approved guide already exists. Make sure your submission adds something useful.
                   </p>
-                  <ul className="mt-3 space-y-1 text-sm text-yellow-900">
+                  <ul className="mt-3 space-y-1 text-sm text-vw-dark">
                     {duplicateWarnings.slice(0, 3).map((guide) => (
                       <li key={guide.id}>{guide.title}</li>
                     ))}
@@ -250,13 +252,13 @@ export default function SubmitGuidePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-vw-dark">
                     Generation *
                   </label>
                   <select
                     value={generation}
                     onChange={(e) => setGeneration(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                    className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                     required
                   >
                     <option value="">Select Generation</option>
@@ -269,13 +271,13 @@ export default function SubmitGuidePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-vw-dark">
                     System *
                   </label>
                   <select
                     value={system}
                     onChange={(e) => setSystem(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                    className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                     required
                   >
                     <option value="">Select System</option>
@@ -290,13 +292,13 @@ export default function SubmitGuidePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-vw-dark">
                     Difficulty *
                   </label>
                   <select
                     value={difficulty}
                     onChange={(e) => setDifficulty(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                    className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                     required
                   >
                     {difficulties.map((diff) => (
@@ -308,7 +310,7 @@ export default function SubmitGuidePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-vw-dark">
                     Time Estimate
                   </label>
                   <input
@@ -316,16 +318,16 @@ export default function SubmitGuidePage() {
                     value={timeEstimate}
                     onChange={(e) => setTimeEstimate(e.target.value)}
                     placeholder="e.g., 2-3 hours"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                    className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark placeholder:text-vw-muted/70 focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                   />
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-2 text-sm text-vw-muted">
                     Include hands-on time, not shipping or parts-ordering time.
                   </p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-vw-dark">
                   Content * (Markdown supported)
                 </label>
                 <textarea
@@ -347,21 +349,21 @@ Write your guide here...
 ### Step 2
 1. First step`}
                   rows={15}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue font-mono text-sm"
+                  className="w-full resize-y rounded-md border border-vw-line bg-vw-cream px-4 py-3 font-mono text-sm text-vw-dark placeholder:text-vw-muted/70 focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                   required
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-vw-muted">
                   Use Markdown formatting for headings, lists, and bold text. Include symptoms, prep, steps, checks, and final verification.
                 </p>
                 {contentTooShort && (
-                  <p className="mt-1 text-sm text-red-700">
+                  <p className="mt-1 text-sm text-vw-red">
                     Add more detail before submitting. Current length: {content.trim().length}/200 characters.
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-vw-dark">
                   Tool List (one per line)
                 </label>
                 <textarea
@@ -371,15 +373,15 @@ Write your guide here...
 Torque wrench
 Jack and jack stands"
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                  className="w-full resize-y rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark placeholder:text-vw-muted/70 focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-vw-muted">
                   {toolsList.length} listed. Include specialty tools and safety equipment.
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-vw-dark">
                   Parts List (one per line)
                 </label>
                 <textarea
@@ -389,18 +391,18 @@ Jack and jack stands"
 Brake fluid
 Brake lines"
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue"
+                  className="w-full resize-y rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark placeholder:text-vw-muted/70 focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-vw-muted">
                   {partsList.length} listed. Include fluids, seals, fasteners, and one-time-use hardware when relevant.
                 </p>
               </div>
 
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <fieldset className="rounded-lg border border-vw-line bg-vw-cream p-5">
                 <h3 className="font-bold text-vw-blue">Good guide checklist</h3>
                 <div className="mt-3 space-y-3">
                   {guideChecklistItems.map((item) => (
-                    <label key={item.id} className="flex items-start gap-3 text-sm text-gray-700">
+                    <label key={item.id} className="flex items-start gap-3 rounded-md px-2 py-1 text-sm leading-relaxed text-vw-dark hover:bg-vw-gold/10">
                       <input
                         type="checkbox"
                         checked={Boolean(guideChecklist[item.id])}
@@ -414,7 +416,7 @@ Brake lines"
                     </label>
                   ))}
                 </div>
-              </div>
+              </fieldset>
 
               <button
                 type="submit"
@@ -426,7 +428,7 @@ Brake lines"
             </div>
           </form>
         </div>
-      </section>
+      </main>
     </div>
   );
 }

@@ -86,16 +86,17 @@ export default function UploadPage() {
   if (loading) {
     return (
       <div className="flex flex-col">
-        <section className="bg-vw-blue py-16">
+        <header className="border-b border-vw-gold/25 bg-[linear-gradient(135deg,var(--vw-blue),var(--vw-dark))] py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-4xl font-bold text-white">Upload PDF</h1>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-vw-gold-light">Community archive</p>
+            <h1 className="text-4xl font-bold text-white sm:text-5xl">Upload PDF</h1>
           </div>
-        </section>
-        <section className="py-12 bg-gray-50 flex-1">
+        </header>
+        <main className="flex-1 py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p>Checking authentication...</p>
+            <p className="rounded-xl border border-vw-line bg-vw-paper p-6 text-vw-muted shadow-sm" role="status">Checking authentication...</p>
           </div>
-        </section>
+        </main>
       </div>
     );
   }
@@ -152,66 +153,67 @@ export default function UploadPage() {
 
   return (
     <div className="flex flex-col">
-      <section className="bg-vw-blue py-16">
+      <header className="border-b border-vw-gold/25 bg-[linear-gradient(135deg,var(--vw-blue),var(--vw-dark))] py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Upload PDF</h1>
-          <p className="text-xl text-gray-300">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-vw-gold-light">Community archive</p>
+          <h1 className="mb-3 text-4xl font-bold text-white sm:text-5xl">Upload PDF</h1>
+          <p className="max-w-2xl text-lg leading-relaxed text-vw-steel">
             Upload technical documents and categorize them by generation and system.
           </p>
         </div>
-      </section>
+      </header>
 
-      <section className="py-12 bg-gray-50 flex-1">
+      <main className="flex-1 py-12 sm:py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
-            <div className="mb-6 rounded-lg border border-vw-gold/50 bg-vw-gold/10 p-4">
+          <form onSubmit={handleSubmit} className="rounded-xl border border-vw-line bg-vw-paper p-5 shadow-[0_18px_45px_rgba(55,42,28,0.08)] sm:p-8">
+            <aside className="mb-8 rounded-lg border border-vw-gold/35 bg-vw-gold/10 p-5">
               <h2 className="font-bold text-vw-blue">Before uploading</h2>
-              <div className="mt-3 grid gap-3 text-sm text-gray-700 md:grid-cols-2">
+              <div className="mt-4 grid gap-4 text-sm leading-relaxed text-vw-muted md:grid-cols-2">
                 <div>
-                  <div className="font-medium text-gray-900">Accepted file</div>
+                  <div className="font-semibold text-vw-dark">Accepted file</div>
                   <p>PDF only, up to {MAX_PDF_SIZE_MB} MB.</p>
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">Required metadata</div>
+                  <div className="font-semibold text-vw-dark">Required metadata</div>
                   <p>Generation, system, and clear title are required so people can find it.</p>
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">Duplicate check</div>
+                  <div className="font-semibold text-vw-dark">Duplicate check</div>
                   <p>The form warns if a matching title or original filename already exists.</p>
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">After submission</div>
+                  <div className="font-semibold text-vw-dark">After submission</div>
                   <p>Uploads enter the admin moderation queue before appearing publicly.</p>
                 </div>
               </div>
-            </div>
+            </aside>
 
             {message && (
-              <div className={`mb-6 p-4 rounded-md ${
-                message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
+              <div className={`mb-6 rounded-md border p-4 ${
+                message.type === 'success' ? 'border-[#55745d]/30 bg-[#55745d]/10 text-[#3f6549]' : 'border-vw-red/25 bg-vw-red/10 text-vw-red'
+              }`} role={message.type === 'error' ? 'alert' : 'status'}>
                 {message.text}
               </div>
             )}
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-vw-dark">
                   PDF File *
                 </label>
                 <input
                   type="file"
                   accept=".pdf,application/pdf"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
+                  className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-sm text-vw-dark file:mr-4 file:rounded-md file:border-0 file:bg-vw-blue file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-vw-blue-light focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                 />
                 {file && (
                   <div className="mt-1 text-sm">
-                    <p className={fileTooLarge ? 'text-red-700' : 'text-gray-500'}>
+                    <p className={fileTooLarge ? 'text-vw-red' : 'text-vw-muted'}>
                       Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
                     </p>
                     {fileTooLarge && (
-                      <p className="mt-1 text-red-700">
+                      <p className="mt-1 text-vw-red">
                         This file is over the {MAX_PDF_SIZE_MB} MB limit.
                       </p>
                     )}
@@ -221,11 +223,11 @@ export default function UploadPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-vw-dark">
                     Generation *
                   </label>
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-vw-muted">
                       {generationsSelected.length} selected
                     </span>
                     <button
@@ -238,15 +240,15 @@ export default function UploadPage() {
                         }
                         setModels([]);
                       }}
-                      className="text-sm text-vw-blue hover:underline"
+                      className="text-sm font-semibold text-vw-link-blue underline-offset-4 hover:underline"
                     >
                       {generationsSelected.length === generations.length ? 'Clear All' : 'Select All'}
                     </button>
                   </div>
 
-                  <div className="border border-gray-300 rounded-md p-3 max-h-40 overflow-y-auto">
+                  <div className="max-h-40 overflow-y-auto rounded-md border border-vw-line bg-vw-cream p-3 shadow-inner shadow-vw-dark/5">
                     {generations.map((gen) => (
-                      <label key={gen.id} className="flex items-center space-x-2 mb-1">
+                      <label key={gen.id} className="mb-1 flex items-center gap-2 rounded px-1 py-1 text-vw-dark hover:bg-vw-gold/10">
                         <input
                           type="checkbox"
                           checked={generationsSelected.includes(gen.id)}
@@ -259,7 +261,7 @@ export default function UploadPage() {
                             setModels([]);
                           }}
                         />
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-vw-dark">
                           {gen.name} ({gen.years})
                         </span>
                       </label>
@@ -268,15 +270,15 @@ export default function UploadPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-vw-dark">
                     Models (optional)
                   </label>
-                  <div className="border border-gray-300 rounded-md p-3 max-h-40 overflow-y-auto">
+                  <div className="max-h-40 min-h-12 overflow-y-auto rounded-md border border-vw-line bg-vw-cream p-3 shadow-inner shadow-vw-dark/5">
                     {generationsSelected.length !== 1 && (
-                      <p className="text-sm text-gray-500">Select exactly one generation to choose models</p>
+                      <p className="text-sm text-vw-muted">Select exactly one generation to choose models</p>
                     )}
                     {availableModels.map((m) => (
-                      <label key={m} className="flex items-center space-x-2 mb-1">
+                      <label key={m} className="mb-1 flex items-center gap-2 rounded px-1 py-1 text-vw-dark hover:bg-vw-gold/10">
                         <input
                           type="checkbox"
                           checked={models.includes(m)}
@@ -288,7 +290,7 @@ export default function UploadPage() {
                             }
                           }}
                         />
-                        <span className="text-sm text-gray-700">{m}</span>
+                        <span className="text-sm text-vw-dark">{m}</span>
                       </label>
                     ))}
                   </div>
@@ -297,13 +299,13 @@ export default function UploadPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-vw-dark">
                     System *
                   </label>
                   <select
                     value={system}
                     onChange={(e) => setSystem(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
+                    className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                     required
                   >
                     <option value="">Select System</option>
@@ -316,7 +318,7 @@ export default function UploadPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-vw-dark">
                     Title *
                   </label>
                   <input
@@ -324,14 +326,14 @@ export default function UploadPage() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g., Mk1 GTI Engine Rebuild Guide"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
+                    className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark placeholder:text-vw-muted/70 focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-vw-dark">
                   Description
                 </label>
                 <textarea
@@ -339,20 +341,20 @@ export default function UploadPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Brief description of the document contents..."
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
+                  className="w-full resize-y rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark placeholder:text-vw-muted/70 focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-vw-muted">
                   Include what the document covers, source if known, and any model-year limits.
                 </p>
               </div>
 
               {duplicateWarnings.length > 0 && (
-                <div className="rounded-md border border-yellow-300 bg-yellow-50 p-4">
-                  <h3 className="font-semibold text-yellow-900">Possible duplicate</h3>
-                  <p className="mt-1 text-sm text-yellow-800">
+                <div className="rounded-md border border-vw-gold/45 bg-vw-gold/10 p-4">
+                  <h3 className="font-semibold text-vw-dark">Possible duplicate</h3>
+                  <p className="mt-1 text-sm text-vw-muted">
                     A similar PDF already exists. Review it before uploading another copy.
                   </p>
-                  <ul className="mt-3 space-y-1 text-sm text-yellow-900">
+                  <ul className="mt-3 space-y-1 text-sm text-vw-dark">
                     {duplicateWarnings.slice(0, 3).map((pdf) => (
                       <li key={pdf.id}>
                         {pdf.title} ({pdf.generation} / {pdf.system})
@@ -372,7 +374,7 @@ export default function UploadPage() {
             </div>
           </form>
         </div>
-      </section>
+      </main>
     </div>
   );
 }

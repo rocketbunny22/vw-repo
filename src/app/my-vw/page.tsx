@@ -259,14 +259,14 @@ export default function MyVwPage() {
   if (loading) {
     return (
       <div className="flex flex-col">
-        <section className="bg-vw-blue py-16">
+        <section className="border-b border-white/10 bg-vw-dark py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-4xl font-bold text-white">My VW</h1>
           </div>
         </section>
-        <section className="py-12 bg-gray-50 flex-1">
+        <section className="flex-1 bg-vw-surface py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-gray-500">Loading dashboard...</p>
+            <p className="text-vw-muted">Loading dashboard...</p>
           </div>
         </section>
       </div>
@@ -284,15 +284,15 @@ export default function MyVwPage() {
 
   return (
     <div className="flex flex-col">
-      <section className="bg-vw-blue py-12">
+      <section className="border-b border-white/10 bg-vw-dark py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
             <div>
-              <p className="text-vw-gold font-medium mb-2">My VW Dashboard</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-vw-gold-light">My VW Dashboard</p>
               <h1 className="text-4xl font-bold text-white mb-3">
                 {vehicle?.nickname ? vehicle.nickname : user?.username}
               </h1>
-              <p className="text-lg text-gray-200">
+              <p className="text-lg text-white/70">
                 {vehicle && vehicleGeneration
                   ? `${vehicleGeneration.name} ${vehicle.model}${vehicle.year ? ` - ${vehicle.year}` : ''}`
                   : 'Set up your garage to personalize the dashboard.'}
@@ -300,50 +300,50 @@ export default function MyVwPage() {
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-3">
+              <div className="rounded-xl border border-white/15 bg-white/8 px-4 py-3 backdrop-blur-sm">
                 <p className="text-2xl font-bold text-white">{overallPercent}%</p>
-                <p className="text-xs text-gray-200">Checklist</p>
+                <p className="text-xs text-white/65">Checklist</p>
               </div>
-              <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-3">
+              <div className="rounded-xl border border-white/15 bg-white/8 px-4 py-3 backdrop-blur-sm">
                 <p className="text-2xl font-bold text-white">{savedPdfs.length + savedGuides.length}</p>
-                <p className="text-xs text-gray-200">Saved</p>
+                <p className="text-xs text-white/65">Saved</p>
               </div>
-              <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-3">
+              <div className="rounded-xl border border-white/15 bg-white/8 px-4 py-3 backdrop-blur-sm">
                 <p className="text-2xl font-bold text-white">{recommendedSystems.length}</p>
-                <p className="text-xs text-gray-200">Systems</p>
+                <p className="text-xs text-white/65">Systems</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-10 bg-gray-50 flex-1">
+      <section className="flex-1 bg-vw-surface py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {showWelcome && (
-            <div className="mb-8 overflow-hidden rounded-xl border border-vw-line bg-white shadow-sm">
+            <div className="mb-8 overflow-hidden rounded-2xl border border-vw-line bg-vw-paper shadow-[0_16px_45px_rgba(70,52,35,0.08)]">
               <div className="bg-vw-blue px-6 py-5 text-white">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
                     <p className="text-sm font-medium text-vw-gold">Welcome to VW Repo</p>
                     <h2 className="mt-1 text-2xl font-bold">Start with the tools built around your car.</h2>
-                    <p className="mt-2 max-w-3xl text-sm text-gray-200">
+                    <p className="mt-2 max-w-3xl text-sm text-white/70">
                       Use this dashboard as your home base for garage details, saved references, recommended systems, and maintenance progress.
                     </p>
                   </div>
                   <button
                     onClick={dismissWelcome}
                     disabled={dismissingWelcome}
-                    className="self-start rounded-md bg-white px-4 py-2 text-sm font-medium text-vw-blue hover:bg-gray-100 disabled:opacity-60"
+                    className="self-start rounded-md bg-vw-paper px-4 py-2 text-sm font-medium text-vw-blue hover:bg-vw-cream disabled:opacity-60"
                   >
                     Got it
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-1 divide-y divide-gray-200 md:grid-cols-5 md:divide-x md:divide-y-0">
+              <div className="grid grid-cols-1 divide-y divide-vw-line md:grid-cols-5 md:divide-x md:divide-y-0">
                 {welcomeActions.map((action) => (
-                  <Link key={action.title} href={action.href.startsWith('#') ? action.href : localizedPath(action.href, locale)} className="block p-5 hover:bg-gray-50">
+                  <Link key={action.title} href={action.href.startsWith('#') ? action.href : localizedPath(action.href, locale)} className="block p-5 transition-colors hover:bg-vw-cream">
                     <h3 className="font-bold text-vw-dark">{action.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-gray-600">{action.description}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-vw-muted">{action.description}</p>
                   </Link>
                 ))}
               </div>
@@ -352,12 +352,12 @@ export default function MyVwPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div className="p-6 border-b border-gray-200">
+              <div className="overflow-hidden rounded-2xl border border-vw-line bg-vw-paper shadow-[0_12px_36px_rgba(70,52,35,0.07)]">
+                <div className="border-b border-vw-line p-6">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <h2 className="text-2xl font-bold text-vw-blue">Garage</h2>
-                      <p className="text-gray-600 mt-1">Your current car context.</p>
+                      <p className="mt-1 text-vw-muted">Your current car context.</p>
                     </div>
                     <Link href={localizedPath('/profile', locale)} className="btn-secondary px-4 py-2 text-sm">
                       {vehicle ? 'Edit Garage' : 'Add Car'}
@@ -367,7 +367,7 @@ export default function MyVwPage() {
 
                 {vehicle && vehicleGeneration ? (
                   <div className="grid grid-cols-1 md:grid-cols-[220px_1fr]">
-                    <div className="relative min-h-48 bg-gray-100">
+                    <div className="relative min-h-48 bg-vw-cream">
                       <Image
                         src={vehicleGeneration.image}
                         alt={vehicleGeneration.name}
@@ -380,10 +380,10 @@ export default function MyVwPage() {
                       <h3 className="text-xl font-bold text-vw-dark">
                         {vehicle.nickname && `${vehicle.nickname} - `}{vehicleGeneration.name} {vehicle.model}
                       </h3>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="mt-1 text-sm text-vw-muted">
                         {[vehicle.year, vehicle.engineCode, vehicle.color].filter(Boolean).join(' - ') || vehicleGeneration.years}
                       </p>
-                      <p className="text-gray-700 mt-4">{vehicleGeneration.description}</p>
+                      <p className="mt-4 text-vw-muted">{vehicleGeneration.description}</p>
                       <div className="flex flex-wrap gap-2 mt-5">
                         <Link href={localizedPath(`/generation/${vehicleGeneration.slug}`, locale)} className="btn-primary px-4 py-2 text-sm">
                           View Generation
@@ -391,7 +391,7 @@ export default function MyVwPage() {
                         <Link href={localizedPath(`/library?generation=${vehicleGeneration.id}`, locale)} className="btn-secondary px-4 py-2 text-sm">
                           Matching PDFs
                         </Link>
-                        <Link href={localizedPath(`/guides?generation=${vehicleGeneration.id}`, locale)} className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+                        <Link href={localizedPath(`/guides?generation=${vehicleGeneration.id}`, locale)} className="rounded-md border border-vw-line px-4 py-2 text-sm text-vw-dark hover:border-vw-gold hover:bg-vw-cream">
                           Matching Guides
                         </Link>
                       </div>
@@ -399,23 +399,23 @@ export default function MyVwPage() {
                   </div>
                 ) : (
                   <div className="p-6">
-                    <p className="text-gray-600 mb-4">Add a vehicle to turn this into a personalized VW workspace.</p>
+                    <p className="mb-4 text-vw-muted">Add a vehicle to turn this into a personalized VW workspace.</p>
                     <Link href={localizedPath('/profile', locale)} className="btn-primary inline-block">Set Up Garage</Link>
                   </div>
                 )}
               </div>
 
-              <div id="maintenance-checklists" className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+              <div id="maintenance-checklists" className="rounded-2xl border border-vw-line bg-vw-paper p-6 shadow-[0_12px_36px_rgba(70,52,35,0.07)]">
                 <div className="flex items-center justify-between gap-4 mb-5">
                   <div>
                     <h2 className="text-2xl font-bold text-vw-blue">Maintenance Checklists</h2>
-                    <p className="text-gray-600 mt-1">{overallCompleted} of {overallItems} tasks complete.</p>
+                    <p className="mt-1 text-vw-muted">{overallCompleted} of {overallItems} tasks complete.</p>
                   </div>
                   <div className="w-28">
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-2 overflow-hidden rounded-full bg-vw-steel">
                       <div className="h-full bg-vw-gold" style={{ width: `${overallPercent}%` }} />
                     </div>
-                    <p className="text-xs text-gray-500 text-right mt-1">{overallPercent}%</p>
+                    <p className="mt-1 text-right text-xs text-vw-muted">{overallPercent}%</p>
                   </div>
                 </div>
 
@@ -425,7 +425,7 @@ export default function MyVwPage() {
                     const checklistPercent = getPercent(checklist, progress);
 
                     return (
-                      <div key={checklist.id} className="border border-gray-200 rounded-lg p-5">
+                      <div key={checklist.id} className="rounded-xl border border-vw-line bg-vw-cream/45 p-5">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
@@ -433,11 +433,11 @@ export default function MyVwPage() {
                               <span className="badge badge-gold">{checklist.difficulty}</span>
                               {checklist.system && <span className="badge badge-blue">{localizedSystemName(checklist.system)}</span>}
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">{checklist.description}</p>
+                            <p className="mt-1 text-sm text-vw-muted">{checklist.description}</p>
                           </div>
                           <div className="min-w-24 text-right">
                             <p className="text-sm font-semibold text-vw-blue">{checklistPercent}%</p>
-                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
+                            <div className="mt-1 h-2 overflow-hidden rounded-full bg-vw-steel">
                               <div className="h-full bg-vw-blue" style={{ width: `${checklistPercent}%` }} />
                             </div>
                           </div>
@@ -452,7 +452,7 @@ export default function MyVwPage() {
                               <label
                                 key={item.id}
                                 className={`flex items-start gap-3 rounded-md border p-3 transition-colors ${
-                                  completed ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-white hover:bg-gray-50'
+                                  completed ? 'border-green-200 bg-green-50' : 'border-vw-line bg-vw-paper hover:border-vw-gold hover:bg-vw-cream'
                                 }`}
                               >
                                 <input
@@ -460,11 +460,11 @@ export default function MyVwPage() {
                                   checked={completed}
                                   disabled={updatingItem === updateKey}
                                   onChange={(event) => toggleChecklistItem(checklist.id, item.id, event.target.checked)}
-                                  className="mt-1 h-4 w-4 rounded border-gray-300 text-vw-blue focus:ring-vw-blue"
+                                  className="mt-1 h-4 w-4 rounded border-vw-line text-vw-blue focus:ring-vw-blue"
                                 />
                                 <span className="flex-1">
                                   <span className="block font-medium text-vw-dark">{item.label}</span>
-                                  <span className="block text-sm text-gray-600 mt-1">{item.detail}</span>
+                                  <span className="mt-1 block text-sm text-vw-muted">{item.detail}</span>
                                   {item.href && (
                                     <Link
                                       href={localizedPath(item.href, locale)}
@@ -487,79 +487,79 @@ export default function MyVwPage() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+              <div className="rounded-2xl border border-vw-line bg-vw-paper p-6 shadow-[0_12px_36px_rgba(70,52,35,0.07)]">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-vw-blue">Saved Items</h2>
                   <Link href={localizedPath('/bookmarks', locale)} className="text-sm text-vw-blue hover:underline">View all</Link>
                 </div>
                 {savedPdfs.length === 0 && savedGuides.length === 0 ? (
-                  <p className="text-sm text-gray-600">Save PDFs and guides to build a quick repair queue.</p>
+                  <p className="text-sm text-vw-muted">Save PDFs and guides to build a quick repair queue.</p>
                 ) : (
                   <div className="space-y-4">
                     {savedGuides.slice(0, 2).map((guide) => (
-                      <Link key={guide.id} href={`/guides/${guide.slug}`} className="block border-b border-gray-100 pb-3 last:border-b-0">
+                      <Link key={guide.id} href={`/guides/${guide.slug}`} className="block border-b border-vw-line/70 pb-3 last:border-b-0">
                         <p className="font-medium text-vw-dark hover:text-vw-blue">{guide.title}</p>
-                        <p className="text-xs text-gray-500 mt-1">{guide.timeEstimate} - {localizedSystemName(guide.system)}</p>
+                        <p className="mt-1 text-xs text-vw-muted">{guide.timeEstimate} - {localizedSystemName(guide.system)}</p>
                       </Link>
                     ))}
                     {savedPdfs.slice(0, 2).map((pdf) => (
-                      <a key={pdf.id} href={pdfViewUrl(pdf)} target="_blank" rel="noreferrer" className="block border-b border-gray-100 pb-3 last:border-b-0">
+                      <a key={pdf.id} href={pdfViewUrl(pdf)} target="_blank" rel="noreferrer" className="block border-b border-vw-line/70 pb-3 last:border-b-0">
                         <p className="font-medium text-vw-dark hover:text-vw-blue">{pdf.title}</p>
-                        <p className="text-xs text-gray-500 mt-1">{localizedSystemName(pdf.system)}</p>
+                        <p className="mt-1 text-xs text-vw-muted">{localizedSystemName(pdf.system)}</p>
                       </a>
                     ))}
                   </div>
                 )}
               </div>
 
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+              <div className="rounded-2xl border border-vw-line bg-vw-paper p-6 shadow-[0_12px_36px_rgba(70,52,35,0.07)]">
                 <h2 className="text-xl font-bold text-vw-blue mb-4">Recommended Systems</h2>
                 <div className="space-y-3">
                   {recommendedSystems.map((system) => (
                     <Link
                       key={system.id}
                       href={localizedPath(`/systems/${system.slug}${vehicleGeneration ? `?gen=${vehicleGeneration.id}` : ''}`, locale)}
-                      className="block rounded-md border border-gray-200 p-3 hover:border-vw-gold hover:bg-gray-50"
+                      className="block rounded-lg border border-vw-line bg-vw-cream/45 p-3 transition-colors hover:border-vw-gold hover:bg-vw-cream"
                     >
                       <p className="font-medium text-vw-dark">{system.name}</p>
-                      <p className="text-sm text-gray-600 line-clamp-2 mt-1">{system.description}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-vw-muted">{system.description}</p>
                     </Link>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+              <div className="rounded-2xl border border-vw-line bg-vw-paper p-6 shadow-[0_12px_36px_rgba(70,52,35,0.07)]">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-vw-blue">Next Reads</h2>
                   <Link href={localizedPath('/guides', locale)} className="text-sm text-vw-blue hover:underline">Guides</Link>
                 </div>
                 <div className="space-y-3">
                   {recommendedGuides.map((guide) => (
-                    <Link key={guide.id} href={`/guides/${guide.slug}`} className="block border-b border-gray-100 pb-3 last:border-b-0">
+                    <Link key={guide.id} href={`/guides/${guide.slug}`} className="block border-b border-vw-line/70 pb-3 last:border-b-0">
                       <p className="font-medium text-vw-dark hover:text-vw-blue">{guide.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">{guide.difficulty} - {guide.timeEstimate}</p>
+                      <p className="mt-1 text-xs text-vw-muted">{guide.difficulty} - {guide.timeEstimate}</p>
                     </Link>
                   ))}
                   {recommendedGuides.length === 0 && (
-                    <p className="text-sm text-gray-600">No guide recommendations yet.</p>
+                    <p className="text-sm text-vw-muted">No guide recommendations yet.</p>
                   )}
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+              <div className="rounded-2xl border border-vw-line bg-vw-paper p-6 shadow-[0_12px_36px_rgba(70,52,35,0.07)]">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-vw-blue">Useful PDFs</h2>
                   <Link href={localizedPath('/library', locale)} className="text-sm text-vw-blue hover:underline">Library</Link>
                 </div>
                 <div className="space-y-3">
                   {recommendedPdfs.map((pdf) => (
-                    <a key={pdf.id} href={pdfViewUrl(pdf)} target="_blank" rel="noreferrer" className="block border-b border-gray-100 pb-3 last:border-b-0">
+                    <a key={pdf.id} href={pdfViewUrl(pdf)} target="_blank" rel="noreferrer" className="block border-b border-vw-line/70 pb-3 last:border-b-0">
                       <p className="font-medium text-vw-dark hover:text-vw-blue">{pdf.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">{localizedSystemName(pdf.system)}</p>
+                      <p className="mt-1 text-xs text-vw-muted">{localizedSystemName(pdf.system)}</p>
                     </a>
                   ))}
                   {recommendedPdfs.length === 0 && (
-                    <p className="text-sm text-gray-600">Upload or save PDFs to populate this list.</p>
+                    <p className="text-sm text-vw-muted">Upload or save PDFs to populate this list.</p>
                   )}
                 </div>
               </div>

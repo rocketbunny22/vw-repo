@@ -17,16 +17,16 @@ export default function LanguageToggle({
   const spanishActive = locale === 'es-MX';
   const isSettings = variant === 'settings';
   const baseClassName = isSettings
-    ? 'border-vw-line bg-vw-surface text-vw-blue hover:border-vw-blue hover:bg-white'
-    : 'border-white/30';
+    ? 'border-vw-line bg-vw-paper text-vw-blue shadow-sm transition-colors hover:border-vw-gold/60 hover:bg-vw-cream'
+    : 'border-white/25 bg-white/5 transition-colors hover:border-vw-gold/50 hover:bg-white/10';
   const activeClassName = isSettings
     ? 'text-vw-blue'
     : 'text-white transition-colors group-hover:text-vw-gold';
   const inactiveClassName = isSettings
-    ? 'text-gray-400'
+    ? 'text-vw-muted/65'
     : 'text-white/60 transition-colors group-hover:text-white/80';
   const dividerClassName = isSettings
-    ? 'bg-gray-300'
+    ? 'bg-vw-line'
     : 'bg-white/30 transition-colors group-hover:bg-white/50';
   const changeLocale = () => {
     const nextLocale = spanishActive ? 'en' : 'es-MX';

@@ -59,6 +59,17 @@ main h2 {
   color: var(--vw-dark);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 :focus-visible {
   outline: 3px solid var(--vw-gold);
   outline-offset: 3px;

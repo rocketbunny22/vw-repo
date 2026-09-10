@@ -140,7 +140,7 @@ export default async function SystemsPage({
         dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) }}
       />
       {/* Header */}
-      <section className="bg-vw-blue py-16">
+      <section className="border-b border-vw-gold/35 bg-[linear-gradient(135deg,var(--vw-dark),var(--vw-blue))] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
             <Link href="/" className="hover:text-vw-gold">Home</Link>
@@ -156,19 +156,19 @@ export default async function SystemsPage({
           <h1 className="text-4xl font-bold text-white mb-2">
             {selectedGen ? `${selectedGen.name} - ` : ''}{systemInfo.name}
           </h1>
-          <p className="text-xl text-gray-300">{systemInfo.description}</p>
+          <p className="max-w-4xl text-xl leading-relaxed text-vw-steel">{systemInfo.description}</p>
         </div>
       </section>
 
       {/* System Details */}
       {selectedGen && systemInfo.specs && (
-        <section className="py-12 bg-white border-b">
+        <section className="border-b border-vw-line bg-vw-paper py-12">
           <div className="max-w-7xl mx-auto px-4">
             <h2 className="text-2xl font-bold text-vw-blue mb-6">Specifications</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {Object.entries(systemInfo.specs).map(([key, value]) => (
-                <div key={key} className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-500 mb-1">{key}</div>
+                <div key={key} className="rounded-lg border border-vw-line bg-vw-cream p-4 shadow-[0_5px_16px_rgba(55,42,28,0.04)]">
+                  <div className="mb-1 text-xs font-semibold uppercase tracking-[0.1em] text-vw-muted">{key}</div>
                   <div className="font-semibold text-vw-dark">{value as string}</div>
                 </div>
               ))}
@@ -179,14 +179,14 @@ export default async function SystemsPage({
 
       {/* Common Issues */}
       {selectedGen && systemInfo.commonIssues && systemInfo.commonIssues.length > 0 && (
-        <section className="py-12 bg-red-50 border-b">
+        <section className="border-b border-vw-line bg-vw-cream py-12">
           <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-red-800 mb-4">Common Issues</h2>
+            <h2 className="mb-4 text-2xl font-bold text-vw-red">Common Issues</h2>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {systemInfo.commonIssues.map((issue: string, index: number) => (
-                <li key={index} className="flex items-start gap-2">
-                  <UiIcon name="warning" className="mt-1 h-4 w-4 shrink-0 text-red-600" />
-                  <span className="text-gray-700">{issue}</span>
+                <li key={index} className="flex items-start gap-3 rounded-lg border border-vw-red/15 bg-vw-paper p-4">
+                  <UiIcon name="warning" className="mt-1 h-4 w-4 shrink-0 text-vw-red" />
+                  <span className="text-vw-dark">{issue}</span>
                 </li>
               ))}
             </ul>
@@ -196,14 +196,14 @@ export default async function SystemsPage({
 
       {/* Maintenance Tips */}
       {selectedGen && systemInfo.maintenanceTips && systemInfo.maintenanceTips.length > 0 && (
-        <section className="py-12 bg-green-50 border-b">
+        <section className="border-b border-vw-line bg-vw-surface py-12">
           <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-green-800 mb-4">Maintenance Tips</h2>
+            <h2 className="mb-4 text-2xl font-bold text-vw-blue">Maintenance Tips</h2>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {systemInfo.maintenanceTips.map((tip: string, index: number) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span className="text-gray-700">{tip}</span>
+                <li key={index} className="flex items-start gap-3 rounded-lg border border-vw-line bg-vw-paper p-4">
+                  <span className="mt-1 font-bold text-vw-gold">✓</span>
+                  <span className="text-vw-dark">{tip}</span>
                 </li>
               ))}
             </ul>
@@ -213,7 +213,7 @@ export default async function SystemsPage({
 
       {/* Related PDFs */}
       {selectedGen && relatedPdfs.length > 0 && (
-        <section className="py-12 bg-white">
+        <section className="bg-vw-cream py-12">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-vw-blue">Related PDFs</h2>
@@ -232,7 +232,7 @@ export default async function SystemsPage({
 
       {/* Related DIY Guides */}
       {selectedGen && (
-        <section className="py-12 bg-gray-50">
+        <section className="border-t border-vw-line bg-vw-paper py-12">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-vw-blue">DIY Guides</h2>
@@ -241,7 +241,7 @@ export default async function SystemsPage({
                 View All →
               </Link>
             </div>
-            <p className="text-gray-600 mb-4">
+            <p className="mb-4 text-vw-muted">
               Check the DIY Guides page for step-by-step tutorials on {selectedGen.name} {systemInfo.name}.
             </p>
             <Link href={`/guides?generation=${selectedGen.id}&system=${slug}`} className="btn-primary">
@@ -253,9 +253,9 @@ export default async function SystemsPage({
 
       {/* No resources message */}
       {selectedGen && relatedPdfs.length === 0 && (
-        <section className="py-12 bg-gray-50">
+        <section className="border-t border-vw-line bg-vw-paper py-12">
           <div className="max-w-7xl mx-auto px-4">
-            <p className="text-gray-600 mb-4">
+            <p className="mb-4 text-vw-muted">
               No PDFs or guides found specifically for {selectedGen.name} {systemInfo.name}.
             </p>
             <div className="flex gap-4">
@@ -272,7 +272,7 @@ export default async function SystemsPage({
 
       {/* Other Generations with this system */}
       {!selectedGen && (
-        <section className="py-12 bg-gray-50">
+        <section className="bg-vw-surface py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-vw-blue mb-6">
               {systemInfo.name} across all generations
@@ -282,14 +282,14 @@ export default async function SystemsPage({
                 <Link
                   key={`${sys.generationSlug}-${index}`}
                   href={`/systems/${sys.slug}?gen=${sys.generationSlug}`}
-                  className="block bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-xl transition-all"
+                  className="group block rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_10px_28px_rgba(55,42,28,0.06)] transition-all hover:-translate-y-0.5 hover:border-vw-gold/55 hover:shadow-[0_16px_38px_rgba(55,42,28,0.1)]"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-xl font-bold text-vw-blue">{sys.generation}</h3>
-                      <p className="text-gray-600 mt-1 line-clamp-2">{sys.description}</p>
+                      <p className="mt-1 line-clamp-2 text-vw-muted">{sys.description}</p>
                     </div>
-                    <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-6 h-6 text-vw-gold transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>

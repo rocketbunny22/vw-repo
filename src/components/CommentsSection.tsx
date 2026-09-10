@@ -109,7 +109,7 @@ export default function CommentsSection({ guideId }: Props) {
     });
 
   return (
-    <div className="mt-16 border-t border-gray-200 pt-10">
+    <div className="mt-16 border-t border-vw-line pt-10">
       <h2 className="text-2xl font-bold text-vw-dark mb-8 flex items-center gap-2">
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -118,13 +118,13 @@ export default function CommentsSection({ guideId }: Props) {
       </h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md text-sm">{error}</div>
+        <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>
       )}
 
       {user ? (
         <form onSubmit={handleSubmit} className="mb-10">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-full bg-vw-blue flex items-center justify-center text-white text-sm font-bold shrink-0 mt-1">
+            <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-vw-blue text-sm font-bold text-white ring-2 ring-vw-gold/30">
               {user.username.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1">
@@ -134,14 +134,14 @@ export default function CommentsSection({ guideId }: Props) {
                 placeholder="Share your experience or ask a question..."
                 rows={3}
                 maxLength={2000}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-vw-blue focus:border-transparent resize-none text-sm"
+                className="w-full resize-none rounded-xl border border-vw-line bg-vw-paper px-4 py-3 text-sm text-vw-dark placeholder:text-vw-muted/70 focus:border-vw-gold focus:outline-none focus:ring-2 focus:ring-vw-gold/20"
               />
               <div className="flex items-center justify-between mt-2">
-                <span className="text-xs text-gray-400">{newComment.length}/2000</span>
+                <span className="text-xs text-vw-muted">{newComment.length}/2000</span>
                 <button
                   type="submit"
                   disabled={!newComment.trim() || submitting}
-                  className="px-4 py-2 bg-vw-blue text-white rounded-md font-medium hover:bg-vw-blue-light transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-primary px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {submitting ? 'Posting...' : 'Post Comment'}
                 </button>
@@ -150,7 +150,7 @@ export default function CommentsSection({ guideId }: Props) {
           </div>
         </form>
       ) : (
-        <div className="mb-10 p-4 bg-gray-50 rounded-lg text-center text-sm text-gray-500">
+        <div className="mb-10 rounded-xl border border-vw-line bg-vw-cream p-4 text-center text-sm text-vw-muted">
           <Link href={localizedPath('/login', locale)} className="text-vw-blue font-medium hover:underline">Sign in</Link> to leave a comment.
         </div>
       )}
@@ -158,14 +158,14 @@ export default function CommentsSection({ guideId }: Props) {
       {loading ? (
         <div className="text-center py-8">
           <div className="inline-block w-6 h-6 border-2 border-vw-blue border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-400 text-sm mt-2">Loading comments...</p>
+          <p className="mt-2 text-sm text-vw-muted">Loading comments...</p>
         </div>
       ) : comments.length === 0 ? (
         <div className="text-center py-8">
-          <svg className="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="mx-auto mb-3 h-12 w-12 text-vw-line" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <p className="text-gray-500 text-sm">No comments yet. Be the first to share your thoughts!</p>
+          <p className="text-sm text-vw-muted">No comments yet. Be the first to share your thoughts!</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -175,7 +175,7 @@ export default function CommentsSection({ guideId }: Props) {
                 {comment.authorName.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="rounded-xl border border-vw-line/80 bg-vw-cream p-4">
                   <div className="flex items-center justify-between gap-3 mb-1">
                     <Link
                       href={`/users/${encodeURIComponent(comment.authorName)}`}
@@ -189,15 +189,15 @@ export default function CommentsSection({ guideId }: Props) {
                           type="button"
                           onClick={() => reportComment(comment.id)}
                           disabled={reportingId === comment.id || comment.reported}
-                          className="text-xs text-gray-400 hover:text-red-600 disabled:cursor-not-allowed disabled:text-gray-300"
+                          className="text-xs text-vw-muted hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {comment.reported ? 'Reported' : 'Report'}
                         </button>
                       )}
-                      <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
+                      <span className="text-xs text-vw-muted">{formatDate(comment.createdAt)}</span>
                     </div>
                   </div>
-                  <p className="text-gray-700 text-sm whitespace-pre-wrap break-words">{comment.content}</p>
+                  <p className="whitespace-pre-wrap break-words text-sm text-vw-dark">{comment.content}</p>
                 </div>
               </div>
             </div>

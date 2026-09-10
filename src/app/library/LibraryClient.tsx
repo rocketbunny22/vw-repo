@@ -112,22 +112,22 @@ export default function LibraryClient({
 
   return (
     <div className="flex flex-col">
-      <section className="bg-vw-blue py-16">
+      <section className="border-b border-vw-gold/35 bg-[linear-gradient(135deg,var(--vw-dark),var(--vw-blue))] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold text-white mb-4">{t('PDF Library')}</h1>
-          <p className="text-xl text-gray-300">
+          <p className="max-w-3xl text-xl leading-relaxed text-vw-steel">
             {t('Download technical documents organized by generation and system.')}
           </p>
         </div>
       </section>
 
-      <section className="border-y border-vw-line bg-vw-steel py-6">
+      <section className="border-b border-vw-line bg-vw-paper py-6 shadow-[0_8px_24px_rgba(55,42,28,0.04)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row gap-4">
             <select
               value={selectedGeneration}
               onChange={(e) => { setSelectedGeneration(e.target.value); setSelectedModel('all'); }}
-              className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
+              className="rounded-md border border-vw-line bg-vw-cream px-4 py-2 text-vw-dark focus:border-vw-gold focus:outline-none focus:ring-2 focus:ring-vw-gold/20"
             >
               <option value="all">{t('All Generations')}</option>
               {generations.map((gen) => (
@@ -139,7 +139,7 @@ export default function LibraryClient({
             <select
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
-              className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
+              className="rounded-md border border-vw-line bg-vw-cream px-4 py-2 text-vw-dark disabled:cursor-not-allowed disabled:opacity-55 focus:border-vw-gold focus:outline-none focus:ring-2 focus:ring-vw-gold/20"
               disabled={!currentModels.length}
             >
               <option value="all">{t('All Models')}</option>
@@ -152,7 +152,7 @@ export default function LibraryClient({
             <select
               value={selectedSystem}
               onChange={(e) => setSelectedSystem(e.target.value)}
-              className="px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-vw-blue"
+              className="rounded-md border border-vw-line bg-vw-cream px-4 py-2 text-vw-dark focus:border-vw-gold focus:outline-none focus:ring-2 focus:ring-vw-gold/20"
             >
               <option value="all">{t('All Systems')}</option>
               {systemsList.map((sys) => (
@@ -167,7 +167,7 @@ export default function LibraryClient({
                 className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedGeneration === vehicle.generation
                     ? 'bg-vw-blue text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                    : 'border border-vw-line bg-vw-cream text-vw-blue hover:border-vw-gold/60 hover:bg-vw-surface'
                 }`}
               >
                 <UiIcon name="vehicle" className="mr-1.5 h-4 w-4" />
@@ -184,14 +184,14 @@ export default function LibraryClient({
         </div>
       </section>
 
-      <section className="py-12 bg-gray-50 flex-1">
+      <section className="flex-1 bg-vw-surface py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {filteredPdfs.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="rounded-xl border border-dashed border-vw-line bg-vw-paper py-16 text-center">
               <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <p className="text-gray-500">{t('No PDFs found')}</p>
+              <p className="text-vw-muted">{t('No PDFs found')}</p>
               <Link href={localizedPath('/upload', locale)} className="mt-4 inline-block text-vw-blue hover:underline">
                 {t('Upload your first PDF')}
               </Link>
@@ -201,12 +201,12 @@ export default function LibraryClient({
               {filteredPdfs.map((pdf) => (
                 <div
                   key={pdf.id}
-                  className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all"
+                  className="group overflow-hidden rounded-xl border border-vw-line bg-vw-paper shadow-[0_10px_28px_rgba(55,42,28,0.06)] transition-all hover:-translate-y-0.5 hover:border-vw-gold/55 hover:shadow-[0_16px_38px_rgba(55,42,28,0.1)]"
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-3">
-                      <div className="w-12 h-12 bg-vw-red rounded-lg flex items-center justify-center">
-                        <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-vw-red/20 bg-vw-red/10">
+                        <svg className="w-6 h-6 text-vw-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
                       </div>
@@ -223,14 +223,14 @@ export default function LibraryClient({
                       </Link>
                     </h3>
                     {pdf.description && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{pdf.description}</p>
+                      <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-vw-muted">{pdf.description}</p>
                     )}
                     <div className="flex flex-wrap gap-2 mb-4">
                       <span className="badge badge-blue">{getGenerationName(pdf.generation)}</span>
                       {pdf.model && <span className="badge badge-green">{pdf.model}</span>}
                       <span className="badge badge-gold">{locale === 'es-MX' ? systemNamesEs[pdf.system] || getSystemName(pdf.system) : getSystemName(pdf.system)}</span>
                     </div>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center justify-between border-t border-vw-line/70 pt-3 text-sm text-vw-muted">
                       <span>{formatFileSize(pdf.fileSize)}</span>
                       <span className="flex items-center gap-3">
                         <span className="flex items-center gap-1">
@@ -272,26 +272,26 @@ export default function LibraryClient({
           )}
 
           {viewingPdf && (
-            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col">
-                <div className="flex items-center justify-between p-4 border-b">
-                  <h3 className="font-bold">{viewingPdf.title}</h3>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-vw-dark/85 p-4 backdrop-blur-sm">
+              <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-vw-line bg-vw-paper shadow-[0_28px_80px_rgba(0,0,0,0.35)]">
+                <div className="flex items-center justify-between border-b border-vw-line p-4">
+                  <h3 className="font-bold text-vw-blue">{viewingPdf.title}</h3>
                   <button
                     onClick={() => setViewingPdf(null)}
-                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                    className="text-2xl text-vw-muted hover:text-vw-red"
                   >
                     &times;
                   </button>
                 </div>
-                <div className="flex-1 overflow-auto p-4 bg-gray-100">
+                <div className="flex-1 overflow-auto bg-vw-surface p-4">
                   <iframe
                     src={pdfViewUrl(viewingPdf)}
                     className="w-full h-[70vh] border-0"
                     title={viewingPdf.title}
                   />
                 </div>
-                <div className="p-4 border-t flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-                  <span className="text-sm text-gray-500">{formatFileSize(viewingPdf.fileSize)}</span>
+                <div className="flex flex-col gap-3 border-t border-vw-line p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="text-sm text-vw-muted">{formatFileSize(viewingPdf.fileSize)}</span>
                   <div className="flex flex-wrap gap-2">
                     <a
                       href={viewingPdf.url}

@@ -320,14 +320,15 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="flex flex-col">
-        <section className="bg-vw-dark py-16">
+        <header className="border-b border-vw-blue-light/40 bg-vw-dark py-14">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-vw-gold-light">Workshop control room</p>
             <h1 className="text-4xl font-bold text-white">Admin Dashboard</h1>
           </div>
-        </section>
-        <section className="py-12 bg-gray-50 flex-1">
+        </header>
+        <section className="flex-1 bg-vw-surface/70 py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p>Loading...</p>
+            <p className="text-vw-muted">Loading workshop data…</p>
           </div>
         </section>
       </div>
@@ -336,64 +337,75 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col">
-      <section className="bg-vw-dark py-16">
+      <header className="border-b border-vw-blue-light/40 bg-vw-dark py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Admin Dashboard</h1>
-          <p className="text-xl text-gray-300">Manage users and content</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-vw-gold-light">Workshop control room</p>
+          <h1 className="text-4xl font-bold text-white sm:text-5xl">Admin Dashboard</h1>
+          <p className="mt-3 text-lg text-white/70">Review community work and keep the archive in order.</p>
         </div>
-      </section>
+      </header>
 
-      <section className="border-y border-vw-line bg-vw-steel py-4">
+      <nav aria-label="Administration sections" className="border-b border-vw-line bg-vw-steel py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-4">
+          <div className="flex gap-2 overflow-x-auto pb-1">
             <button
+              type="button"
+              aria-pressed={activeTab === 'moderation'}
               onClick={() => setActiveTab('moderation')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'moderation' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-white hover:text-vw-blue'
+                activeTab === 'moderation' ? 'bg-vw-dark text-white shadow-sm' : 'text-vw-dark hover:bg-vw-paper hover:text-vw-blue'
               }`}
             >
               Moderation ({pendingCount})
             </button>
             <button
+              type="button"
+              aria-pressed={activeTab === 'users'}
               onClick={() => setActiveTab('users')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'users' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-white hover:text-vw-blue'
+                activeTab === 'users' ? 'bg-vw-dark text-white shadow-sm' : 'text-vw-dark hover:bg-vw-paper hover:text-vw-blue'
               }`}
             >
               Users ({users.length})
             </button>
             <button
+              type="button"
+              aria-pressed={activeTab === 'pdfs'}
               onClick={() => setActiveTab('pdfs')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'pdfs' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-white hover:text-vw-blue'
+                activeTab === 'pdfs' ? 'bg-vw-dark text-white shadow-sm' : 'text-vw-dark hover:bg-vw-paper hover:text-vw-blue'
               }`}
             >
               PDFs ({pdfs.length})
             </button>
             <button
+              type="button"
+              aria-pressed={activeTab === 'guides'}
               onClick={() => setActiveTab('guides')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'guides' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-white hover:text-vw-blue'
+                activeTab === 'guides' ? 'bg-vw-dark text-white shadow-sm' : 'text-vw-dark hover:bg-vw-paper hover:text-vw-blue'
               }`}
             >
               Guides ({guides.length})
             </button>
             <button
+              type="button"
+              aria-pressed={activeTab === 'tools'}
               onClick={() => setActiveTab('tools')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'tools' ? 'bg-vw-dark text-white' : 'text-vw-dark hover:bg-white hover:text-vw-blue'
+                activeTab === 'tools' ? 'bg-vw-dark text-white shadow-sm' : 'text-vw-dark hover:bg-vw-paper hover:text-vw-blue'
               }`}
             >
               Tools
             </button>
           </div>
         </div>
-      </section>
+      </nav>
 
-      <section className="py-12 bg-gray-50 flex-1">
+      <section className="flex-1 bg-vw-surface/70 py-10 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {error && (
-            <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-md">
+            <div role="alert" className="mb-6 rounded-lg border border-vw-red/30 bg-vw-red/10 p-4 text-sm font-medium text-vw-red">
               {error}
             </div>
           )}
@@ -401,32 +413,32 @@ export default function AdminPage() {
           {activeTab === 'moderation' && (
             <div className="space-y-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white rounded-lg shadow-sm border p-4">
+                <div className="rounded-xl border border-vw-line bg-vw-paper p-4 shadow-[0_8px_24px_rgba(55,42,28,0.05)]">
                   <div className="text-sm text-gray-500">Pending PDFs</div>
                   <div className="text-3xl font-bold text-vw-blue">{moderation.pendingPdfs.length}</div>
                 </div>
-                <div className="bg-white rounded-lg shadow-sm border p-4">
+                <div className="rounded-xl border border-vw-line bg-vw-paper p-4 shadow-[0_8px_24px_rgba(55,42,28,0.05)]">
                   <div className="text-sm text-gray-500">Pending Guides</div>
                   <div className="text-3xl font-bold text-vw-blue">{moderation.pendingGuides.length}</div>
                 </div>
-                <div className="bg-white rounded-lg shadow-sm border p-4">
+                <div className="rounded-xl border border-vw-line bg-vw-paper p-4 shadow-[0_8px_24px_rgba(55,42,28,0.05)]">
                   <div className="text-sm text-gray-500">Feedback</div>
                   <div className="text-3xl font-bold text-vw-blue">{moderation.feedback.length}</div>
                 </div>
-                <div className="bg-white rounded-lg shadow-sm border p-4">
+                <div className="rounded-xl border border-vw-line bg-vw-paper p-4 shadow-[0_8px_24px_rgba(55,42,28,0.05)]">
                   <div className="text-sm text-gray-500">Reported Comments</div>
                   <div className="text-3xl font-bold text-vw-blue">{moderation.comments.length}</div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="border-b px-6 py-4">
+              <div className="overflow-x-auto rounded-xl border border-vw-line bg-vw-paper shadow-[0_10px_28px_rgba(55,42,28,0.06)]">
+                <div className="border-b border-vw-line bg-vw-cream px-6 py-4">
                   <h2 className="text-xl font-bold text-vw-blue">Pending PDFs</h2>
                 </div>
                 {moderation.pendingPdfs.length === 0 ? (
                   <p className="px-6 py-6 text-gray-500">No PDFs are waiting for review.</p>
                 ) : (
-                  <div className="divide-y">
+                  <div className="divide-y divide-vw-line">
                     {moderation.pendingPdfs.map((pdf) => (
                       <div key={pdf.id} className="p-6">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -465,14 +477,14 @@ export default function AdminPage() {
                 )}
               </div>
 
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="border-b px-6 py-4">
+              <div className="overflow-x-auto rounded-xl border border-vw-line bg-vw-paper shadow-[0_10px_28px_rgba(55,42,28,0.06)]">
+                <div className="border-b border-vw-line bg-vw-cream px-6 py-4">
                   <h2 className="text-xl font-bold text-vw-blue">Pending Guides</h2>
                 </div>
                 {moderation.pendingGuides.length === 0 ? (
                   <p className="px-6 py-6 text-gray-500">No guides are waiting for review.</p>
                 ) : (
-                  <div className="divide-y">
+                  <div className="divide-y divide-vw-line">
                     {moderation.pendingGuides.map((guide) => (
                       <div key={guide.id} className="p-6">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -512,14 +524,14 @@ export default function AdminPage() {
               </div>
 
               <div className="grid gap-8 lg:grid-cols-2">
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="border-b px-6 py-4">
+                <div className="overflow-x-auto rounded-xl border border-vw-line bg-vw-paper shadow-[0_10px_28px_rgba(55,42,28,0.06)]">
+                  <div className="border-b border-vw-line bg-vw-cream px-6 py-4">
                     <h2 className="text-xl font-bold text-vw-blue">Feedback</h2>
                   </div>
                   {moderation.feedback.length === 0 ? (
                     <p className="px-6 py-6 text-gray-500">No feedback needs review.</p>
                   ) : (
-                    <div className="divide-y">
+                    <div className="divide-y divide-vw-line">
                       {moderation.feedback.map((item) => (
                         <div key={item.id} className="p-6">
                           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -552,14 +564,14 @@ export default function AdminPage() {
                   )}
                 </div>
 
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="border-b px-6 py-4">
+                <div className="overflow-x-auto rounded-xl border border-vw-line bg-vw-paper shadow-[0_10px_28px_rgba(55,42,28,0.06)]">
+                  <div className="border-b border-vw-line bg-vw-cream px-6 py-4">
                     <h2 className="text-xl font-bold text-vw-blue">Reported Comments</h2>
                   </div>
                   {moderation.comments.length === 0 ? (
                     <p className="px-6 py-6 text-gray-500">No comments have been reported.</p>
                   ) : (
-                    <div className="divide-y">
+                    <div className="divide-y divide-vw-line">
                       {moderation.comments.map((comment) => (
                         <div key={comment.id} className="p-6">
                           <p className="text-sm text-gray-800">{comment.content}</p>
@@ -595,9 +607,9 @@ export default function AdminPage() {
           )}
 
           {activeTab === 'users' && (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="overflow-x-auto rounded-xl border border-vw-line bg-vw-paper shadow-[0_10px_28px_rgba(55,42,28,0.06)]">
+              <table className="min-w-[760px] divide-y divide-vw-line">
+                <thead className="bg-vw-cream">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
@@ -606,7 +618,7 @@ export default function AdminPage() {
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="divide-y divide-vw-line bg-vw-paper">
                   {users.map((user) => (
                     <tr key={user.id}>
                       <td className="px-6 py-4">
@@ -615,7 +627,7 @@ export default function AdminPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          user.role === 'admin' ? 'bg-vw-gold text-vw-blue' : 'bg-gray-100 text-gray-800'
+                          user.role === 'admin' ? 'border border-vw-gold/35 bg-vw-gold/10 text-vw-blue' : 'bg-vw-steel text-vw-dark'
                         }`}>
                           {user.role}
                         </span>
@@ -654,9 +666,9 @@ export default function AdminPage() {
           )}
 
           {activeTab === 'pdfs' && (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="overflow-x-auto rounded-xl border border-vw-line bg-vw-paper shadow-[0_10px_28px_rgba(55,42,28,0.06)]">
+              <table className="min-w-[760px] divide-y divide-vw-line">
+                <thead className="bg-vw-cream">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
@@ -666,7 +678,7 @@ export default function AdminPage() {
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="divide-y divide-vw-line bg-vw-paper">
                   {pdfs.map((pdf) => (
                     <tr key={pdf.id}>
                       <td className="px-6 py-4 font-medium text-gray-900">{pdf.title}</td>
@@ -720,9 +732,9 @@ export default function AdminPage() {
           )}
 
           {activeTab === 'guides' && (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="overflow-x-auto rounded-xl border border-vw-line bg-vw-paper shadow-[0_10px_28px_rgba(55,42,28,0.06)]">
+              <table className="min-w-[760px] divide-y divide-vw-line">
+                <thead className="bg-vw-cream">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
@@ -732,7 +744,7 @@ export default function AdminPage() {
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="divide-y divide-vw-line bg-vw-paper">
                   {guides.map((guide) => (
                     <tr key={guide.id}>
                       <td className="px-6 py-4">
@@ -789,7 +801,7 @@ export default function AdminPage() {
 
           {activeTab === 'tools' && (
             <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_10px_28px_rgba(55,42,28,0.06)]">
                 <h3 className="text-xl font-bold mb-4">PDF Search Backfill</h3>
                 <p className="text-gray-600 mb-4">
                   Extract searchable text for stored PDFs that do not have an index yet.
@@ -805,7 +817,7 @@ export default function AdminPage() {
                 <button
                   onClick={runBackfill}
                   disabled={actionLoading === 'backfillPdfText'}
-                  className="px-4 py-2 bg-vw-blue text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="btn-primary disabled:opacity-50"
                 >
                   {actionLoading === 'backfillPdfText' ? 'Running...' : 'Run Backfill'}
                 </button>
@@ -813,15 +825,15 @@ export default function AdminPage() {
                 {backfillResult && (
                   <div className="mt-6">
                     <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-                      <div className="rounded-md bg-gray-50 p-3">
+                      <div className="rounded-md border border-vw-line bg-vw-cream p-3">
                         <div className="text-xs uppercase text-gray-500">Total</div>
                         <div className="text-lg font-bold text-gray-900">{backfillResult.total}</div>
                       </div>
-                      <div className="rounded-md bg-gray-50 p-3">
+                      <div className="rounded-md border border-vw-line bg-vw-cream p-3">
                         <div className="text-xs uppercase text-gray-500">Candidates</div>
                         <div className="text-lg font-bold text-gray-900">{backfillResult.candidates}</div>
                       </div>
-                      <div className="rounded-md bg-gray-50 p-3">
+                      <div className="rounded-md border border-vw-line bg-vw-cream p-3">
                         <div className="text-xs uppercase text-gray-500">Processed</div>
                         <div className="text-lg font-bold text-gray-900">{backfillResult.processed}</div>
                       </div>
@@ -840,15 +852,15 @@ export default function AdminPage() {
                     </div>
 
                     {backfillResult.failures.length > 0 && (
-                      <div className="mt-4 overflow-hidden rounded-md border border-gray-200">
+                      <div className="mt-4 overflow-x-auto rounded-md border border-vw-line">
                         <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
+                          <thead className="bg-vw-cream">
                             <tr>
                               <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">PDF</th>
                               <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">Error / Reason</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-200 bg-white">
+                          <tbody className="divide-y divide-vw-line bg-vw-paper">
                             {backfillResult.failures.map((failure) => (
                               <tr key={failure.id}>
                                 <td className="px-4 py-2 text-sm font-medium text-gray-900">{failure.title}</td>
@@ -863,7 +875,7 @@ export default function AdminPage() {
                 )}
               </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_10px_28px_rgba(55,42,28,0.06)]">
                 <h3 className="text-xl font-bold mb-4">Email Test</h3>
                 <p className="text-gray-600 mb-4">
                   Send a test email to verify your Resend setup is working correctly.
@@ -876,7 +888,7 @@ export default function AdminPage() {
                 <button
                   onClick={sendTestEmail}
                   disabled={actionLoading === 'testEmail'}
-                  className="px-4 py-2 bg-vw-blue text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="btn-primary disabled:opacity-50"
                 >
                   {actionLoading === 'testEmail' ? 'Sending...' : 'Send Test Email'}
                 </button>
@@ -885,9 +897,9 @@ export default function AdminPage() {
           )}
 
           {editingPdf && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
-                <h3 className="text-xl font-bold mb-4">Edit PDF</h3>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-vw-dark/70 p-4 backdrop-blur-sm">
+              <div role="dialog" aria-modal="true" aria-labelledby="edit-pdf-title" className="mx-4 w-full max-w-lg rounded-xl border border-vw-line bg-vw-paper p-6 shadow-2xl">
+                <h3 id="edit-pdf-title" className="mb-4 text-xl font-bold text-vw-blue">Edit PDF</h3>
                 {error && (
                   <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md text-sm">
                     {error}
@@ -900,7 +912,7 @@ export default function AdminPage() {
                       type="text"
                       value={editForm.title}
                       onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-md"
+                      className="w-full rounded-md border border-vw-line bg-vw-cream px-3 py-2 outline-none focus:border-vw-gold"
                     />
                   </div>
                   <div>
@@ -909,7 +921,7 @@ export default function AdminPage() {
                       value={editForm.description}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border rounded-md"
+                      className="w-full rounded-md border border-vw-line bg-vw-cream px-3 py-2 outline-none focus:border-vw-gold"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -918,7 +930,7 @@ export default function AdminPage() {
                       <select
                         value={editForm.generation}
                         onChange={(e) => setEditForm({ ...editForm, generation: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-md"
+                        className="w-full rounded-md border border-vw-line bg-vw-cream px-3 py-2 outline-none focus:border-vw-gold"
                       >
                         {generationOptions.map((opt) => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -930,7 +942,7 @@ export default function AdminPage() {
                       <select
                         value={editForm.system}
                         onChange={(e) => setEditForm({ ...editForm, system: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-md"
+                        className="w-full rounded-md border border-vw-line bg-vw-cream px-3 py-2 outline-none focus:border-vw-gold"
                       >
                         {systemOptions.map((sys) => (
                           <option key={sys} value={sys}>{sys.charAt(0).toUpperCase() + sys.slice(1)}</option>
@@ -944,21 +956,21 @@ export default function AdminPage() {
                       type="text"
                       value={editForm.model}
                       onChange={(e) => setEditForm({ ...editForm, model: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-md"
+                      className="w-full rounded-md border border-vw-line bg-vw-cream px-3 py-2 outline-none focus:border-vw-gold"
                     />
                   </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
                   <button
                     onClick={() => setEditingPdf(null)}
-                    className="px-4 py-2 text-gray-700 border rounded-md hover:bg-gray-50"
+                    className="btn-secondary"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleUpdatePdf}
                     disabled={actionLoading === editingPdf.id}
-                    className="px-4 py-2 bg-vw-blue text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    className="btn-primary disabled:opacity-50"
                   >
                     {actionLoading === editingPdf.id ? 'Saving...' : 'Save Changes'}
                   </button>

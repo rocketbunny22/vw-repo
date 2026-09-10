@@ -57,51 +57,52 @@ function ResetPasswordForm() {
 
   if (success) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <p className="text-lg text-green-700 mb-4">Password reset successful!</p>
-        <p className="text-gray-600">Redirecting to login...</p>
+      <div className="rounded-xl border border-[#55745d]/30 bg-vw-paper p-8 text-center shadow-[0_18px_45px_rgba(55,42,28,0.08)]">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#55745d]/10 text-xl text-[#3f6549]" aria-hidden="true">✓</div>
+        <p className="mb-4 text-lg font-semibold text-[#3f6549]">Password reset successful!</p>
+        <p className="text-vw-muted">Redirecting to login...</p>
       </div>
     );
   }
 
   if (!token) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <p className="text-lg text-red-700 mb-4">Invalid reset link</p>
+      <div className="rounded-xl border border-vw-red/25 bg-vw-paper p-8 text-center shadow-[0_18px_45px_rgba(55,42,28,0.08)]">
+        <p className="text-lg font-semibold text-vw-red">Invalid reset link</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
+    <form onSubmit={handleSubmit} className="rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_18px_45px_rgba(55,42,28,0.08)] sm:p-8">
       {error && (
-        <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-md">{error}</div>
+        <div className="mb-6 rounded-md border border-vw-red/25 bg-vw-red/10 p-4 text-vw-red" role="alert">{error}</div>
       )}
 
       <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-semibold text-vw-dark">
             New Password
           </label>
           <input
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
+            className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark shadow-inner shadow-vw-dark/5 focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
             required
             minLength={10}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-semibold text-vw-dark">
             Confirm Password
           </label>
           <input
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-vw-blue focus:border-transparent"
+            className="w-full rounded-md border border-vw-line bg-vw-cream px-4 py-3 text-vw-dark shadow-inner shadow-vw-dark/5 focus:border-vw-gold focus:ring-2 focus:ring-vw-gold/20"
             required
             minLength={10}
           />
@@ -122,19 +123,20 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <div className="flex flex-col">
-      <section className="bg-vw-blue py-16">
+      <header className="border-b border-vw-gold/25 bg-[linear-gradient(135deg,var(--vw-blue),var(--vw-dark))] py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Reset Password</h1>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-vw-gold-light">Account security</p>
+          <h1 className="text-4xl font-bold text-white sm:text-5xl">Reset Password</h1>
         </div>
-      </section>
+      </header>
 
-      <section className="py-12 bg-gray-50 flex-1">
+      <main className="flex-1 py-12 sm:py-16">
         <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
-          <Suspense fallback={<div className="bg-white rounded-lg shadow-md p-8">Loading...</div>}>
+          <Suspense fallback={<div className="rounded-xl border border-vw-line bg-vw-paper p-8 text-vw-muted shadow-[0_18px_45px_rgba(55,42,28,0.08)]">Loading...</div>}>
             <ResetPasswordForm />
           </Suspense>
         </div>
-      </section>
+      </main>
     </div>
   );
 }

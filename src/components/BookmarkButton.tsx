@@ -96,10 +96,10 @@ export default function BookmarkButton({
       disabled={loading}
       title={bookmarked ? 'Remove bookmark' : 'Save bookmark'}
       aria-label={bookmarked ? 'Remove bookmark' : 'Save bookmark'}
-      className={`inline-flex h-9 w-9 items-center justify-center rounded-md border transition-colors ${
+      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-sm transition-[color,background-color,border-color,transform,box-shadow] hover:-translate-y-px disabled:cursor-wait ${
         bookmarked
-          ? 'border-vw-gold bg-vw-gold text-vw-blue'
-          : 'border-gray-300 bg-white text-gray-500 hover:border-vw-gold hover:text-vw-blue'
+          ? 'border-vw-gold/50 bg-vw-gold/15 text-vw-blue shadow-vw-gold/10 hover:bg-vw-gold/25'
+          : 'border-vw-line bg-vw-paper text-vw-muted hover:border-vw-gold/70 hover:bg-vw-cream hover:text-vw-blue'
       } ${loading ? 'opacity-60' : ''} ${className}`}
     >
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill={bookmarked ? 'currentColor' : 'none'} stroke="currentColor">
