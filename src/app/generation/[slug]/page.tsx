@@ -1,13 +1,19 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { diyGuides } from '@/data/diyGuides';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
 import { PdfCard } from '@/components/PdfViewer';
 import { toPublicPdfSummary } from '@/lib/publicSummaries';
+import { isRedisUnavailableError } from '@/lib/redis';
 import { absoluteUrl, breadcrumbJsonLd, createMetadata, jsonLd, siteName, truncateDescription } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+export function generateStaticParams() {
+  return generations.map((generation) => ({ slug: generation.slug }));
+}
 
 export async function generateMetadata({
   params,
@@ -27,7 +33,7 @@ export async function generateMetadata({
   return createMetadata({
     title: `${generation.name} Volkswagen ${generation.years} Guides, Specs & Manuals`,
     description: truncateDescription(
-      `${generation.name} Volkswagen ${generation.years}: ${generation.description} Browse models, systems, technical specs, DIY guides, and PDF manuals.`
+      `${generation.name} Volkswagen ${generation.years} repair resources for ${generation.models.join(', ')}. Browse system specs, common issues, DIY guides, and PDF manuals.`
     ),
     path: `/generation/${generation.slug}`,
     image: generation.image,
@@ -44,12 +50,11 @@ export default async function GenerationPage({
   
   if (!generation) notFound();
 
-  const pdfs = (await getAllPdfs())
-    .filter((pdf) => pdf.approved !== false)
-    .map(toPublicPdfSummary);
+  const { pdfs, unavailable: pdfsUnavailable } = await getApprovedPdfs();
   const relatedPdfs = pdfs.filter(
     (pdf) => pdf.generation === generation.id || pdf.generation === generation.slug
   );
+  const relatedGuides = diyGuides.filter((guide) => guide.generation === generation.id);
   const pageUrl = absoluteUrl(`/generation/${generation.slug}`);
   const generationJsonLd = {
     '@context': 'https://schema.org',
@@ -65,8 +70,20 @@ export default async function GenerationPage({
     },
     about: generation.models.map((model) => ({
       '@type': 'Car',
-      name: `Volkswagen ${model}`,
+      name: `${generation.name} Volkswagen ${model}`,
     })),
+    hasPart: [
+      ...generation.systems.map((system) => ({
+        '@type': 'TechArticle',
+        name: `${generation.name} Volkswagen ${system.name}`,
+        url: absoluteUrl(`/systems/${system.slug}?gen=${generation.slug}`),
+      })),
+      ...relatedGuides.map((guide) => ({
+        '@type': 'TechArticle',
+        name: guide.title,
+        url: absoluteUrl(`/guides/${guide.slug}`),
+      })),
+    ],
   };
   const breadcrumbs = breadcrumbJsonLd([
     { name: 'Home', path: '/' },
@@ -105,19 +122,72 @@ export default async function GenerationPage({
         </div>
       </section>
 
+      <section className="border-b border-vw-line bg-vw-cream px-4 py-10">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-4xl border-l-4 border-vw-gold pl-5">
+            <h2 className="text-2xl font-bold text-vw-blue">
+              {generation.name} Volkswagen repair information
+            </h2>
+            <p className="mt-3 text-lg leading-relaxed text-vw-muted">{generation.description}</p>
+            <p className="mt-3 leading-relaxed text-vw-muted">
+              This archive covers the {generation.models.map((model) => `Volkswagen ${model}`).join(', ')}
+              {' '}from {generation.years}, including system specifications, known issues, maintenance notes,
+              step-by-step DIY guides, and available PDF manuals.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="bg-vw-surface px-4 py-12">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-bold text-vw-blue mb-6">Systems</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <h2 className="mb-2 text-2xl font-bold text-vw-blue">{generation.name} repair systems</h2>
+          <p className="mb-6 max-w-3xl text-vw-muted">Choose a system for generation-specific specifications, maintenance guidance, common problems, manuals, and repair resources.</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {generation.systems.map((sys, i) => (
-              <Link key={sys.id} href={`/systems/${sys.slug}?gen=${generation.slug}`} className="group block rounded-xl border border-vw-line bg-vw-paper p-6 text-center shadow-[0_8px_22px_rgba(55,42,28,0.05)] transition-all hover:-translate-y-0.5 hover:border-vw-gold/60 hover:shadow-[0_14px_32px_rgba(55,42,28,0.09)]">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-vw-gold/35 bg-vw-gold/10 text-vw-blue transition-colors group-hover:bg-vw-gold/20"><span className="font-bold">{i+1}</span></div>
-                <h3 className="font-bold text-vw-dark">{sys.name}</h3>
+              <Link key={sys.id} href={`/systems/${sys.slug}?gen=${generation.slug}`} className="group block rounded-xl border border-vw-line bg-vw-paper p-6 shadow-[0_8px_22px_rgba(55,42,28,0.05)] transition-all hover:-translate-y-0.5 hover:border-vw-gold/60 hover:shadow-[0_14px_32px_rgba(55,42,28,0.09)]">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-vw-gold/35 bg-vw-gold/10 text-vw-blue transition-colors group-hover:bg-vw-gold/20"><span className="font-bold">{i + 1}</span></div>
+                  <div>
+                    <h3 className="font-bold text-vw-dark">{generation.name} Volkswagen {sys.name}</h3>
+                    <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-vw-muted">{sys.description}</p>
+                  </div>
+                </div>
               </Link>
             ))}
           </div>
         </div>
       </section>
+
+      {relatedGuides.length > 0 && (
+        <section className="border-t border-vw-line bg-vw-paper px-4 py-12">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-vw-blue">{generation.name} Volkswagen DIY guides</h2>
+                <p className="mt-1 text-vw-muted">Step-by-step repair and maintenance procedures for this generation.</p>
+              </div>
+              <Link href={`/guides?generation=${generation.id}`} className="shrink-0 font-medium text-vw-link-blue hover:underline">View all guides →</Link>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {relatedGuides.map((guide) => {
+                const system = generation.systems.find((item) => item.slug === guide.system || item.id === guide.system);
+                return (
+                  <article key={guide.id} className="rounded-xl border border-vw-line bg-vw-cream p-5">
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      <span className="badge badge-gold">{system?.name || guide.system}</span>
+                      <span className="badge badge-gray">{guide.difficulty}</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-vw-blue">
+                      <Link href={`/guides/${guide.slug}`} className="hover:underline">{guide.title}</Link>
+                    </h3>
+                    <p className="mt-2 text-sm text-vw-muted">Estimated time: {guide.timeEstimate}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="border-t border-vw-line bg-vw-cream px-4 py-12">
         <div className="max-w-7xl mx-auto">
@@ -131,7 +201,11 @@ export default async function GenerationPage({
             </Link>
           </div>
 
-          {relatedPdfs.length === 0 ? (
+          {pdfsUnavailable ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+              The manual inventory is temporarily unavailable. The generation specifications and guides on this page remain available.
+            </div>
+          ) : relatedPdfs.length === 0 ? (
             <div className="rounded-xl border border-dashed border-vw-line bg-vw-paper p-6 text-vw-muted">
               No PDFs have been uploaded for this generation yet.
             </div>
@@ -159,4 +233,16 @@ export default async function GenerationPage({
       </section>
     </div>
   );
+}
+
+async function getApprovedPdfs() {
+  try {
+    const pdfs = (await getAllPdfs())
+      .filter((pdf) => pdf.approved !== false)
+      .map(toPublicPdfSummary);
+    return { pdfs, unavailable: false };
+  } catch (error) {
+    if (!isRedisUnavailableError(error)) throw error;
+    return { pdfs: [], unavailable: true };
+  }
 }

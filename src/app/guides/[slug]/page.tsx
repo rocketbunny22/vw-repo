@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { diyGuides } from '@/data/diyGuides';
+import { spanishGuideContent } from '@/data/diyGuides.es-MX';
 import { generations } from '@/data/generations';
 import { DiyGuide } from '@/types';
 import { getUserGuides } from '@/data/guides';
@@ -60,6 +61,7 @@ export async function generateMetadata({
     path: `/guides/${guide.slug}`,
     image: gen?.image,
     type: 'article',
+    includeLanguageAlternates: Boolean(spanishGuideContent[guide.slug]),
   });
 }
 
@@ -77,18 +79,26 @@ export default async function GuidePage({
   
   const gen = generations.find((g) => g.id === guide.generation);
   const sys = systemsList.find((s) => s.id === guide.system);
+  const relatedGuides = diyGuides.filter((item) => (
+    item.slug !== guide.slug
+    && item.generation === guide.generation
+    && item.system === guide.system
+  )).slice(0, 3);
   const pagePath = `/guides/${guide.slug}`;
   const guideJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
+    inLanguage: 'en-US',
     headline: guide.title,
     description: truncateDescription(guide.content),
     url: absoluteUrl(pagePath),
+    ...(gen ? { image: absoluteUrl(gen.image) } : {}),
     datePublished: guide.createdAt,
     dateModified: guide.updatedAt || guide.createdAt,
     author: {
       '@type': 'Person',
       name: guide.author,
+      ...(guide.authorId ? { url: absoluteUrl(`/users/${encodeURIComponent(guide.author)}`) } : {}),
     },
     publisher: {
       '@type': 'Organization',
@@ -99,11 +109,8 @@ export default async function GuidePage({
       gen ? `${gen.name} Volkswagen` : 'Volkswagen',
       sys?.name || 'Volkswagen maintenance',
     ],
-    timeRequired: guide.timeEstimate,
-    proficiencyLevel: guide.difficulty,
-    tool: guide.tools?.map((tool) => ({ '@type': 'HowToTool', name: tool })),
-    supply: guide.parts?.map((part) => ({ '@type': 'HowToSupply', name: part })),
     mainEntityOfPage: absoluteUrl(pagePath),
+    isAccessibleForFree: true,
   };
   const breadcrumbs = breadcrumbJsonLd([
     { name: 'Home', path: '/' },
@@ -226,6 +233,32 @@ export default async function GuidePage({
               </aside>
             </div>
           </div>
+
+          <aside className="mt-10 rounded-xl border border-vw-line bg-vw-paper p-6" aria-labelledby="related-resources-title">
+            <h2 id="related-resources-title" className="text-2xl font-bold text-vw-blue">Related {gen?.name || 'Volkswagen'} resources</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {gen && (
+                <Link href={`/generation/${gen.slug}`} className="rounded-lg border border-vw-line bg-vw-cream p-4 font-medium text-vw-link-blue hover:border-vw-gold hover:underline">
+                  {gen.name} Volkswagen specifications and manuals
+                </Link>
+              )}
+              {gen && sys && (
+                <Link href={`/systems/${guide.system}?gen=${gen.slug}`} className="rounded-lg border border-vw-line bg-vw-cream p-4 font-medium text-vw-link-blue hover:border-vw-gold hover:underline">
+                  {gen.name} Volkswagen {sys.name.toLowerCase()} specifications and common issues
+                </Link>
+              )}
+              {gen && (
+                <Link href={`/library?generation=${gen.id}&system=${guide.system}`} className="rounded-lg border border-vw-line bg-vw-cream p-4 font-medium text-vw-link-blue hover:border-vw-gold hover:underline">
+                  {gen.name} {sys?.name.toLowerCase() || ''} PDF manuals
+                </Link>
+              )}
+              {relatedGuides.map((relatedGuide) => (
+                <Link key={relatedGuide.id} href={`/guides/${relatedGuide.slug}`} className="rounded-lg border border-vw-line bg-vw-cream p-4 font-medium text-vw-link-blue hover:border-vw-gold hover:underline">
+                  {relatedGuide.title}
+                </Link>
+              ))}
+            </div>
+          </aside>
 
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <CommentsSection guideId={guide.id} />

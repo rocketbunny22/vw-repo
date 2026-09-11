@@ -72,7 +72,9 @@ export function createMetadata({
         },
       ],
       locale: locale === 'es-MX' ? 'es_MX' : 'en_US',
-      alternateLocale: locale === 'es-MX' ? ['en_US'] : ['es_MX'],
+      alternateLocale: includeLanguageAlternates
+        ? locale === 'es-MX' ? ['en_US'] : ['es_MX']
+        : undefined,
       type,
     },
     twitter: {

@@ -5,6 +5,7 @@ import { spanishGuideContent } from '@/data/diyGuides.es-MX';
 import { getUserGuides } from '@/data/guides';
 import { generations } from '@/data/generations';
 import { createMetadata } from '@/lib/seo';
+import { isRedisUnavailableError } from '@/lib/redis';
 import { difficultyNamesEs, formatTimeEstimateEs, systemNamesEs, toSpanishPath } from '@/lib/localization';
 import BookmarkButton from '@/components/BookmarkButton';
 
@@ -18,7 +19,7 @@ export const metadata: Metadata = createMetadata({
 export const dynamic = 'force-dynamic';
 
 export default async function SpanishGuidesPage() {
-  const userGuides = (await getUserGuides()).filter((guide) => guide.approved);
+  const userGuides = await getApprovedUserGuides();
   const guides = [
     ...diyGuides.filter((guide) => spanishGuideContent[guide.slug]),
     ...userGuides,
@@ -37,6 +38,8 @@ export default async function SpanishGuidesPage() {
           {guides.map((guide) => {
             const translated = spanishGuideContent[guide.slug] || guide;
             const generation = generations.find((item) => item.id === guide.generation);
+            const isTranslated = Boolean(spanishGuideContent[guide.slug]);
+            const guidePath = isTranslated ? toSpanishPath(`/guides/${guide.slug}`) : `/guides/${guide.slug}`;
             return (
               <article key={guide.id} className="group overflow-hidden rounded-xl border border-vw-line bg-vw-paper shadow-[0_10px_28px_rgba(55,42,28,0.06)] transition-all hover:-translate-y-0.5 hover:border-vw-gold/55 hover:shadow-[0_16px_38px_rgba(55,42,28,0.1)]">
                 <div className="p-6">
@@ -45,15 +48,16 @@ export default async function SpanishGuidesPage() {
                       <span className="badge badge-blue">{generation?.name}</span>
                       <span className="badge badge-gold">{systemNamesEs[guide.system] || guide.system}</span>
                       <span className="badge border border-vw-line bg-vw-cream text-vw-dark">{difficultyNamesEs[guide.difficulty] || guide.difficulty}</span>
+                      {!isTranslated && <span className="badge badge-gray">En inglés</span>}
                     </div>
                     <BookmarkButton itemType="guide" itemId={guide.id} />
                   </div>
                   <h2 className="text-xl font-bold text-vw-blue">
-                    <Link href={toSpanishPath(`/guides/${guide.slug}`)} className="hover:underline">{translated.title}</Link>
+                    <Link href={guidePath} className="hover:underline">{translated.title}</Link>
                   </h2>
                   <p className="mt-3 border-t border-vw-line/70 pt-3 text-sm text-vw-muted">Por {guide.author} · {formatTimeEstimateEs(guide.timeEstimate)}</p>
-                  <Link href={toSpanishPath(`/guides/${guide.slug}`)} className="mt-5 inline-block font-medium text-vw-blue hover:text-vw-gold">
-                    Leer guía →
+                  <Link href={guidePath} className="mt-5 inline-block font-medium text-vw-blue hover:text-vw-gold">
+                    {isTranslated ? 'Leer guía' : 'Read guide in English'} →
                   </Link>
                 </div>
               </article>
@@ -63,4 +67,13 @@ export default async function SpanishGuidesPage() {
       </section>
     </div>
   );
+}
+
+async function getApprovedUserGuides() {
+  try {
+    return (await getUserGuides()).filter((guide) => guide.approved);
+  } catch (error) {
+    if (!isRedisUnavailableError(error)) throw error;
+    return [];
+  }
 }

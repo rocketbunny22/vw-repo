@@ -11,27 +11,18 @@ import { pdfManualPath } from '@/lib/pdfUrls';
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticRoutes: MetadataRoute.Sitemap = [
+  const staticRoutes = [
     '/',
     '/library',
     '/guides',
     '/privacy-policy',
     '/terms-of-use',
-    '/es-mx',
-    '/es-mx/biblioteca',
-    '/es-mx/guias',
-    '/es-mx/politica-de-privacidad',
-    '/es-mx/terminos-de-uso',
-  ].map((path) => ({ url: absoluteUrl(path) }));
+  ].flatMap((path) => localizedEntries(path));
 
-  const generationRoutes: MetadataRoute.Sitemap = generations.map((generation) => ({
-    url: absoluteUrl(`/generation/${generation.slug}`),
-    images: [absoluteUrl(generation.image)],
-  }));
-  const spanishGenerationRoutes: MetadataRoute.Sitemap = generations.map((generation) => ({
-    url: absoluteUrl(toSpanishPath(`/generation/${generation.slug}`)),
-    images: [absoluteUrl(generation.image)],
-  }));
+  const generationRoutes = generations.flatMap((generation) => localizedEntries(
+    `/generation/${generation.slug}`,
+    { images: [absoluteUrl(generation.image)] },
+  ));
 
   const systemSlugs = new Set<string>();
   generations.forEach((generation) => {
@@ -41,53 +32,49 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const systemRoutes: MetadataRoute.Sitemap = Array.from(systemSlugs).map((slug) => ({
     url: absoluteUrl(`/systems/${slug}`),
   }));
-  const spanishSystemRoutes: MetadataRoute.Sitemap = Array.from(systemSlugs).map((slug) => ({
-    url: absoluteUrl(toSpanishPath(`/systems/${slug}`)),
-  }));
-  const generationSystemRoutes: MetadataRoute.Sitemap = generations.flatMap((generation) => (
+  const generationSystemRoutes = generations.flatMap((generation) => (
     generation.systems.map((system) => ({
       url: absoluteUrl(`/systems/${system.slug}?gen=${generation.slug}`),
     }))
   ));
-  const spanishGenerationSystemRoutes: MetadataRoute.Sitemap = generations.flatMap((generation) => (
-    generation.systems.map((system) => ({
-      url: absoluteUrl(toSpanishPath(`/systems/${system.slug}?gen=${generation.slug}`)),
-    }))
-  ));
 
-  const staticGuideRoutes: MetadataRoute.Sitemap = diyGuides.map((guide) => ({
-    url: absoluteUrl(`/guides/${guide.slug}`),
-    lastModified: validDate(guide.updatedAt),
-  }));
-  const spanishGuideRoutes: MetadataRoute.Sitemap = diyGuides.map((guide) => ({
-    url: absoluteUrl(toSpanishPath(`/guides/${guide.slug}`)),
-    lastModified: validDate(guide.updatedAt),
-  }));
+  const staticGuideRoutes = diyGuides.flatMap((guide) => localizedEntries(
+    `/guides/${guide.slug}`,
+    { lastModified: validDate(guide.updatedAt) },
+  ));
 
   let userGuideRoutes: MetadataRoute.Sitemap = [];
   let pdfRoutes: MetadataRoute.Sitemap = [];
   let userProfileRoutes: MetadataRoute.Sitemap = [];
 
-  try {
-    const [userGuides, pdfs, users] = await Promise.all([
-      getUserGuides(),
-      getAllPdfs(),
-      getUsers(),
-    ]);
-    const approvedUserGuides = userGuides.filter((guide) => guide.approved);
-    const approvedPdfs = pdfs.filter((pdf) => pdf.approved !== false);
+  const [userGuidesResult, pdfsResult, usersResult] = await Promise.allSettled([
+    getUserGuides(),
+    getAllPdfs(),
+    getUsers(),
+  ]);
+  const approvedUserGuides = userGuidesResult.status === 'fulfilled'
+    ? userGuidesResult.value.filter((guide) => guide.approved)
+    : [];
+  const approvedPdfs = pdfsResult.status === 'fulfilled'
+    ? pdfsResult.value.filter((pdf) => pdf.approved !== false)
+    : [];
 
+  if (userGuidesResult.status === 'fulfilled') {
     userGuideRoutes = approvedUserGuides.map((guide) => ({
-        url: absoluteUrl(`/guides/${guide.slug}`),
-        lastModified: validDate(guide.updatedAt || guide.createdAt),
+      url: absoluteUrl(`/guides/${guide.slug}`),
+      lastModified: validDate(guide.updatedAt || guide.createdAt),
     }));
+  }
 
+  if (pdfsResult.status === 'fulfilled') {
     pdfRoutes = approvedPdfs.map((pdf) => ({
       url: absoluteUrl(pdfManualPath(pdf)),
       lastModified: validDate(pdf.uploadedAt),
     }));
+  }
 
-    userProfileRoutes = users
+  if (usersResult.status === 'fulfilled') {
+    userProfileRoutes = usersResult.value
       .filter((user) => (
         (user.vehiclePublic === true && Boolean(user.vehicle))
         || approvedUserGuides.some((guide) => guide.authorId === user.id || guide.author === user.username)
@@ -96,28 +83,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .map((user) => ({
         url: absoluteUrl(`/users/${encodeURIComponent(user.username)}`),
       }));
-  } catch {
-    userGuideRoutes = [];
-    pdfRoutes = [];
-    userProfileRoutes = [];
   }
 
   const routes = [
     ...staticRoutes,
     ...generationRoutes,
-    ...spanishGenerationRoutes,
     ...systemRoutes,
-    ...spanishSystemRoutes,
     ...generationSystemRoutes,
-    ...spanishGenerationSystemRoutes,
     ...staticGuideRoutes,
-    ...spanishGuideRoutes,
     ...userGuideRoutes,
     ...pdfRoutes,
     ...userProfileRoutes,
   ];
 
   return Array.from(new Map(routes.map((route) => [route.url, route])).values());
+}
+
+function localizedEntries(
+  englishPath: string,
+  fields: Omit<MetadataRoute.Sitemap[number], 'url' | 'alternates'> = {},
+): MetadataRoute.Sitemap {
+  const spanishPath = toSpanishPath(englishPath);
+  const englishUrl = absoluteUrl(englishPath);
+  const spanishUrl = absoluteUrl(spanishPath);
+  const alternates = {
+    languages: {
+      'en-US': englishUrl,
+      'es-MX': spanishUrl,
+      'x-default': englishUrl,
+    },
+  };
+
+  return [
+    { ...fields, url: englishUrl, alternates },
+    { ...fields, url: spanishUrl, alternates },
+  ];
 }
 
 function validDate(value?: string): Date | undefined {

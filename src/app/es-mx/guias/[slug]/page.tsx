@@ -24,6 +24,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const guide = diyGuides.find((item) => item.slug === englishSlug)
     || userGuides.find((item) => item.slug === englishSlug && item.approved);
   if (!guide) return { title: 'Guía no encontrada', robots: { index: false, follow: false } };
+  if (!spanishGuideContent[englishSlug]) {
+    return {
+      title: guide.title,
+      alternates: { canonical: absoluteUrl(`/guides/${guide.slug}`) },
+      robots: { index: false, follow: true },
+    };
+  }
   const translated = spanishGuideContent[englishSlug] || guide;
 
   const generation = generations.find((item) => item.id === guide.generation);
@@ -44,11 +51,18 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
   const guide = diyGuides.find((item) => item.slug === englishSlug)
     || userGuides.find((item) => item.slug === englishSlug && item.approved);
   if (!guide) notFound();
+  if (!spanishGuideContent[englishSlug]) permanentRedirect(`/guides/${guide.slug}`);
   const translated = spanishGuideContent[englishSlug] || guide;
   const canonicalPath = toSpanishPath(`/guides/${englishSlug}`);
   if (slug !== (guideSlugsEs[englishSlug] || englishSlug)) permanentRedirect(canonicalPath);
 
   const generation = generations.find((item) => item.id === guide.generation);
+  const relatedGuides = diyGuides.filter((item) => (
+    item.slug !== guide.slug
+    && item.generation === guide.generation
+    && item.system === guide.system
+    && Boolean(spanishGuideContent[item.slug])
+  )).slice(0, 3);
   const path = canonicalPath;
   const article = {
     '@context': 'https://schema.org',
@@ -57,10 +71,17 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
     headline: translated.title,
     description: truncateDescription(translated.content),
     url: absoluteUrl(path),
+    ...(generation ? { image: absoluteUrl(generation.image) } : {}),
     datePublished: guide.createdAt,
     dateModified: guide.updatedAt,
-    author: { '@type': 'Person', name: guide.author },
+    author: {
+      '@type': 'Person',
+      name: guide.author,
+      ...(guide.authorId ? { url: absoluteUrl(`/users/${encodeURIComponent(guide.author)}`) } : {}),
+    },
     publisher: { '@type': 'Organization', name: siteName, url: absoluteUrl('/') },
+    mainEntityOfPage: absoluteUrl(path),
+    isAccessibleForFree: true,
   };
   const breadcrumbs = breadcrumbJsonLd([
     { name: 'Inicio', path: '/es-mx' },
@@ -177,6 +198,32 @@ export default async function SpanishGuidePage({ params }: { params: Promise<{ s
               </aside>
             </div>
           </div>
+
+          <aside className="mt-10 rounded-xl border border-vw-line bg-vw-paper p-6" aria-labelledby="recursos-relacionados-title">
+            <h2 id="recursos-relacionados-title" className="text-2xl font-bold text-vw-blue">Recursos relacionados del Volkswagen {generation?.name}</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {generation && (
+                <Link href={toSpanishPath(`/generation/${generation.slug}`)} className="rounded-lg border border-vw-line bg-vw-cream p-4 font-medium text-vw-link-blue hover:border-vw-gold hover:underline">
+                  Especificaciones y manuales del Volkswagen {generation.name}
+                </Link>
+              )}
+              {generation && (
+                <Link href={toSpanishPath(`/systems/${guide.system}?gen=${generation.slug}`)} className="rounded-lg border border-vw-line bg-vw-cream p-4 font-medium text-vw-link-blue hover:border-vw-gold hover:underline">
+                  {systemNamesEs[guide.system]} del Volkswagen {generation.name}: especificaciones y problemas
+                </Link>
+              )}
+              {generation && (
+                <Link href={toSpanishPath(`/library?generation=${generation.id}&system=${guide.system}`)} className="rounded-lg border border-vw-line bg-vw-cream p-4 font-medium text-vw-link-blue hover:border-vw-gold hover:underline">
+                  Manuales PDF de {systemNamesEs[guide.system]?.toLowerCase()} para {generation.name}
+                </Link>
+              )}
+              {relatedGuides.map((relatedGuide) => (
+                <Link key={relatedGuide.id} href={toSpanishPath(`/guides/${relatedGuide.slug}`)} className="rounded-lg border border-vw-line bg-vw-cream p-4 font-medium text-vw-link-blue hover:border-vw-gold hover:underline">
+                  {spanishGuideContent[relatedGuide.slug].title}
+                </Link>
+              ))}
+            </div>
+          </aside>
 
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <CommentsSection guideId={guide.id} />

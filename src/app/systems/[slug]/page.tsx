@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { diyGuides } from '@/data/diyGuides';
 import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { notFound } from 'next/navigation';
 import { PdfCard } from '@/components/PdfViewer';
 import UiIcon from '@/components/UiIcon';
 import { toPublicPdfSummary } from '@/lib/publicSummaries';
+import { pdfManualPath } from '@/lib/pdfUrls';
+import { isRedisUnavailableError } from '@/lib/redis';
 import { absoluteUrl, breadcrumbJsonLd, createMetadata, jsonLd, siteName, truncateDescription } from '@/lib/seo';
 
 export async function generateStaticParams() {
@@ -48,7 +51,7 @@ export async function generateMetadata({
     ? `${selectedGeneration.name} Volkswagen ${systemInfo.name} Specs, Issues & Manuals`
     : `Volkswagen ${systemInfo.name} Specs, Issues & Manuals`;
   const description = selectedGeneration
-    ? `${selectedGeneration.name} Volkswagen ${systemInfo.name}: ${systemInfo.description} Find common issues, maintenance tips, specifications, DIY guides, and manuals.`
+    ? `${selectedGeneration.name} Volkswagen ${systemInfo.name} resources for ${selectedGeneration.models.join(', ')}. Find specs, common issues, maintenance tips, DIY guides, and manuals.`
     : `Volkswagen ${systemInfo.name} reference across generations. Compare common issues, maintenance tips, specifications, DIY guides, and manuals.`;
 
   return createMetadata({
@@ -56,6 +59,7 @@ export async function generateMetadata({
     description: truncateDescription(description),
     path: selectedGeneration ? `/systems/${slug}?gen=${selectedGeneration.slug}` : `/systems/${slug}`,
     image: selectedGeneration?.image,
+    includeLanguageAlternates: false,
   });
 }
 
@@ -88,9 +92,7 @@ export default async function SystemsPage({
   const systemInfo = filteredSystems[0];
   const selectedGen = gen ? generations.find((g) => g.slug === gen) : null;
 
-  const pdfs = (await getAllPdfs())
-    .filter((pdf) => pdf.approved !== false)
-    .map(toPublicPdfSummary);
+  const { pdfs, unavailable: pdfsUnavailable } = await getApprovedPdfs();
   const relatedPdfs = pdfs.filter((pdf) => {
     if (pdf.system !== slug) return false;
 
@@ -103,11 +105,15 @@ export default async function SystemsPage({
 
     return genValues.includes(String(pdf.generation));
   });
+  const relatedGuides = selectedGen
+    ? diyGuides.filter((guide) => guide.generation === selectedGen.id && guide.system === slug)
+    : [];
 
   const pagePath = selectedGen ? `/systems/${slug}?gen=${selectedGen.slug}` : `/systems/${slug}`;
   const systemJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
+    inLanguage: 'en-US',
     headline: selectedGen ? `${selectedGen.name} ${systemInfo.name}` : `Volkswagen ${systemInfo.name}`,
     description: systemInfo.description,
     url: absoluteUrl(pagePath),
@@ -122,6 +128,28 @@ export default async function SystemsPage({
           name: `${selectedGen.name} Volkswagen`,
         }
       : 'Volkswagen repair and maintenance',
+    isAccessibleForFree: true,
+    ...(selectedGen ? {
+      image: absoluteUrl(selectedGen.image),
+      hasPart: [
+        ...relatedGuides.map((guide) => ({
+          '@type': 'TechArticle',
+          name: guide.title,
+          url: absoluteUrl(`/guides/${guide.slug}`),
+        })),
+        ...relatedPdfs.map((pdf) => ({
+          '@type': 'DigitalDocument',
+          name: pdf.title,
+          url: absoluteUrl(pdfManualPath(pdf)),
+        })),
+      ],
+    } : {
+      hasPart: allSystems.map((system) => ({
+        '@type': 'TechArticle',
+        name: `${system.generation} Volkswagen ${system.name}`,
+        url: absoluteUrl(`/systems/${system.slug}?gen=${system.generationSlug}`),
+      })),
+    }),
   };
   const breadcrumbs = breadcrumbJsonLd([
     { name: 'Home', path: '/' },
@@ -241,22 +269,40 @@ export default async function SystemsPage({
                 View All →
               </Link>
             </div>
-            <p className="mb-4 text-vw-muted">
-              Check the DIY Guides page for step-by-step tutorials on {selectedGen.name} {systemInfo.name}.
-            </p>
-            <Link href={`/guides?generation=${selectedGen.id}&system=${slug}`} className="btn-primary">
-              Browse {selectedGen.name} {systemInfo.name} Guides
-            </Link>
+            {relatedGuides.length > 0 ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {relatedGuides.map((guide) => (
+                  <article key={guide.id} className="rounded-xl border border-vw-line bg-vw-cream p-5">
+                    <span className="badge badge-gold">{guide.difficulty}</span>
+                    <h3 className="mt-3 text-lg font-bold text-vw-blue">
+                      <Link href={`/guides/${guide.slug}`} className="hover:underline">{guide.title}</Link>
+                    </h3>
+                    <p className="mt-2 text-sm text-vw-muted">Estimated time: {guide.timeEstimate}</p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div>
+                <p className="mb-4 text-vw-muted">
+                  Check the DIY Guides page for step-by-step tutorials on {selectedGen.name} {systemInfo.name}.
+                </p>
+                <Link href={`/guides?generation=${selectedGen.id}&system=${slug}`} className="btn-primary">
+                  Browse {selectedGen.name} {systemInfo.name} Guides
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       )}
 
       {/* No resources message */}
-      {selectedGen && relatedPdfs.length === 0 && (
+      {selectedGen && (pdfsUnavailable || relatedPdfs.length === 0) && (
         <section className="border-t border-vw-line bg-vw-paper py-12">
           <div className="max-w-7xl mx-auto px-4">
             <p className="mb-4 text-vw-muted">
-              No PDFs or guides found specifically for {selectedGen.name} {systemInfo.name}.
+              {pdfsUnavailable
+                ? `The PDF inventory for ${selectedGen.name} ${systemInfo.name} is temporarily unavailable. Static specifications and guides remain available.`
+                : `No PDFs were found specifically for ${selectedGen.name} ${systemInfo.name}.`}
             </p>
             <div className="flex gap-4">
               <Link href={`/library?generation=${selectedGen.id}`} className="text-vw-blue hover:underline">
@@ -301,4 +347,16 @@ export default async function SystemsPage({
       )}
     </div>
   );
+}
+
+async function getApprovedPdfs() {
+  try {
+    const pdfs = (await getAllPdfs())
+      .filter((pdf) => pdf.approved !== false)
+      .map(toPublicPdfSummary);
+    return { pdfs, unavailable: false };
+  } catch (error) {
+    if (!isRedisUnavailableError(error)) throw error;
+    return { pdfs: [], unavailable: true };
+  }
 }

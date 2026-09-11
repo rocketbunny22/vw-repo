@@ -6,6 +6,7 @@ import { generations } from '@/data/generations';
 import { getAllPdfs } from '@/data/pdfs';
 import { PdfCard } from '@/components/PdfViewer';
 import { toPublicPdfSummary } from '@/lib/publicSummaries';
+import { isRedisUnavailableError } from '@/lib/redis';
 import { breadcrumbJsonLd, createMetadata, jsonLd, truncateDescription } from '@/lib/seo';
 import { englishGenerationSlug, englishSystemSlug, generationDescriptionsEs, systemNamesEs, systemSlugsEs, toSpanishPath } from '@/lib/localization';
 
@@ -35,6 +36,8 @@ export async function generateMetadata({
     path: toSpanishPath(generation ? `/systems/${englishSlug}?gen=${generation.slug}` : `/systems/${englishSlug}`),
     image: generation?.image,
     locale: 'es-MX',
+    includeLanguageAlternates: false,
+    robots: { index: false, follow: true },
   });
 }
 
@@ -58,12 +61,10 @@ export default async function SpanishSystemPage({
   const availableGenerations = generations.filter((generation) => generation.systems.some((system) => system.slug === englishSlug));
   const selectedGeneration = gen ? availableGenerations.find((generation) => generation.slug === englishGenerationSlug(gen)) : null;
   const systemInfo = selectedGeneration?.systems.find((system) => system.slug === englishSlug) || availableGenerations[0]?.systems.find((system) => system.slug === englishSlug);
-  const relatedPdfs = selectedGeneration
-    ? (await getAllPdfs())
-        .filter((pdf) => pdf.approved !== false && pdf.generation === selectedGeneration.id && pdf.system === englishSlug)
-        .slice(0, 6)
-        .map(toPublicPdfSummary)
-    : [];
+  const pdfResult = selectedGeneration
+    ? await getApprovedPdfs(selectedGeneration.id, englishSlug)
+    : { pdfs: [], unavailable: false };
+  const relatedPdfs = pdfResult.pdfs;
   const path = toSpanishPath(selectedGeneration ? `/systems/${englishSlug}?gen=${selectedGeneration.slug}` : `/systems/${englishSlug}`);
   const breadcrumbs = breadcrumbJsonLd([
     { name: 'Inicio', path: '/es-mx' },
@@ -187,7 +188,9 @@ export default async function SpanishSystemPage({
         <section className="border-t border-vw-line bg-vw-paper py-12">
           <div className="max-w-7xl mx-auto px-4">
             <p className="mb-4 text-vw-muted">
-              No se encontraron PDFs ni guías específicas para {selectedGeneration.name} {systemInfo?.name}.
+              {pdfResult.unavailable
+                ? `El inventario de PDFs para ${selectedGeneration.name} ${systemInfo?.name} no está disponible temporalmente.`
+                : `No se encontraron PDFs específicos para ${selectedGeneration.name} ${systemInfo?.name}.`}
             </p>
             <div className="flex gap-4">
               <Link href={toSpanishPath(`/library?generation=${selectedGeneration.id}`)} className="text-vw-blue hover:underline">
@@ -231,4 +234,17 @@ export default async function SpanishSystemPage({
       )}
     </div>
   );
+}
+
+async function getApprovedPdfs(generationId: string, systemSlug: string) {
+  try {
+    const pdfs = (await getAllPdfs())
+      .filter((pdf) => pdf.approved !== false && pdf.generation === generationId && pdf.system === systemSlug)
+      .slice(0, 6)
+      .map(toPublicPdfSummary);
+    return { pdfs, unavailable: false };
+  } catch (error) {
+    if (!isRedisUnavailableError(error)) throw error;
+    return { pdfs: [], unavailable: true };
+  }
 }
